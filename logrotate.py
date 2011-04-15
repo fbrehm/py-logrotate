@@ -15,6 +15,8 @@
 
 import re
 
+from LogRotateGetopts import LogrotateOptParser;
+
 revision = '$Revision$'
 revision = re.sub( r'\$', '', revision )
 revision = re.sub( r'Revision: ', r'r', revision )
