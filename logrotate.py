@@ -14,6 +14,8 @@
 '''
 
 import re
+import sys
+import pprint
 
 from LogRotateGetopts import LogrotateOptParser;
 
@@ -30,8 +32,17 @@ __license__    = 'GPL3'
 
 #-----------------------------------------------------------------
 def main():
-    print "Lege los ..."
-    pass
+
+    opt_parser = LogrotateOptParser(
+        prog = "logrotate",
+        version = __version__,
+    )
+    pp = pprint.PrettyPrinter(indent=4)
+    opt_parser.getOpts()
+
+    print "Options: " + pp.pformat(opt_parser.options)
+    print "Arguments: " + pp.pformat(opt_parser.args)
+
 
 #========================================================================
 

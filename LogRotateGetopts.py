@@ -18,6 +18,7 @@ import sys
 
 from optparse import OptionError
 from optparse import OptionParser
+from optparse import OptionGroup
 from optparse import OptionConflictError
 
 
@@ -46,8 +47,6 @@ class LogrotateOptParser(object):
     #-------------------------------------------------------
     def __init__( self, prog = '%prog',
                         version = None,
-                        description = 'rotates and compresses system logs',
-                        usage = 'Usage: %s [options]',
     ):
         '''
         Costructor.
@@ -55,10 +54,6 @@ class LogrotateOptParser(object):
         @type prog: str
         @param version: The version string to use
         @type version: str
-        @param description: The Description the process should use
-        @type description: str
-        @param usage: An usage string fro the help screen, must have a '%s' for the program name
-        @type usage: str
         @return: None
         '''
 
@@ -68,19 +63,19 @@ class LogrotateOptParser(object):
         @type: str
         '''
 
-        self.version = __version__
+        self.version = version
         '''
         @ivar: The version string to use
         @type: str
         '''
 
-        self.description = description
+        self.description = 'rotates and compresses system logs'
         '''
         @ivar: description of the program
         @type: str
         '''
 
-        self.usage = usage %(prog)
+        self.usage = "Usage: %s [options] <configfile>" %(prog)
         '''
         @ivar: the usage string in getopt help output
         @type: str
@@ -109,10 +104,11 @@ class LogrotateOptParser(object):
             self.version = version
 
         self.parser = OptionParser(
-                prog        = self.prog,
-                version     = self.version,
-                description = self.description,
-                usage       = self.usage
+                prog             = self.prog,
+                version          = self.version,
+                description      = self.description,
+                usage            = self.usage,
+                conflict_handler = "resolve",
         )
         '''
         @ivar: the working OptionParser Object
@@ -127,6 +123,12 @@ class LogrotateOptParser(object):
         Private function to add all necessary options
         to the OptionParser object
         '''
+
+        if self.parser.has_option('--help'):
+            self.parser.remove_option('--help')
+
+        if self.parser.has_option('--version'):
+            self.parser.remove_option('--version')
 
         self.parser.add_option(
             '--simulate',
@@ -146,6 +148,73 @@ class LogrotateOptParser(object):
             dest    = 'verbose',
             help    = 'set the verbosity level'
         )
+
+        self.parser.add_option(
+            '--debug',
+            '-d',
+            default = False,
+            action  = 'store_true',
+            dest    = 'debug',
+            help    = "Don't do anything, just test (implies -v and -T)"
+        )
+
+        self.parser.add_option(
+            '--force',
+            '-f',
+            default = False,
+            action  = 'store_true',
+            dest    = 'force',
+            help    = "Force file rotation"
+        )
+
+        self.parser.add_option(
+            '--config-check',
+            '-c',
+            default = False,
+            action  = 'store_true',
+            dest    = 'configcheck',
+            help    = "Checks only the given configuration file and does "
+                      + "nothing. Conflicts with -f",
+        )
+
+        self.parser.add_option(
+            '--state',
+            '-s',
+            dest    = "statefile",
+            metavar = 'FILE',
+            help    = 'Path of state file (different to configuration)',
+        )
+
+        ######
+        # Deprecated options for compatibilty to logrotate
+        group = OptionGroup(self.parser, "Deprecated options")
+
+        ######
+        # Option group for common options
+
+        group = OptionGroup(self.parser, "Common options")
+
+        group.add_option(
+            '-h',
+            '-?',
+            '--help',
+            '--usage',
+            default = False,
+            action  = 'help',
+            dest    = 'help',
+            help    = 'shows a help message and exit'
+        )
+
+        group.add_option(
+            '-V',
+            '--version',
+            default = False,
+            action  = 'version',
+            dest    = 'version',
+            help    = 'shows the version number of the program and exit',
+        )
+
+        self.parser.add_option_group(group)
 
     #----------------------------------------------------------------------
     def getOpts(self):
