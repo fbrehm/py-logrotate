@@ -18,6 +18,7 @@ import sys
 import pprint
 
 from LogRotateGetopts import LogrotateOptParser;
+from LogRotateGetopts import LogrotateOptParserError;
 
 revision = '$Revision$'
 revision = re.sub( r'\$', '', revision )
@@ -38,7 +39,12 @@ def main():
         version = __version__,
     )
     pp = pprint.PrettyPrinter(indent=4)
-    opt_parser.getOpts()
+    try:
+        opt_parser.getOpts()
+    except LogrotateOptParserError, e:
+        sys.stderr.write(str(e) + "\n\n")
+        opt_parser.parser.print_help(sys.stderr)
+        sys.exit(1)
 
     print "Options: " + pp.pformat(opt_parser.options)
     print "Arguments: " + pp.pformat(opt_parser.args)

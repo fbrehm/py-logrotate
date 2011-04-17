@@ -36,6 +36,14 @@ __license__    = 'GPL3'
 
 #========================================================================
 
+class LogrotateOptParserError(Exception):
+    '''
+    Class for exceptions in this module, escpacially
+    due to false commandline options.
+    '''
+
+#========================================================================
+
 class LogrotateOptParser(object):
     '''
     Class for parsing commandline options of Python logrotating.
@@ -69,7 +77,7 @@ class LogrotateOptParser(object):
         @type: str
         '''
 
-        self.description = 'rotates and compresses system logs'
+        self.description = 'Rotates and compresses system logs.'
         '''
         @ivar: description of the program
         @type: str
@@ -189,6 +197,18 @@ class LogrotateOptParser(object):
         # Deprecated options for compatibilty to logrotate
         group = OptionGroup(self.parser, "Deprecated options")
 
+        group.add_option(
+            '--mail',
+            '-m',
+            dest    = "mailcmd",
+            metavar = 'CMD',
+            help    = ( ( 'Should tell %s which command to use '
+                        + 'when mailing logs - not used.' )
+                        %(str(self.prog)) ),
+        )
+
+        self.parser.add_option_group(group)
+
         ######
         # Option group for common options
 
@@ -227,6 +247,20 @@ class LogrotateOptParser(object):
         if not self.parsed:
             self.options, self.args = self.parser.parse_args()
             self.parsed = True
+
+        if self.options.force and self.options.configcheck:
+            raise LogrotateOptParserError('Invalid usage of --force and '
+                + '--config-check.')
+
+        if self.args is None:
+            raise LogrotateOptParserError('No configuration file given.')
+
+        if len(self.args) != 1:
+            raise LogrotateOptParserError('Only one configuration file is allowed.')
+
+        if self.options.mailcmd:
+            sys.stderr.write('Usage of --mail is deprecated '
+                + 'in this version.\n\n')
 
 #========================================================================
 
