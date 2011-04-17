@@ -16,6 +16,8 @@
 import re
 import sys
 import pprint
+import gettext
+import os.path
 
 from LogRotateGetopts import LogrotateOptParser;
 from LogRotateGetopts import LogrotateOptParserError;
@@ -33,6 +35,9 @@ __license__    = 'GPL3'
 
 #-----------------------------------------------------------------
 def main():
+
+    basedir = os.path.realpath(os.path.dirname(sys.argv[0]))
+    #print "Basedir: %s" % ( basedir )
 
     opt_parser = LogrotateOptParser(
         prog = "logrotate",
