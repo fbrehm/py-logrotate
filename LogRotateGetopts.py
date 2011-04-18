@@ -83,11 +83,14 @@ class LogrotateOptParser(object):
         @type: str
         '''
 
-        self.usage = "Usage: %s [options] <configfile>" %(prog)
+        self.usage = "Usage: %s [options] <configfile>\n" %(prog)
         '''
         @ivar: the usage string in getopt help output
         @type: str
         '''
+        self.usage += ( '       %s [-h|-?|--help]\n' %(prog) )
+        self.usage += ( '       %s --usage\n' %(prog) )
+        self.usage += ( '       %s --version' %(prog) )
 
         self.options = None
         '''
@@ -218,11 +221,18 @@ class LogrotateOptParser(object):
             '-h',
             '-?',
             '--help',
-            '--usage',
             default = False,
             action  = 'help',
             dest    = 'help',
             help    = 'shows a help message and exit'
+        )
+
+        group.add_option(
+            '--usage',
+            default = False,
+            action  = 'store_true',
+            dest    = 'usage',
+            help    = 'Display brief usage message and exit'
         )
 
         group.add_option(
@@ -247,6 +257,10 @@ class LogrotateOptParser(object):
         if not self.parsed:
             self.options, self.args = self.parser.parse_args()
             self.parsed = True
+
+        if self.options.usage:
+            self.parser.print_usage()
+            sys.exit(0)
 
         if self.options.force and self.options.configcheck:
             raise LogrotateOptParserError('Invalid usage of --force and '
