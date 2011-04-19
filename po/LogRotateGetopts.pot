@@ -3,8 +3,8 @@
 # This file is distributed under the same license as the pylogrotate package.
 # Frank Brehm <frank@brehm-online.com>, 2011.
 #
-# $Id: $
-# $URL: $
+# $Id$
+# $URL$
 #
 #, fuzzy
 msgid ""
