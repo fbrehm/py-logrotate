@@ -89,7 +89,7 @@ def main():
     )
 
     if opt_parser.options.verbose > 2:
-        print _("Handler object structure") + ': ' + str(lr_handler)
+        print _("Handler object structure") + ':\n' + str(lr_handler)
 
 #========================================================================
 

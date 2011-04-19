@@ -20,10 +20,14 @@ msgstr ""
 "Content-Type: text/plain; charset=CHARSET\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: logrotate.py:54
+#: logrotate.py:67
 msgid "Options"
 msgstr ""
 
-#: logrotate.py:55
+#: logrotate.py:68
 msgid "Arguments"
+msgstr ""
+
+#: logrotate.py:92
+msgid "Handler object structure"
 msgstr ""

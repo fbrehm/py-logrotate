@@ -20,10 +20,14 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-#: logrotate.py:54
+#: logrotate.py:67
 msgid "Options"
 msgstr "Optionen"
 
-#: logrotate.py:55
+#: logrotate.py:68
 msgid "Arguments"
 msgstr "Argumente"
+
+#: logrotate.py:92
+msgid "Handler object structure"
+msgstr "Struktur des Handlerobjektes"
