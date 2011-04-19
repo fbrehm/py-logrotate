@@ -15,6 +15,7 @@
 
 import re
 import sys
+import gettext
 
 from optparse import OptionError
 from optparse import OptionParser
@@ -55,13 +56,20 @@ class LogrotateOptParser(object):
     #-------------------------------------------------------
     def __init__( self, prog = '%prog',
                         version = None,
+                        local_dir = None,
     ):
         '''
         Costructor.
-        @param prog: The name of the calling process (e.g. sys.argv[0])
-        @type prog: str
-        @param version: The version string to use
-        @type version: str
+
+        @param prog:      The name of the calling process (e.g. sys.argv[0])
+        @type prog:       str
+        @param version:   The version string to use
+        @type version:    str
+        @param local_dir: The directory, where the i18n-files (*.mo)
+                          are located. If None, then system default
+                          (/usr/share/locale) is used.
+        @type local_dir:  str or None
+
         @return: None
         '''
 
@@ -77,13 +85,31 @@ class LogrotateOptParser(object):
         @type: str
         '''
 
-        self.description = 'Rotates and compresses system logs.'
+        self.local_dir = local_dir
+        '''
+        @ivar: The directory, where the i18n-files (*.mo) are located.
+        @type: str or None
+        '''
+
+        self.t = gettext.translation(
+            'LogRotateGetopts',
+            local_dir,
+            fallback = True
+        )
+        '''
+        @ivar: a gettext translation object
+        @type: gettext.translation
+        '''
+
+        _ = self.t.lgettext
+
+        self.description = _('Rotates, compresses and mails system logs.')
         '''
         @ivar: description of the program
         @type: str
         '''
 
-        self.usage = "Usage: %s [options] <configfile>\n" %(prog)
+        self.usage = ( _("%s [options] <configfile>") + "\n" ) %(prog)
         '''
         @ivar: the usage string in getopt help output
         @type: str
@@ -135,6 +161,9 @@ class LogrotateOptParser(object):
         to the OptionParser object
         '''
 
+        _ = self.t.ugettext
+        __ = self.t.ungettext
+
         if self.parser.has_option('--help'):
             self.parser.remove_option('--help')
 
@@ -148,7 +177,7 @@ class LogrotateOptParser(object):
             default = False,
             action  = 'store_true',
             dest    = 'test',
-            help    = 'set this do simulate commands'
+            help    = _('set this do simulate commands'),
         )
 
         self.parser.add_option(
@@ -157,7 +186,7 @@ class LogrotateOptParser(object):
             default = False,
             action  = 'count',
             dest    = 'verbose',
-            help    = 'set the verbosity level'
+            help    = _('set the verbosity level'),
         )
 
         self.parser.add_option(
@@ -166,7 +195,7 @@ class LogrotateOptParser(object):
             default = False,
             action  = 'store_true',
             dest    = 'debug',
-            help    = "Don't do anything, just test (implies -v and -T)"
+            help    = _("Don't do anything, just test (implies -v and -T)"),
         )
 
         self.parser.add_option(
@@ -175,7 +204,7 @@ class LogrotateOptParser(object):
             default = False,
             action  = 'store_true',
             dest    = 'force',
-            help    = "Force file rotation"
+            help    = _("Force file rotation"),
         )
 
         self.parser.add_option(
@@ -184,8 +213,8 @@ class LogrotateOptParser(object):
             default = False,
             action  = 'store_true',
             dest    = 'configcheck',
-            help    = "Checks only the given configuration file and does "
-                      + "nothing. Conflicts with -f",
+            help    = _("Checks only the given configuration file and does "
+                      + "nothing. Conflicts with -f."),
         )
 
         self.parser.add_option(
@@ -193,29 +222,22 @@ class LogrotateOptParser(object):
             '-s',
             dest    = "statefile",
             metavar = 'FILE',
-            help    = 'Path of state file (different to configuration)',
+            help    = _('Path of state file (different to configuration)'),
         )
 
-        ######
-        # Deprecated options for compatibilty to logrotate
-        group = OptionGroup(self.parser, "Deprecated options")
-
-        group.add_option(
+        self.parser.add_option(
             '--mail',
             '-m',
             dest    = "mailcmd",
             metavar = 'CMD',
-            help    = ( ( 'Should tell %s which command to use '
-                        + 'when mailing logs - not used.' )
-                        %(str(self.prog)) ),
+            help    = _('Command to send mail (instead of using '
+                        + 'the Phyton email package)'),
         )
-
-        self.parser.add_option_group(group)
 
         ######
         # Option group for common options
 
-        group = OptionGroup(self.parser, "Common options")
+        group = OptionGroup(self.parser, _("Common options"))
 
         group.add_option(
             '-h',
@@ -224,7 +246,7 @@ class LogrotateOptParser(object):
             default = False,
             action  = 'help',
             dest    = 'help',
-            help    = 'shows a help message and exit'
+            help    = _('Shows a help message and exit.'),
         )
 
         group.add_option(
@@ -232,7 +254,7 @@ class LogrotateOptParser(object):
             default = False,
             action  = 'store_true',
             dest    = 'usage',
-            help    = 'Display brief usage message and exit'
+            help    = _('Display brief usage message and exit.'),
         )
 
         group.add_option(
@@ -241,7 +263,7 @@ class LogrotateOptParser(object):
             default = False,
             action  = 'version',
             dest    = 'version',
-            help    = 'shows the version number of the program and exit',
+            help    = _('Shows the version number of the program and exit.'),
         )
 
         self.parser.add_option_group(group)
@@ -254,6 +276,8 @@ class LogrotateOptParser(object):
         @return: None
         '''
 
+        _ = self.t.ugettext
+
         if not self.parsed:
             self.options, self.args = self.parser.parse_args()
             self.parsed = True
@@ -263,23 +287,21 @@ class LogrotateOptParser(object):
             sys.exit(0)
 
         if self.options.force and self.options.configcheck:
-            raise LogrotateOptParserError('Invalid usage of --force and '
-                + '--config-check.')
+            raise LogrotateOptParserError( _('Invalid usage of --force and '
+                + '--config-check.') )
 
-        if self.args is None:
-            raise LogrotateOptParserError('No configuration file given.')
+        if self.args is None or len(self.args) < 1:
+            raise LogrotateOptParserError( _('No configuration file given.') )
 
         if len(self.args) != 1:
-            raise LogrotateOptParserError('Only one configuration file is allowed.')
-
-        if self.options.mailcmd:
-            sys.stderr.write('Usage of --mail is deprecated '
-                + 'in this version.\n\n')
+            raise LogrotateOptParserError(
+                _('Only one configuration file is allowed.')
+            )
 
 #========================================================================
 
 if __name__ == "__main__":
-    main()
+    pass
 
 
 #========================================================================

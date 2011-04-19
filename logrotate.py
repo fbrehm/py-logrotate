@@ -9,7 +9,7 @@
 @contact: frank@brehm-online.com
 @license: GPL3
 @copyright: (c) 2010-2011 by Frank Brehm, Berlin
-@version: 0.1.0
+@version: 0.2.0
 @summary: rotates and compress system logs
 '''
 
@@ -19,8 +19,8 @@ import pprint
 import gettext
 import os.path
 
-from LogRotateGetopts import LogrotateOptParser;
-from LogRotateGetopts import LogrotateOptParserError;
+from LogRotateGetopts import LogrotateOptParser
+from LogRotateGetopts import LogrotateOptParserError
 
 revision = '$Revision$'
 revision = re.sub( r'\$', '', revision )
@@ -29,7 +29,7 @@ revision = re.sub( r'Revision: ', r'r', revision )
 __author__    = 'Frank Brehm'
 __copyright__ = '(C) 2011 by Frank Brehm, Berlin'
 __contact__    = 'frank@brehm-online.com'
-__version__    = '0.1.0 ' + revision
+__version__    = '0.2.0 ' + revision
 __license__    = 'GPL3'
 
 
@@ -38,10 +38,19 @@ def main():
 
     basedir = os.path.realpath(os.path.dirname(sys.argv[0]))
     #print "Basedir: %s" % ( basedir )
+    local_dir = os.path.join(basedir, 'po')
+    if not os.path.isdir(local_dir):
+        local_dir = None
+    #print "Locale-Dir: %s" % ( local_dir )
+
+    t = gettext.translation('pylogrotate', local_dir, fallback=True)
+    _ = t.lgettext
+    __ = t.lngettext
 
     opt_parser = LogrotateOptParser(
-        prog = "logrotate",
-        version = __version__,
+        prog      = "logrotate",
+        version   = __version__,
+        local_dir = local_dir,
     )
     pp = pprint.PrettyPrinter(indent=4)
     try:
@@ -51,8 +60,8 @@ def main():
         opt_parser.parser.print_help(sys.stderr)
         sys.exit(1)
 
-    print "Options: " + pp.pformat(opt_parser.options)
-    print "Arguments: " + pp.pformat(opt_parser.args)
+    print _("Options") + ": " + pp.pformat(opt_parser.options)
+    print _("Arguments") + ": " + pp.pformat(opt_parser.args)
 
 
 #========================================================================
