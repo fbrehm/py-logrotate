@@ -9,7 +9,7 @@
 @contact: frank@brehm-online.com
 @license: GPL3
 @copyright: (c) 2010-2011 by Frank Brehm, Berlin
-@version: 0.0.1
+@version: 0.1.0
 @summary: Application handler module for Python logrotating
 '''
 
@@ -21,6 +21,9 @@ import gettext
 import logging
 import pprint
 
+from LogRotateConfig import LogrotateConfigurationError
+from LogRotateConfig import LogrotateConfigurationReader
+
 revision = '$Revision$'
 revision = re.sub( r'\$', '', revision )
 revision = re.sub( r'Revision: ', r'r', revision )
@@ -29,7 +32,7 @@ revision = re.sub( r'\s*$', '', revision )
 __author__    = 'Frank Brehm'
 __copyright__ = '(C) 2011 by Frank Brehm, Berlin'
 __contact__    = 'frank@brehm-online.com'
-__version__    = '0.0.1 ' + revision
+__version__    = '0.1.0 ' + revision
 __license__    = 'GPL3'
 
 
@@ -137,6 +140,12 @@ class LogrotateHandler(object):
         @type: str
         '''
 
+        self.config = {}
+        '''
+        @ivar: the configuration, how it was read from cofiguration file(s)
+        @type: dict
+        '''
+
         #################################################
         # Create a logger object
         self.logger = logging.getLogger('pylogrotate')
@@ -157,7 +166,8 @@ class LogrotateHandler(object):
             ch.setLevel(logging.INFO)
 
         # create formatter
-        formatter = logging.Formatter('[%(asctime)s]: %(name)s %(levelname)-8s - %(message)s')
+        formatter = logging.Formatter('[%(asctime)s]: %(name)s %(levelname)-8s'
+                                        + ' - %(message)s')
 
         # add formatter to ch
         ch.setFormatter(formatter)
@@ -166,6 +176,12 @@ class LogrotateHandler(object):
         self.logger.addHandler(ch)
 
         self.logger.debug( _("Logrotating initialised") )
+
+        if not self.read_configuration():
+            self.logger.error( _('Could not read configuration') )
+            sys.exit(1)
+
+        self.logger.debug( _("Logrotating ready for work") )
 
     #------------------------------------------------------------
     def __str__(self):
@@ -179,6 +195,7 @@ class LogrotateHandler(object):
 
         pp = pprint.PrettyPrinter(indent=4)
         structure = {
+            'config':      self.config,
             'config_file': self.config_file,
             'force':       self.force,
             'local_dir':   self.local_dir,
@@ -188,6 +205,36 @@ class LogrotateHandler(object):
             'verbose':     self.verbose,
         }
         return pp.pformat(structure)
+
+    #------------------------------------------------------------
+    def read_configuration(self):
+        '''
+        Reads the configuration from self.config_file
+
+        @return: Success of reading
+        @rtype:  bool
+        '''
+
+        _ = self.t.lgettext
+
+        config_reader = LogrotateConfigurationReader(
+            config_file = self.config_file,
+            verbose     = self.verbose,
+            logger      = self.logger,
+            local_dir   = self.local_dir,
+        )
+
+        if self.verbose > 2:
+            self.logger.debug( _("Configuration reader object structure")
+                            + ':\n' + str(config_reader) )
+
+        try:
+            self.config = config_reader.get_config()
+        except LogrotateConfigurationError, e:
+            self.logger.error( str(e) )
+            sys.exit(10)
+
+        return True
 
 #========================================================================
 
