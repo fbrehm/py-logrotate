@@ -154,7 +154,13 @@ class LogrotateConfigurationReader(object):
         @ivar: the dafault values for  directives
         @type: dict
         '''
-        self.reset_defaults()
+        self._reset_defaults()
+
+        self.new_log = None
+        '''
+        @ivar: struct with the current log definition
+        @type: dict or None
+        '''
 
         self.taboo = []
         '''
@@ -197,10 +203,16 @@ class LogrotateConfigurationReader(object):
         @type: bool
         '''
 
-        self.config = {}
+        self.config = []
         '''
         @ivar: the configuration, how it was read from cofiguration file(s)
-        @type: dict
+        @type: list
+        '''
+
+        self.scripts = []
+        '''
+        @ivar: list of all named scripts found in configuration
+        @type: list
         '''
 
         self.logger.debug( _("Logrotate config reader initialised") )
@@ -222,14 +234,16 @@ class LogrotateConfigurationReader(object):
             'config_files':    self.config_files,
             'config_was_read': self.config_was_read,
             'default':         self.default,
+            'new_log':         self.new_log,
             'local_dir':       self.local_dir,
+            'scripts':         self.scripts,
             'taboo':           self.taboo,
             'verbose':         self.verbose,
         }
         return pp.pformat(structure)
 
     #------------------------------------------------------------
-    def reset_defaults(self):
+    def _reset_defaults(self):
         '''
         Resetting self.default to the hard coded values
         '''
@@ -238,34 +252,44 @@ class LogrotateConfigurationReader(object):
 
         if self.verbose > 3:
             self.logger.debug( _("Resetting default values for directives "
-                    + "to hard coded values") )
+                    + "to hard coded values")
+            )
 
         self.default = {}
 
-        self.default['compress']      = None
-        self.default['copytruncate']  = None
+        self.default['compress']      = False
+        self.default['compress_cmd']  = 'internal_gzip'
+        self.default['compress_ext']  = '.gz'
+        self.default['compress_opts'] = None
+        self.default['copy']          = False
+        self.default['copytruncate']  = False
         self.default['create']        = {
             'mode':  None,
             'owner': None,
             'group': None,
         },
         self.default['period']        = 7
-        self.default['dateext']       = None
+        self.default['dateext']       = False
         self.default['datepattern']   = '%Y-%m-%d'
-        self.default['delaycompress'] = None
+        self.default['delaycompress'] = False
         self.default['extension']     = ""
-        self.default['ifempty']       = 1
+        self.default['ifempty']       = True
+        self.default['mailaddress']   = None
+        self.default['mailfirst']     = None
         self.default['maxage']        = None
-        self.default['missingok']     = None
+        self.default['missingok']     = False
         self.default['olddir']        = {
             'dirname':    '',
-            'dateformat': None,
+            'dateformat': False,
             'mode':       None,
             'owner':      None,
             'group':      None,
         },
         self.default['rotate']        = 4
+        self.default['sharedscripts'] = False
+        self.default['shred']         = False
         self.default['size']          = None
+        self.default['start']         = 0
 
     #------------------------------------------------------------
     def add_taboo(self, pattern, pattern_type = 'file'):
@@ -309,6 +333,21 @@ class LogrotateConfigurationReader(object):
         return self.config
 
     #------------------------------------------------------------
+    def get_scripts(self):
+        '''
+        Returns the scriptlist, how it was read from configuration file(s)
+
+        @return: list of scripts
+        @rtype:  list
+        '''
+
+        if not self.config_was_read:
+            if not self._read():
+                return None
+
+        return self.scripts
+
+    #------------------------------------------------------------
     def _read(self):
         '''
         Reads the configuration from configuration file and all
@@ -348,7 +387,95 @@ class LogrotateConfigurationReader(object):
         lines = cfile.readlines()
         cfile.close()
 
+        # defaults for the big loop
+        linenr    = 0
+        in_fd     = False
+        in_script = False
+        lastrow   = ''
+        newscript = ''
+
+        # inspect every line of configuration file
+        for line in lines:
+
+            linenr += 1
+            line = line.strip()
+
+            # Perform a bckslash at the end of the line
+            line = lastrow + line
+            match = re.search(r'\\$', line)
+            if match:
+                line = re.sub(r'\\$', '', line)
+                lastrow = line
+                continue
+            lastrow = ''
+
+            # delete comments
+            line = re.sub(r'^#.*', '', line)
+            if line == '':
+                continue
+
+            # perform script content
+            if in_script:
+                match = re.search(r'^endscript$', line)
+                if match:
+                    in_script = False
+                    continue
+                self.scripts[newscript].append(line)
+                continue
+
         return True
+
+    #------------------------------------------------------------
+    def _start_new_log(self):
+        '''
+        Starting a new log definition in self.new_log and filling it
+        with the current default values.
+        '''
+
+        _ = self.t.lgettext
+
+        if self.verbose > 3:
+            self.logger.debug(
+                _("Starting a new log directive with default values")
+            )
+
+        self.new_log = {}
+
+        self.new_log['file_patterns'] = []
+
+        self.new_log['compress']      = self.default['compress']
+        self.new_log['compress_cmd']  = self.default['compress_cmd']
+        self.new_log['compress_ext']  = self.default['compress_ext']
+        self.new_log['compress_opts'] = self.default['compress_opts']
+        self.new_log['copy']          = self.default['copy']
+        self.new_log['copytruncate']  = self.default['copytruncate']
+        self.new_log['create']        = {
+            'mode':  self.default['create']['mode'],
+            'owner': self.default['create']['owner'],
+            'group': self.default['create']['group'],
+        },
+        self.new_log['period']        = self.default['period']
+        self.new_log['dateext']       = self.default['dateext']
+        self.new_log['datepattern']   = self.default['datepattern']
+        self.new_log['delaycompress'] = self.default['delaycompress']
+        self.new_log['extension']     = self.default['extension']
+        self.new_log['ifempty']       = self.default['ifempty']
+        self.new_log['mailaddress']   = self.default['mailaddress']
+        self.new_log['mailfirst']     = self.default['mailfirst']
+        self.new_log['maxage']        = self.default['maxage']
+        self.new_log['missingok']     = self.default['missingok']
+        self.new_log['olddir']        = {
+            'dirname':    self.default['olddir']['dirname'],
+            'dateformat': self.default['olddir']['dateformat'],
+            'mode':       self.default['olddir']['mode'],
+            'owner':      self.default['olddir']['owner'],
+            'group':      self.default['olddir']['group'],
+        },
+        self.new_log['rotate']        = self.default['rotate']
+        self.new_log['shred']         = self.default['shred']
+        self.new_log['size']          = self.default['size']
+        self.new_log['start']         = self.default['start']
+
 
 #========================================================================
 
