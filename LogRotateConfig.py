@@ -150,6 +150,13 @@ class LogrotateConfigurationReader(object):
         #############################################
         # the rest of instance variables:
 
+        self.search_path = ['/bin', '/usr/bin']
+        '''
+        @ivar: ordered list with directories, where executables are searched
+        @type: list
+        '''
+        self._init_search_path()
+
         self.shred_command = '/usr/bin/shred'
         '''
         @ivar: the system command to shred aged rotated logfiles, if wanted
@@ -244,6 +251,7 @@ class LogrotateConfigurationReader(object):
             'default':         self.default,
             'new_log':         self.new_log,
             'local_dir':       self.local_dir,
+            'search_path':     self.search_path,
             'scripts':         self.scripts,
             'shred_command':   self.shred_command,
             'taboo':           self.taboo,
@@ -327,6 +335,63 @@ class LogrotateConfigurationReader(object):
         self.taboo.append(pattern)
 
     #------------------------------------------------------------
+    def _init_search_path(self):
+        '''
+        Initialises the internal list of search pathes
+
+        @return: None
+        '''
+
+        _ = self.t.lgettext
+        dir_included = {}
+
+        # Including default path list from environment $PATH
+        def_path = os.environ['PATH']
+        if not def_path:
+            def_path = ''
+        sep = os.pathsep
+        path_list = []
+        for item in def_path.split(sep):
+            if item:
+                if os.path.isdir(item):
+                    real_dir = os.path.abspath(item)
+                    if not real_dir in dir_included:
+                        path_list.append(real_dir)
+                        dir_included[real_dir] = True
+                else:
+                    self.logger.debug(
+                        _("'%s' is not a directory") % (item)
+                    )
+                        
+        # Including default path list from python
+        def_path = os.defpath
+        for item in def_path.split(sep):
+            if item:
+                if os.path.isdir(item):
+                    real_dir = os.path.abspath(item)
+                    if not real_dir in dir_included:
+                        path_list.append(real_dir)
+                        dir_included[real_dir] = True
+                else:
+                    self.logger.debug(
+                        _("'%s' is not a directory") % (item)
+                    )
+
+        # Including own defined directories
+        for item in ('/usr/local/bin', '/sbin', '/usr/sbin', '/usr/local/sbin'):
+            if os.path.isdir(item):
+                real_dir = os.path.abspath(item)
+                if not real_dir in dir_included:
+                    path_list.append(real_dir)
+                    dir_included[real_dir] = True
+            else:
+                self.logger.debug(
+                    _("'%s' is not a directory") % (item)
+                )
+
+        self.search_path = path_list
+
+    #------------------------------------------------------------
     def _get_std_search_path(self, include_current = False):
         '''
         Returns a list with all search directories from $PATH and some additionally
@@ -340,51 +405,20 @@ class LogrotateConfigurationReader(object):
         @rtype:  list
         '''
 
-        _ = self.t.lgettext
-        pp = pprint.PrettyPrinter(indent=4)
-        dir_included = {}
+        #_ = self.t.lgettext
 
-        def_path = os.environ['PATH']
-        if not def_path:
-            def_path = ''
-        sep = os.pathsep
-        path_list = []
-        for item in def_path.split(sep):
-            if item:
-                if not item in dir_included:
-                    path_list.append(item)
-                    dir_included[item] = True
-        if self.verbose > 2:
-            self.logger.debug( _("Path list from $PATH:") + "\n"
-                               + pp.pformat(path_list)
-            )
-
-        def_path = os.defpath
-        for item in def_path.split(sep):
-            if item:
-                if not item in dir_included:
-                    path_list.append(item)
-                    dir_included[item] = True
-        for item in ('/usr/local/bin', '/sbin', '/usr/sbin', '/usr/local/sbin'):
-            if not item in dir_included:
-                path_list.append(item)
-                dir_included[item] = True
+        path_list = self.search_path
         if include_current:
             item = os.getcwd()
-            if not item in dir_included:
-                path_list.append(item)
-                dir_included[item] = True
-        if self.verbose > 2:
-            self.logger.debug( _("Path list after standard path:") + "\n"
-                               + pp.pformat(path_list)
-            )
+            real_dir = os.path.abspath(item)
+            path_list.append(real_dir)
 
         return path_list
 
     #------------------------------------------------------------
     def check_shred_command(self):
         '''
-        Checks the availibility of a check command. Sets self.shred_command to
+        Checks the availability of a check command. Sets self.shred_command to
         this system command or to None, if not found (including a warning).
         '''
 
@@ -415,6 +449,61 @@ class LogrotateConfigurationReader(object):
             self.logger.warning( _("Shred command not found, shred disabled") )
             self.shred_command = None
             return False
+
+    #------------------------------------------------------------
+    def check_compress_command(self, command):
+        '''
+        Checks the availability of the given compress command.
+
+        'internal_gzip' and 'internal_bzip2' are accepted as valid compress
+        commands for compressing with the appropriate python modules.
+
+        @param command: command to validate (absolute or relative for
+                        searching in standard search path)
+        @type command:  str
+
+        @return: absolute path of the compress command, 'internal_gzip',
+                 'internal_bzip2' or None if not found or invalid
+        @rtype:  str or None
+        '''
+
+        _ = self.t.lgettext
+        path_list = self._get_std_search_path(True)
+
+        match = re.search(r'^\s*internal[\-_\s]?gzip\s*', command, re.IGNORECASE)
+        if match:
+            return 'internal_gzip'
+
+        match = re.search(r'^\s*internal[\-_\s]?bzip2\s*', command, re.IGNORECASE)
+        if match:
+            return 'internal_bzip2'
+
+        if os.path.isabs(command):
+            if os.access(command, os.X_OK):
+                return os.path.abspath(command)
+            else:
+                return None
+
+        cmd = None
+        found = False
+        for search_dir in path_list:
+            if os.path.isdir(search_dir):
+                cmd = os.path.join(search_dir, command)
+                if not os.path.isfile(cmd):
+                    continue
+                if os.access(cmd, os.X_OK):
+                    found = True
+                    break
+            else:
+                self.logger.debug( _("Search path '%s' doesn't exists "
+                                      + "or is not a directory")
+                                   % (search_dir)
+                )
+
+        if found:
+            return os.path.abspath(cmd)
+        else:
+            return None
 
     #------------------------------------------------------------
     def get_config(self):
