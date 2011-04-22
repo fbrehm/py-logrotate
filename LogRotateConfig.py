@@ -17,6 +17,7 @@ import re
 import sys
 import gettext
 import pprint
+import os
 import os.path
 
 revision = '$Revision$'
@@ -149,9 +150,16 @@ class LogrotateConfigurationReader(object):
         #############################################
         # the rest of instance variables:
 
+        self.shred_command = '/usr/bin/shred'
+        '''
+        @ivar: the system command to shred aged rotated logfiles, if wanted
+        @type: str
+        '''
+        self.check_shred_command()
+
         self.default = {}
         '''
-        @ivar: the dafault values for  directives
+        @ivar: the default values for  directives
         @type: dict
         '''
         self._reset_defaults()
@@ -259,7 +267,7 @@ class LogrotateConfigurationReader(object):
 
         self.default['compress']      = False
         self.default['compress_cmd']  = 'internal_gzip'
-        self.default['compress_ext']  = '.gz'
+        self.default['compress_ext']  = None
         self.default['compress_opts'] = None
         self.default['copy']          = False
         self.default['copytruncate']  = False
@@ -316,6 +324,80 @@ class LogrotateConfigurationReader(object):
             self.logger.debug( _("New taboo pattern: '%s'.") % (pattern) )
 
         self.taboo.append(pattern)
+
+    #------------------------------------------------------------
+    def _get_std_search_path(self, include_current = False):
+        '''
+        Returns a list with all search directories from $PATH and some additionally
+        directiories.
+
+        @param include_current: include the current working directory
+                                at the end of the list
+        @type include_current:  bool
+
+        @return: list of search directories
+        @rtype:  list
+        '''
+
+        _ = self.t.lgettext
+        pp = pprint.PrettyPrinter(indent=4)
+        dir_included = {}
+
+        def_path = os.environ['PATH']
+        if not def_path:
+            def_path = ''
+        sep = os.pathsep
+        path_list = []
+        for item in def_path.split(sep):
+            if item:
+                if not item in dir_included:
+                    path_list.append(item)
+                    dir_included[item] = True
+        if self.verbose > 2:
+            self.logger.debug( _("Path list from $PATH:") + "\n"
+                               + pp.pformat(path_list)
+            )
+
+        def_path = os.defpath
+        for item in def_path.split(sep):
+            if item:
+                if not item in dir_included:
+                    path_list.append(item)
+                    dir_included[item] = True
+        for item in ('/usr/local/bin', '/sbin', '/usr/sbin', '/usr/local/sbin'):
+            if not item in dir_included:
+                path_list.append(item)
+                dir_included[item] = True
+        if include_current:
+            item = os.getcwd()
+            if not item in dir_included:
+                path_list.append(item)
+                dir_included[item] = True
+        if self.verbose > 2:
+            self.logger.debug( _("Path list after standard path:") + "\n"
+                               + pp.pformat(path_list)
+            )
+
+        return path_list
+
+    #------------------------------------------------------------
+    def check_shred_command(self):
+        '''
+        Checks the availibility of a check command. Sets self.check_command to
+        this system command or to None, if not found (including a warning).
+        '''
+
+        _ = self.t.lgettext
+        path_list = self._get_std_search_path(True)
+
+        for search_dir in path_list:
+            if os.path.isdir(search_dir):
+                cmd = os.path.join(search_dir, 'shred')
+            else:
+                self.logger.debug( _("Search path '%s' doesn't exists "
+                                      + "or is not a directory")
+                                   % (search_dir)
+                )
 
     #------------------------------------------------------------
     def get_config(self):
