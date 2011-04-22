@@ -245,6 +245,7 @@ class LogrotateConfigurationReader(object):
             'new_log':         self.new_log,
             'local_dir':       self.local_dir,
             'scripts':         self.scripts,
+            'shred_command':   self.shred_command,
             'taboo':           self.taboo,
             'verbose':         self.verbose,
         }
@@ -383,21 +384,37 @@ class LogrotateConfigurationReader(object):
     #------------------------------------------------------------
     def check_shred_command(self):
         '''
-        Checks the availibility of a check command. Sets self.check_command to
+        Checks the availibility of a check command. Sets self.shred_command to
         this system command or to None, if not found (including a warning).
         '''
 
         _ = self.t.lgettext
         path_list = self._get_std_search_path(True)
 
+        cmd = None
+        found = False
         for search_dir in path_list:
             if os.path.isdir(search_dir):
                 cmd = os.path.join(search_dir, 'shred')
+                if not os.path.isfile(cmd):
+                    continue
+                if os.access(cmd, os.X_OK):
+                    found = True
+                    break
             else:
                 self.logger.debug( _("Search path '%s' doesn't exists "
                                       + "or is not a directory")
                                    % (search_dir)
                 )
+
+        if found:
+            self.logger.debug( _("Shred command found: '%s'") %(cmd) )
+            self.shred_command = cmd
+            return True
+        else:
+            self.logger.warning( _("Shred command not found, shred disabled") )
+            self.shred_command = None
+            return False
 
     #------------------------------------------------------------
     def get_config(self):
