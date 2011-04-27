@@ -611,6 +611,11 @@ class LogrotateConfigurationReader(object):
                 self.scripts[newscript].append(line)
                 continue
 
+            # start of a logfile pattern
+            match = re.search(r'^[\'"]', line)
+            if match or os.path.isabs(line):
+                parts = self._split_parts(line)
+
         return True
 
     #------------------------------------------------------------
@@ -664,6 +669,84 @@ class LogrotateConfigurationReader(object):
         self.new_log['size']          = self.default['size']
         self.new_log['start']         = self.default['start']
 
+    #------------------------------------------------------------
+    def _split_parts(self, text):
+        '''
+        Split the given text in chunks by whitespaces or
+        single or double quoted strings.
+        
+        @param text: the text to split in chunks
+        @type text:  str
+
+        @return: list of chunks
+        @rtype:  list
+        '''
+
+        chunks = []
+        if text is None:
+            return chunks
+
+        txt = str(text)
+        last_chunk = ''
+
+        # Big loop to split the text - until it is empty
+        while txt != '':
+
+            # add chunk, if there is a chunk left and a whitspace
+            # at the begin of the line
+            match = re.search(r"\s+", txt)
+            if ( last_chunk != '' ) and match:
+                chunks.append(last_chunk)
+                last_chunk = ''
+
+            # clean the line
+            txt = txt.strip()
+            if txt == '':
+                break
+
+            # search for a single quoted string at the begin of the line
+            match = re.search(r"^'((?:\\'|[^'])*)'", txt)
+            if match:
+                last_chunk += match.group(1)
+                txt = re.sub(r"^'(?:\\'|[^'])*'", "", txt)
+                continue
+
+            # search for a double quoted string at the begin of the line
+            match = re.search(r'^"((?:\\"|[^"])*)"', txt)
+            if match:
+                last_chunk += match.group(1)
+                txt = re.sub(r'^"(?:\\"|[^"])*"', "", txt)
+                continue
+
+            # search for unquoted, whitespace delimited text
+            # at the begin of the line
+            match = re.search(r'^([^\s\'"]+)', txt)
+            if match:
+                last_chunk += match.group(1)
+                txt = re.sub(r'^[^\s\'"]+', "", txt)
+                continue
+
+            # Only whitespaces left
+            match = re.search(r'^\s*$', txt)
+            if match:
+                break
+
+            # Here we should not come to ...
+            raise Exception("Broken split of »%s«: »%s« left" %( str(text), txt))
+
+        if last_chunk != '':
+            chunks.append(last_chunk)
+
+        _ = self.t.lgettext
+        pp = pprint.PrettyPrinter(indent=4)
+
+        if self.verbose > 3:
+            self.logger.debug(
+                ( _("Split into chunks of: »%s«") % (str(text)))
+                + ":\n" + pp.pformat(chunks)
+            )
+
+        return chunks
 
 #========================================================================
 
