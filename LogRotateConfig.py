@@ -45,6 +45,13 @@ pattern_types = {
     'prefix': r'^%s',
 }
 
+script_directives = [
+    'postrotate',
+    'prerotate',
+    'firstaction',
+    'lastaction',
+]
+
 #========================================================================
 
 class LogrotateConfigurationError(Exception):
@@ -226,7 +233,7 @@ class LogrotateConfigurationReader(object):
         @type: list
         '''
 
-        self.scripts = []
+        self.scripts = {}
         '''
         @ivar: list of all named scripts found in configuration
         @type: list
@@ -624,7 +631,118 @@ class LogrotateConfigurationReader(object):
                         + ":\n" + pp.pformat(parts)
                     )
 
+            # start of a (regular) script definition
+            pattern = r'^(' + '|'.join(script_directives) + r')(\s+.*)?$'
+            match = re.search(pattern, line, re.IGNORECASE)
+            if match:
+                script_type = match.group(1).lower()
+                script_name = None
+                if match.group(2) is not None:
+                    values      = split_parts(match.group(2))
+                    if values[0]:
+                        script_name = values[0]
+                newscript = self._start_log_script_definition(
+                    script_type = script_type,
+                    script_name = script_name,
+                    line        = line,
+                    filename    = self.config_file,
+                    in_fd       = in_fd,
+                    linenr      = linenr,
+                )
+
+        self.config_was_read = True
         return True
+
+    #------------------------------------------------------------
+    def _start_log_script_definition(
+        self,
+        script_type,
+        script_name,
+        line,
+        filename,
+        in_fd,
+        linenr
+    ):
+        '''
+        Starts a new logfile definition or logfile refrence
+        inside a logfile definition.
+        It raises a LogrotateConfigurationError outside a logfile definition.
+
+        @param script_type: postrotate, prerotate, firstaction
+                            or lastaction
+        @type script_type:  str
+        @param script_name: name of refernced script
+        @type script_name:  str or None
+        @param line:        line of current config file
+        @type line:         str
+        @param filename:    current configuration file
+        @type filename:     str
+        @param in_fd:       parsing inside a logfile definition
+        @type in_fd:        bool
+        @param linenr:      current line number of configuration file
+        @type linenr:       int
+
+        @return: name of the script (if a new script definition) or None
+        @rtype:  str or None
+        '''
+
+        _ = self.t.lgettext
+
+        if not in_fd:
+            raise LogrotateConfigurationError(
+                ( _("Directive '%s' is not allowed outside of a "
+                    + "logfile definition (file '%s', line %s)")
+                  % (script_type, filename, linenr) )
+            )
+
+        if script_name:
+            self.new_log[script_type] = script_name
+            return None
+
+        new_script_name = self._new_scriptname(script_type)
+
+        self.scripts[new_script_name] = {}
+        self.scripts[new_script_name]['cmd'] = []
+        self.scripts[new_script_name]['post'] = False
+        self.scripts[new_script_name]['last'] = False
+        self.scripts[new_script_name]['first'] = False
+        self.scripts[new_script_name]['prerun'] = False
+        self.scripts[new_script_name]['donepost'] = False
+        self.scripts[new_script_name]['donelast'] = False
+
+        self.new_log[script_type] = new_script_name
+
+    #------------------------------------------------------------
+    def _new_scriptname(self, script_type = 'script'):
+        '''
+        Retrieves a new, unique script name.
+
+        @param script_type: prefix of the script name
+        @type script_type:  str
+
+        @return: a new, unique script name
+        @rtype:  str
+        '''
+
+        i = 0
+        template = script_type + "_%02d"
+        name = template % (i)
+
+        while True:
+
+            if name in self.scripts:
+                if 'cmd' in self.scripts[name]:
+                    if len(self.scripts[name]['cmd']):
+                        i += 1
+                        name = template % (i)
+                    else:
+                        break
+                else:
+                    break
+            else:
+                break
+
+        return name
 
     #------------------------------------------------------------
     def _start_new_log(self):
@@ -676,6 +794,9 @@ class LogrotateConfigurationReader(object):
         self.new_log['shred']         = self.default['shred']
         self.new_log['size']          = self.default['size']
         self.new_log['start']         = self.default['start']
+
+        for script_type in script_directives:
+            self.new_log[script_type] = None
 
 #========================================================================
 
