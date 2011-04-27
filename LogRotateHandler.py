@@ -146,6 +146,12 @@ class LogrotateHandler(object):
         @type: dict
         '''
 
+        self.scripts = {}
+        '''
+        @ivar: list of all named scripts found in configuration
+        @type: list
+        '''
+
         #################################################
         # Create a logger object
         self.logger = logging.getLogger('pylogrotate')
@@ -200,6 +206,7 @@ class LogrotateHandler(object):
             'force':       self.force,
             'local_dir':   self.local_dir,
             'mail_cmd':    self.mail_cmd,
+            'scripts':     self.scripts,
             'state_file':  self.state_file,
             'test':        self.test,
             'verbose':     self.verbose,
@@ -229,7 +236,8 @@ class LogrotateHandler(object):
                             + ':\n' + str(config_reader) )
 
         try:
-            self.config = config_reader.get_config()
+            self.config  = config_reader.get_config()
+            self.scripts = config_reader.get_scripts()
         except LogrotateConfigurationError, e:
             self.logger.error( str(e) )
             sys.exit(10)

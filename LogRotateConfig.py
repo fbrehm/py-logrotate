@@ -591,7 +591,7 @@ class LogrotateConfigurationReader(object):
             linenr += 1
             line = line.strip()
 
-            # Perform a bckslash at the end of the line
+            # Perform a backslash at the end of the line
             line = lastrow + line
             match = re.search(r'\\$', line)
             if match:
