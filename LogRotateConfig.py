@@ -293,7 +293,7 @@ class LogrotateConfigurationReader(object):
             'mode':  None,
             'owner': None,
             'group': None,
-        },
+        }
         self.default['period']        = 7
         self.default['dateext']       = False
         self.default['datepattern']   = '%Y-%m-%d'
@@ -310,7 +310,7 @@ class LogrotateConfigurationReader(object):
             'mode':       None,
             'owner':      None,
             'group':      None,
-        },
+        }
         self.default['rotate']        = 4
         self.default['sharedscripts'] = False
         self.default['shred']         = False
@@ -580,22 +580,22 @@ class LogrotateConfigurationReader(object):
 
         _ = self.t.lgettext
         pp = pprint.PrettyPrinter(indent=4)
-        self.logger.debug( _("Try reading configuration from '%s' ...")
+        self.logger.debug( _("Try reading configuration from »%s« ...")
                             % (configfile) )
 
         if not os.path.exists(configfile):
             raise LogrotateConfigurationError(
-                _("File '%s' doesn't exists.") % (configfile)
+                _("File »%s« doesn't exists.") % (configfile)
             )
 
         if not os.path.isfile(configfile):
             raise LogrotateConfigurationError(
-                _("'%s' is not a regular file.") % (configfile)
+                _("»%s« is not a regular file.") % (configfile)
             )
 
         self.config_files[configfile] = True
 
-        self.logger.info( _("Reading configuration from '%s' ...")
+        self.logger.info( _("Reading configuration from »%s« ...")
                             % (configfile) )
 
         cfile = None
@@ -603,7 +603,7 @@ class LogrotateConfigurationReader(object):
             cfile = open(configfile, 'Ur')
         except IOError, e:
             raise LogrotateConfigurationError(
-                ( _("Could not read configuration file '%s'")
+                ( _("Could not read configuration file »%s«")
                     % (configfile) )
                 + ': ' + str(e)
             )
@@ -666,7 +666,7 @@ class LogrotateConfigurationReader(object):
                 if in_fd:
                     raise LogrotateConfigurationError(
                         ( _("Logfile pattern definition not allowed inside "
-                            + "a logfile definition (file '%s', line %s)")
+                            + "a logfile definition (file »%s«, line %s)")
                             % (configfile, linenr)
                         )
                     )
@@ -692,7 +692,7 @@ class LogrotateConfigurationReader(object):
                         raise LogrotateConfigurationError(
                             ( _("Syntax error: open curly bracket inside "
                                 + "a logfile pattern definition "
-                                + "(file '%s', line %s)")
+                                + "(file »%s«, line %s)")
                                 % (configfile, linenr)
                             )
                         )
@@ -710,6 +710,39 @@ class LogrotateConfigurationReader(object):
                     in_logfile_list = False
 
                 continue
+
+            # end of a logfile definition
+            match = re.search(r'^}(.*)', line)
+            if match:
+                if not in_fd:
+                    raise LogrotateConfigurationError(
+                        ( _("Syntax error: unbalanced closing curly bracket found "
+                            + "(file »%s«, line %s)")
+                            % (configfile, linenr)
+                        )
+                    )
+                rest = match.group(1)
+                if self.verbose > 2:
+                    self.logger.debug(
+                        ( _("End of a logfile definition (file »%s«, line %s)")
+                            % (configfile, linenr)
+                        )
+                    )
+                if rest:
+                    self.logger.warning(
+                        ( _("Needless content found at the end of a logfile "
+                            + "definition found: »%s« (file »%s«, line %s)")
+                            % (str(rest), configfile, linenr)
+                        )
+                    )
+                if self.verbose > 3:
+                    self.logger.debug(
+                        ( _("New logfile definition:") + "\n"
+                          + pp.pformat(self.new_log)
+                        )
+                    )
+                in_fd = False
+                in_logfile_list = False
 
             # start of a (regular) script definition
             pattern = r'^(' + '|'.join(script_directives) + r')(\s+.*)?$'
@@ -760,14 +793,14 @@ class LogrotateConfigurationReader(object):
         if in_fd:
             raise LogrotateConfigurationError(
                 ( _("Nested logfile definitions are not allowed "
-                    + "(file '%s', line %s)")
+                    + "(file »%s«, line %s)")
                   % (filename, linenr) )
             )
 
         if not in_logfile_list:
             raise LogrotateConfigurationError(
                 ( _("No logfile pattern defined on starting "
-                    + "a logfile definition (file '%s', line %s)")
+                    + "a logfile definition (file »%s«, line %s)")
                   % (filename, linenr) )
             )
 
@@ -808,8 +841,8 @@ class LogrotateConfigurationReader(object):
 
         if not in_fd:
             raise LogrotateConfigurationError(
-                ( _("Directive '%s' is not allowed outside of a "
-                    + "logfile definition (file '%s', line %s)")
+                ( _("Directive »%s« is not allowed outside of a "
+                    + "logfile definition (file »%s«, line %s)")
                   % (script_type, filename, linenr) )
             )
 
@@ -891,7 +924,7 @@ class LogrotateConfigurationReader(object):
             'mode':  self.default['create']['mode'],
             'owner': self.default['create']['owner'],
             'group': self.default['create']['group'],
-        },
+        }
         self.new_log['period']        = self.default['period']
         self.new_log['dateext']       = self.default['dateext']
         self.new_log['datepattern']   = self.default['datepattern']
@@ -908,7 +941,7 @@ class LogrotateConfigurationReader(object):
             'mode':       self.default['olddir']['mode'],
             'owner':      self.default['olddir']['owner'],
             'group':      self.default['olddir']['group'],
-        },
+        }
         self.new_log['rotate']        = self.default['rotate']
         self.new_log['shred']         = self.default['shred']
         self.new_log['size']          = self.default['size']
