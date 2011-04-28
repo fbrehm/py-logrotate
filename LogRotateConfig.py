@@ -523,9 +523,8 @@ class LogrotateConfigurationReader(object):
         @rtype:  dict or None
         '''
 
-        if not self.config_was_read:
-            if not self._read():
-                return None
+        if not self._read_main_configfile():
+            return None
 
         return self.config
 
@@ -538,59 +537,86 @@ class LogrotateConfigurationReader(object):
         @rtype:  list
         '''
 
-        if not self.config_was_read:
-            if not self._read():
-                return None
+        if not self._read_main_configfile():
+            return None
 
         return self.scripts
 
     #------------------------------------------------------------
-    def _read(self):
+    def _read_main_configfile(self):
         '''
-        Reads the configuration from configuration file and all
-        included files
+        Reads the main configuration file (self.config_file).
+
+        @return: success of reading
+        @rtype:  bool
         '''
 
         _ = self.t.lgettext
-        pp = pprint.PrettyPrinter(indent=4)
-        self.logger.debug( _("Try reading configuration from '%s' ...")
-                            % (self.config_file) )
+
+        if self.config_was_read:
+            return True
 
         if not os.path.exists(self.config_file):
             raise LogrotateConfigurationError(
                 _("File '%s' doesn't exists.") % (self.config_file)
             )
-
         self.config_file = os.path.abspath(self.config_file)
 
-        if not os.path.isfile(self.config_file):
+        if not self._read(self.config_file):
+            return None
+
+        self.config_was_read = True
+        return True
+
+    #------------------------------------------------------------
+    def _read(self, configfile):
+        '''
+        Reads the configuration from given configuration file and all
+        included files.
+
+        @param configfile: the configfile to read
+        @type configfile:  str
+        '''
+
+        _ = self.t.lgettext
+        pp = pprint.PrettyPrinter(indent=4)
+        self.logger.debug( _("Try reading configuration from '%s' ...")
+                            % (configfile) )
+
+        if not os.path.exists(configfile):
             raise LogrotateConfigurationError(
-                _("'%s' is not a regular file.") % (self.config_file)
+                _("File '%s' doesn't exists.") % (configfile)
             )
 
-        self.config_files[self.config_file] = True
+        if not os.path.isfile(configfile):
+            raise LogrotateConfigurationError(
+                _("'%s' is not a regular file.") % (configfile)
+            )
+
+        self.config_files[configfile] = True
 
         self.logger.info( _("Reading configuration from '%s' ...")
-                            % (self.config_file) )
+                            % (configfile) )
 
         cfile = None
         try:
-            cfile = open(self.config_file, 'Ur')
+            cfile = open(configfile, 'Ur')
         except IOError, e:
             raise LogrotateConfigurationError(
                 ( _("Could not read configuration file '%s'")
-                    % (self.config_file) )
+                    % (configfile) )
                 + ': ' + str(e)
             )
         lines = cfile.readlines()
         cfile.close()
 
         # defaults for the big loop
-        linenr    = 0
-        in_fd     = False
-        in_script = False
-        lastrow   = ''
-        newscript = ''
+        linenr          = 0
+        in_fd           = False
+        in_script       = False
+        in_logfile_list = False
+        lastrow         = ''
+        newscript       = ''
 
         # inspect every line of configuration file
         for line in lines:
@@ -621,15 +647,69 @@ class LogrotateConfigurationReader(object):
                 self.scripts[newscript].append(line)
                 continue
 
+            if line == '{':
+                self._start_logfile_definition( 
+                    line            = line,
+                    filename        = configfile,
+                    in_fd           = in_fd,
+                    in_logfile_list = in_logfile_list,
+                    linenr          = linenr
+                )
+                in_fd = True
+                in_logfile_list = False
+                continue
+
             # start of a logfile pattern
             match = re.search(r'^[\'"]', line)
             if match or os.path.isabs(line):
+
+                if in_fd:
+                    raise LogrotateConfigurationError(
+                        ( _("Logfile pattern definition not allowed inside "
+                            + "a logfile definition (file '%s', line %s)")
+                            % (configfile, linenr)
+                        )
+                    )
+                do_start_logfile_definition = False
+
+                match_bracket = re.search(r'\s*{\s*$', line)
+                if match_bracket:
+                    line = re.sub(r'\s*{\s*$', '', line)
+                    do_start_logfile_definition = True
+                if not in_logfile_list:
+                    self._start_new_log()
+                in_logfile_list = True
+
                 parts = split_parts(line)
                 if self.verbose > 3:
                     self.logger.debug(
                         ( _("Split into parts of: »%s«") % (line))
                         + ":\n" + pp.pformat(parts)
                     )
+
+                for pattern in parts:
+                    if pattern == '{':
+                        raise LogrotateConfigurationError(
+                            ( _("Syntax error: open curly bracket inside "
+                                + "a logfile pattern definition "
+                                + "(file '%s', line %s)")
+                                % (configfile, linenr)
+                            )
+                        )
+                    self.new_log['file_patterns'].append(pattern)
+
+                if do_start_logfile_definition:
+                    self._start_logfile_definition( 
+                        line            = line,
+                        filename        = configfile,
+                        in_fd           = in_fd,
+                        in_logfile_list = in_logfile_list,
+                        linenr          = linenr
+                    )
+                    in_fd = True
+                    in_logfile_list = False
+
+                continue
 
             # start of a (regular) script definition
             pattern = r'^(' + '|'.join(script_directives) + r')(\s+.*)?$'
@@ -645,13 +725,51 @@ class LogrotateConfigurationReader(object):
                     script_type = script_type,
                     script_name = script_name,
                     line        = line,
-                    filename    = self.config_file,
+                    filename    = configfile,
                     in_fd       = in_fd,
                     linenr      = linenr,
                 )
 
-        self.config_was_read = True
         return True
+
+    #------------------------------------------------------------
+    def _start_logfile_definition(
+        self, line, filename, in_fd, in_logfile_list, linenr
+    ):
+        '''
+        Starts a new logfile definition.
+        It raises a LogrotateConfigurationError on error.
+
+        @param line:            line of current config file
+        @type line:             str
+        @param filename:        current configuration file
+        @type filename:         str
+        @param in_fd:           parsing inside a logfile definition
+        @type in_fd:            bool
+        @param in_logfile_list: logfile pattern list was started
+        @type in_logfile_list:  bool
+        @param linenr:          current line number of configuration file
+        @type linenr:           int
+
+        @return: name of the script (if a new script definition) or None
+        @rtype:  str or None
+        '''
+
+        _ = self.t.lgettext
+
+        if in_fd:
+            raise LogrotateConfigurationError(
+                ( _("Nested logfile definitions are not allowed "
+                    + "(file '%s', line %s)")
+                  % (filename, linenr) )
+            )
+
+        if not in_logfile_list:
+            raise LogrotateConfigurationError(
+                ( _("No logfile pattern defined on starting "
+                    + "a logfile definition (file '%s', line %s)")
+                  % (filename, linenr) )
+            )
 
     #------------------------------------------------------------
     def _start_log_script_definition(
@@ -760,6 +878,7 @@ class LogrotateConfigurationReader(object):
 
         self.new_log = {}
 
+        self.new_log['files'] = []
         self.new_log['file_patterns'] = []
 
         self.new_log['compress']      = self.default['compress']
