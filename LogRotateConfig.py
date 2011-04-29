@@ -30,7 +30,7 @@ revision = re.sub( r'\s*$', '', revision )
 __author__    = 'Frank Brehm'
 __copyright__ = '(C) 2011 by Frank Brehm, Berlin'
 __contact__    = 'frank@brehm-online.com'
-__version__    = '0.1.1 ' + revision
+__version__    = '0.1.2 ' + revision
 __license__    = 'GPL3'
 
 
@@ -647,7 +647,16 @@ class LogrotateConfigurationReader(object):
                 self.scripts[newscript].append(line)
                 continue
 
+            # start of a logfile definition
             if line == '{':
+
+                if self.verbose > 3:
+                    self.logger.debug(
+                        ( _("Starting a logfile definition (file »%s«, line %s)")
+                            % (configfile, linenr)
+                        )
+                    )
+
                 self._start_logfile_definition( 
                     line            = line,
                     filename        = configfile,
@@ -672,6 +681,7 @@ class LogrotateConfigurationReader(object):
                     )
                 do_start_logfile_definition = False
 
+                # look, whether a start of a logfile definition is necessary
                 match_bracket = re.search(r'\s*{\s*$', line)
                 if match_bracket:
                     line = re.sub(r'\s*{\s*$', '', line)
@@ -698,6 +708,7 @@ class LogrotateConfigurationReader(object):
                         )
                     self.new_log['file_patterns'].append(pattern)
 
+                # start of a logfile definition, if necessary
                 if do_start_logfile_definition:
                     self._start_logfile_definition( 
                         line            = line,
@@ -741,8 +752,23 @@ class LogrotateConfigurationReader(object):
                           + pp.pformat(self.new_log)
                         )
                     )
+                self.config.append(self.new_log)
                 in_fd = False
                 in_logfile_list = False
+
+            # performing includes
+            match = re.search(r'^include(?:\s+(.*))?$', line, re.IGNORECASE)
+            if match:
+                rest = match.group(1)
+                if in_fd or in_logfile_list:
+                    self.logger.warning(
+                        ( _("Syntax error: include may not appear inside of "
+                            + "log file definition (file »%s«, line %s)")
+                            % (configfile, linenr)
+                        )
+                    )
+                    continue
+                self._do_include(line, rest, configfile, linenr)
 
             # start of a (regular) script definition
             pattern = r'^(' + '|'.join(script_directives) + r')(\s+.*)?$'
@@ -764,6 +790,160 @@ class LogrotateConfigurationReader(object):
                 )
 
         return True
+
+    #------------------------------------------------------------
+    def _do_include( self, line, rest, filename, linenr):
+        '''
+        Starts a new logfile definition.
+        It raises a LogrotateConfigurationError on error.
+
+        @param line:     line of current config file
+        @type line:      str
+        @param rest:     rest of the current line after »include«
+        @type rest:      str
+        @param filename: current configuration file
+        @type filename:  str
+        @param linenr:   current line number of configuration file
+        @type linenr:    int
+
+        @return: Success of include
+        @rtype:  bool
+        '''
+
+        _ = self.t.lgettext
+
+        # split the rest in chunks
+        values = split_parts(rest)
+
+        # insufficient arguments to include ...
+        if len(values) < 1:
+            self.logger.warning(
+                ( _("No file or directory given in a include directive "
+                    + "(file »%s«, line %s)")
+                    % (filename, linenr)
+                )
+            )
+            return False
+
+        # to much arguments to include ...
+        if len(values) > 1:
+            self.logger.warning(
+                ( _("Only one declaration of a file or diectory is allowed "
+                    + "in a include directive, the first one is used. "
+                    + "(file »%s«, line %s)")
+                    % (filename, linenr)
+                )
+            )
+
+        include = values[0]
+
+        # including object doesn't exists
+        if not os.path.exists(include):
+            self.logger.warning(
+                ( _("Including object »%s« doesn't exists. "
+                    + "(file »%s«, line %s)")
+                    % (include, filename, linenr)
+                )
+            )
+            return False
+
+        include = os.path.abspath(include)
+
+        # including object is neither a regular file nor a directory
+        if not (os.path.isfile(include) or os.path.isdir(include)):
+            self.logger.warning(
+                ( _("Including object »%s« is neither a regular file "
+                    + " nor a directory. "
+                    + "(file »%s«, line %s)")
+                    % (include, filename, linenr)
+                )
+            )
+            return False
+
+        if self.verbose > 1:
+            self.logger.debug(
+                ( _("Trying to include object »%s« ...") % (include) )
+            )
+
+        # including object is a regular file
+        if os.path.isfile(include):
+            if include in self.config_files:
+                self.logger.warning(
+                    ( _("Recursive including of »%s« (file »%s«, line %s)")
+                      % (include, filename, linenr)
+                    )
+                )
+                return False
+            return self._read(include)
+
+        # This should never happen ...
+        if not os.path.isdir(include):
+            raise Exception(
+                ( _("What the hell is this: »%s«. "
+                    + "(file »%s«, line %s)")
+                    % (include, filename, linenr)
+                )
+            )
+
+        # including object is a directory - include all files
+        if self.verbose > 1:
+            self.logger.debug(
+                ( _("Including directory »%s« ...") % (include) )
+            )
+
+        dir_list = os.listdir(include)
+        for item in sorted(dir_list, key=str.lower):
+
+            item_path = os.path.abspath(os.path.join(include, item))
+            if self.verbose > 2:
+                self.logger.debug(
+                    "Including item »%s« (»%s«)..." % (item, item_path)
+                )
+
+            # Skip directories
+            if os.path.isdir(item_path):
+                if self.verbose > 1:
+                    self.logger.debug(
+                        ( _("Skip subdirectory »%s« in including.")
+                          % (item_path)
+                        )
+                    )
+                continue
+
+            # Skip non regular files
+            if not os.path.isfile(item_path):
+                self.logger.debug(
+                    ( _("Item »%s« is not a regular file.")
+                      % (item_path)
+                    )
+                )
+                continue
+
+            # Check for taboo pattern
+            taboo_found = False
+            for pattern in self.taboo:
+                match = re.search(pattern, item)
+                if match:
+                    if self.verbose > 1:
+                        self.logger.debug(
+                            ( _("Item »%s« is matching pattern »%s«, skiping.")
+                              % (item, pattern)
+                            )
+                        )
+                    taboo_found = True
+                    break
+            if taboo_found:
+                continue
+
+            # Check, whther it was former included
+            if item_path in self.config_files:
+                self.logger.warning(
+                    ( _("Recursive including of »%s« (file »%s«, line %s)")
+                      % (item_path, filename, linenr)
+                    )
+                )
+                return False
+            self._read(item_path)
 
     #------------------------------------------------------------
     def _start_logfile_definition(
