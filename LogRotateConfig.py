@@ -52,6 +52,11 @@ script_directives = [
     'lastaction',
 ]
 
+unsupported_options = (
+    'uncompresscmd',
+    'error',
+)
+
 #========================================================================
 
 class LogrotateConfigurationError(Exception):
@@ -832,10 +837,79 @@ class LogrotateConfigurationReader(object):
                         ( _("New external script name: »%s«.") % (newscript) )
                     )
 
+            # all other options
+            if not self._option(line, in_fd, configfile, linenr):
+                self.logger.warning(
+                    ( _("Syntax error in file »%s«, line %s")
+                      % (configfile, linenr)
+                    )
+                )
+
         return True
 
     #------------------------------------------------------------
-    def _ext_script_definition( self, line, rest, filename, linenr):
+    def _option(self, line, in_fd, filename, linenr):
+        '''
+        Checks the given line as a logrotate option and assign this
+        option on success to the default options or in the current
+        logfile directive
+
+        @param line:     line of current config file
+        @type line:      str
+        @param in_fd:    parsing inside a logfile definition
+        @type in_fd:     bool
+        @param filename: current configuration file
+        @type filename:  str
+        @param linenr:   current line number of configuration file
+        @type linenr:    int
+
+        @return: success of parsing this option
+        @rtype:  bool
+        '''
+
+        _ = self.t.lgettext
+        if self.verbose > 4:
+            self.logger.debug(
+                ( _("Checking line »%s« for a logrotate option. "
+                    + "(file »%s«, line %s)")
+                  % (line, filename, linenr)
+                )
+            )
+
+        # where to insert the option?
+        directive = self.default
+        if in_fd:
+            directive = self.new_log
+
+        # extract option from line
+        option = None
+        val    = None
+        match = re.search(r'^(\S+)\s*(.*)', line)
+        if match:
+            option = match.group(1).lower()
+            val    = match.group(2)
+        else:
+            self.logger.warning(
+                ( _("Could not detect option in line »%s«.") % (line))
+            )
+            return False
+
+        # Check for unsupported options
+        pattern = r'^(' + '|'.join(unsupported_options) + r')$'
+        match = re.search(pattern, option, re.IGNORECASE)
+        if match:
+            self.logger.info(
+                ( _("Unsupported option »%s«. "
+                    + "(file »%s«, line %s)")
+                  % (match.group(1).lower(), filename, linenr)
+                )
+            )
+            return True
+
+        return True
+
+    #------------------------------------------------------------
+    def _ext_script_definition(self, line, rest, filename, linenr):
         '''
         Starts a new explicite external script definition.
         It raises a LogrotateConfigurationError on error.
