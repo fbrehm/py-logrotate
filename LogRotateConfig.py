@@ -57,6 +57,14 @@ unsupported_options = (
     'error',
 )
 
+boolean_options = (
+    'compress',
+    'copytruncate',
+    'ifempty',
+    'missingok',
+    'sharedscripts',
+)
+
 #========================================================================
 
 class LogrotateConfigurationError(Exception):
@@ -905,6 +913,20 @@ class LogrotateConfigurationReader(object):
                 )
             )
             return True
+
+        # Check for boolean option
+        pattern = r'^(not?)?(' + '|'.join(boolean_options) + r')$'
+        match = re.search(pattern, option, re.IGNORECASE)
+        if match:
+            negated = match.group(1)
+            key     = match.group(2).lower()
+            if self.verbose > 4:
+                pass
+            if negated is None:
+                option_value = True
+            else:
+                option_value = False
+            
 
         return True
 
