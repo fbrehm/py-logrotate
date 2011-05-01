@@ -644,7 +644,7 @@ class LogrotateConfigurationReader(object):
                 if match:
                     in_script = False
                     continue
-                self.scripts[newscript].append(line)
+                self.scripts[newscript]['cmd'].append(line)
                 continue
 
             # start of a logfile definition
@@ -780,6 +780,13 @@ class LogrotateConfigurationReader(object):
                     values      = split_parts(match.group(2))
                     if values[0]:
                         script_name = values[0]
+                if self.verbose > 3:
+                    self.logger.debug(
+                        ( _("Found start of a regular script definition: "
+                            + "type: »%s«, name: »%s« (file »%s«, line %s)")
+                          % (script_type, script_name, configfile, linenr)
+                        )
+                    )
                 newscript = self._start_log_script_definition(
                     script_type = script_type,
                     script_name = script_name,
@@ -788,8 +795,110 @@ class LogrotateConfigurationReader(object):
                     in_fd       = in_fd,
                     linenr      = linenr,
                 )
+                if newscript:
+                    in_script = True
+                if self.verbose > 3:
+                    self.logger.debug(
+                        ( _("New log script name: »%s«.") % (newscript) )
+                    )
+
+            # start of an explicite external script definition
+            match = re.search(r'^script(\s+.*)?$', line, re.IGNORECASE)
+            if match:
+                if self.verbose > 3:
+                    self.logger.debug(
+                        ( _("Found start of a external script definition. "
+                            + "(file »%s«, line %s)")
+                          % (configfile, linenr)
+                        )
+                    )
+                rest = match.group(1)
+                if in_fd or in_logfile_list:
+                    self.logger.warning(
+                        ( _("Syntax error: external script definition may not "
+                            + "appear inside of a log file definition "
+                            + "(file »%s«, line %s)")
+                            % (configfile, linenr)
+                        )
+                    )
+                    continue
+                newscript = self._ext_script_definition(
+                    line, rest, configfile, linenr
+                )
+                if newscript:
+                    in_script = True
+                if self.verbose > 3:
+                    self.logger.debug(
+                        ( _("New external script name: »%s«.") % (newscript) )
+                    )
 
         return True
+
+    #------------------------------------------------------------
+    def _ext_script_definition( self, line, rest, filename, linenr):
+        '''
+        Starts a new explicite external script definition.
+        It raises a LogrotateConfigurationError on error.
+
+        @param line:     line of current config file
+        @type line:      str
+        @param rest:     rest of the current line after »script«
+        @type rest:      str
+        @param filename: current configuration file
+        @type filename:  str
+        @param linenr:   current line number of configuration file
+        @type linenr:    int
+
+        @return: name of the script (if a new script definition) or None
+        @rtype:  str or None
+        '''
+
+        _ = self.t.lgettext
+
+        # split the rest in chunks
+        values = split_parts(rest)
+
+        # insufficient arguments to include ...
+        if len(values) < 1:
+            self.logger.warning(
+                ( _("No script name given in a script directive "
+                    + "(file »%s«, line %s)")
+                    % (filename, linenr)
+                )
+            )
+            return None
+
+        # to much arguments to include ...
+        if len(values) > 1:
+            self.logger.warning(
+                ( _("Only one script name is allowed "
+                    + "in a script directive, the first one is used. "
+                    + "(file »%s«, line %s)")
+                    % (filename, linenr)
+                )
+            )
+
+        script_name = values[0]
+
+        if script_name in self.scripts:
+            self.logger.warning(
+                ( _("Script name »%s« is allready declared, "
+                    + "it will be overwritten. "
+                    + "(file »%s«, line %s)")
+                    % (script_name, filename, linenr)
+                )
+            )
+
+        self.scripts[script_name] = {}
+        self.scripts[script_name]['cmd'] = []
+        self.scripts[script_name]['post'] = False
+        self.scripts[script_name]['last'] = False
+        self.scripts[script_name]['first'] = False
+        self.scripts[script_name]['prerun'] = False
+        self.scripts[script_name]['donepost'] = False
+        self.scripts[script_name]['donelast'] = False
+
+        return script_name
 
     #------------------------------------------------------------
     def _do_include( self, line, rest, filename, linenr):
@@ -828,7 +937,7 @@ class LogrotateConfigurationReader(object):
         # to much arguments to include ...
         if len(values) > 1:
             self.logger.warning(
-                ( _("Only one declaration of a file or diectory is allowed "
+                ( _("Only one declaration of a file or directory is allowed "
                     + "in a include directive, the first one is used. "
                     + "(file »%s«, line %s)")
                     % (filename, linenr)
@@ -1042,6 +1151,8 @@ class LogrotateConfigurationReader(object):
         self.scripts[new_script_name]['donelast'] = False
 
         self.new_log[script_type] = new_script_name
+
+        return new_script_name
 
     #------------------------------------------------------------
     def _new_scriptname(self, script_type = 'script'):
