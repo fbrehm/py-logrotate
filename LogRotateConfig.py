@@ -1001,6 +1001,11 @@ class LogrotateConfigurationReader(object):
             directive[key] = option_value
             return True
 
+        # Check for mail address
+        match = re.search(r'^(not?)?mail$', option, re.IGNORECASE)
+        if match:
+            negated = match.group(1)
+
         return True
 
     #------------------------------------------------------------
