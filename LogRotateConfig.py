@@ -886,8 +886,10 @@ class LogrotateConfigurationReader(object):
 
         # where to insert the option?
         directive = self.default
+        directive_str = 'default'
         if in_fd:
             directive = self.new_log
+            directive_str = 'new_log'
 
         # extract option from line
         option = None
@@ -920,13 +922,26 @@ class LogrotateConfigurationReader(object):
         if match:
             negated = match.group(1)
             key     = match.group(2).lower()
-            if self.verbose > 4:
-                pass
+            if val:
+                self.logger.warning(
+                    ( _("Found value »%s« behind the boolean option »%s«, "
+                        + "ignoring. (file »%s«, line %s)")
+                      % (val, option, filename, linenr)
+                    )
+                )
             if negated is None:
                 option_value = True
             else:
                 option_value = False
-            
+            if self.verbose > 4:
+                self.logger.debug(
+                    ( _("Setting boolean option »%s« in »%s« to »%s«. "
+                        + "(file »%s«, line %s)")
+                      % (key, directive_str, str(option_value), filename, linenr)
+                    )
+                )
+            directive[key] = option_value
+            return True
 
         return True
 
