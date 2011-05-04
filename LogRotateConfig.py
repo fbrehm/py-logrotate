@@ -57,12 +57,28 @@ unsupported_options = (
     'error',
 )
 
+options_with_values = (
+    'mail',
+    'compresscmd',
+    'statusfile',
+    'pidfile',
+    'compressext',
+    'rotate',
+    'maxage',
+)
+
 boolean_options = (
     'compress',
     'copytruncate',
     'ifempty',
     'missingok',
     'sharedscripts',
+)
+
+integer_options = (
+    'delaycompress',
+    'rotate',
+    'start',
 )
 
 #========================================================================
@@ -936,6 +952,48 @@ class LogrotateConfigurationReader(object):
             if self.verbose > 4:
                 self.logger.debug(
                     ( _("Setting boolean option »%s« in »%s« to »%s«. "
+                        + "(file »%s«, line %s)")
+                      % (key, directive_str, str(option_value), filename, linenr)
+                    )
+                )
+            directive[key] = option_value
+            return True
+
+        # Check for integer options
+        pattern = r'^(not?)?(' + '|'.join(integer_options) + r')$'
+        match = re.search(pattern, option, re.IGNORECASE)
+        if match:
+            negated = match.group(1)
+            key     = match.group(2).lower()
+            option_value = 0
+            if negated is None:
+                if key in options_with_values:
+                    if val is None or val == '':
+                        self.logger.warning(
+                            ( _("Option »%s« without a necessary value.")
+                              % (key)
+                            )
+                        )
+                        return False
+                try:
+                    option_value = long(val)
+                except ValueError, e:
+                    self.logger.warning(
+                        ( _("Option »%s« has no integer value: %s.")
+                          % (key, str(e))
+                        )
+                    )
+                    return False
+            if option_value < 0:
+                self.logger.warning(
+                    ( _("Negative value %s for option »%s« is not allowed.")
+                      % (str(option_value), key)
+                    )
+                )
+                return False
+            if self.verbose > 4:
+                self.logger.debug(
+                    ( _("Setting integer option »%s« in »%s« to »%s«. "
                         + "(file »%s«, line %s)")
                       % (key, directive_str, str(option_value), filename, linenr)
                     )
