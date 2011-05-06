@@ -122,6 +122,32 @@ def split_parts( text, keep_quotes = False, raise_on_unbalanced = True):
 
     return chunks
 
+#------------------------------------------------------------------------
+
+def email_valid(address):
+    '''
+    Simple Check for E-Mail addresses
+
+    @param address: the mail address to check
+    @type address:  str
+
+    @return: Validity of the given mil address
+    @rtype:  bool
+    '''
+
+    if address is None:
+        return False
+
+    adr = str(address)
+    if adr is None or adr == '':
+        return False
+
+    pattern = r'^[a-z0-9._%-+]+@[a-z0-9._%-]+.[a-z]{2,6}$'
+    if re.search(pattern, adr, re.IGNORECASE) is None:
+        return False
+
+    return True
+
 #========================================================================
 
 if __name__ == "__main__":

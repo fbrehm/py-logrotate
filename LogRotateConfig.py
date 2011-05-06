@@ -20,7 +20,7 @@ import pprint
 import os
 import os.path
 
-from LogRotateCommon import split_parts
+from LogRotateCommon import split_parts, email_valid
 
 revision = '$Revision$'
 revision = re.sub( r'\$', '', revision )
@@ -1005,6 +1005,52 @@ class LogrotateConfigurationReader(object):
         match = re.search(r'^(not?)?mail$', option, re.IGNORECASE)
         if match:
             negated = match.group(1)
+            if negated:
+                directive['mailaddress'] = None
+                if val is not None and val != '':
+                    self.logger.warning(
+                        ( _("Senseless option value »%s« after »%s«.")
+                            % (val, option.lower())
+                        )
+                    )
+                    return False
+                return True
+            if not email_valid(val):
+                directive['mailaddress'] = None
+                self.logger.warning( ( _("Invalid Mail address »%s«.") % (val)))
+                return False
+            directive['mailaddress'] = val
+            if self.verbose > 4:
+                self.logger.debug(
+                    ( _("Setting mail address to »%s«. (file »%s«, line %s)")
+                      % (val, filename, linenr)
+                    )
+                )
+            return True
+
+        # Check for mailfirst/maillast
+        match = re.search(r'^mail(first|last)$', option, re.IGNORECASE)
+        if match:
+            when = match.group(1).lower()
+            option_value = False
+            if when == 'first':
+                option_value = True
+            directive['mailfirst'] = option_value
+            if self.verbose > 4:
+                self.logger.debug(
+                    ( _("Setting mailfirst to »%s«. (file »%s«, line %s)")
+                      % (str(option_value), filename, linenr)
+                    )
+                )
+            if val is not None and val != '':
+                self.logger.warning(
+                    ( _("Senseless option value »%s« after »%s«.")
+                        % (val, option.lower())
+                    )
+                )
+                return False
+            return True
+
 
         return True
 

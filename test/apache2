@@ -1,0 +1,21 @@
+# Apache2 logrotate snipet for Gentoo Linux
+# Contributes by Chuck Short
+#
+
+/var/log/apache2/access_log
+/var/log/apache2/*.log
+{
+  missingok
+  notifempty
+  sharedscripts
+  rotate 10
+  error bla
+  weekly
+  size 1m
+  mail	test@uhu-banane.de
+  olddir /var/log/apache2/%Y-%m
+  postrotate
+  /etc/init.d/apache2 reload > /dev/null 2>&1 || true
+  endscript
+}
+
