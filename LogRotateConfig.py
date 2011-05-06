@@ -81,6 +81,22 @@ integer_options = (
     'start',
 )
 
+string_options = (
+    'extension',
+    'compresscmd',
+    'compressoptions',
+)
+
+global_options = (
+    'statusfile',
+    'pidfile',
+)
+
+path_options = (
+    'statusfile',
+    'pidfile',
+)
+
 #========================================================================
 
 class LogrotateConfigurationError(Exception):
@@ -1051,6 +1067,82 @@ class LogrotateConfigurationReader(object):
                 return False
             return True
 
+        # Check for string options
+        pattern = r'^(' + '|'.join(string_options) + r')$'
+        match = re.search(pattern, option, re.IGNORECASE)
+        if match:
+            key = match.group(1).lower()
+            if key in options_with_values:
+                if self.verbose > 5:
+                    self.logger.debug(
+                        ( _("Option »%s« must have a value.")
+                            %(key)
+                        )
+                    )
+                if (val is None) or (re.search(r'^\s*$', val) is None):
+                    self.logger.warning(
+                        ( _("Option »%s« without a value")
+                            %(key)
+                        )
+                    )
+                    return False
+            if key == 'compresscmd':
+                prog = self.check_compress_command(val)
+                if prog is None:
+                    self.logger.warning(
+                        ( _("Compress command »%s« not found.")
+                            %(val)
+                        )
+                    )
+                    return False
+                val = prog
+            if key == 'compressoptions' and val is None:
+                val = ''
+            directive[key] = val
+            return True
+
+        # Check for global options
+        pattern = r'^(' + '|'.join(global_options) + r')$'
+        match = re.search(pattern, option, re.IGNORECASE)
+        if match:
+            key = match.group(1).lower()
+            if in_fd:
+                self.logger.warning(
+                    ( _("Option »%s« not allowd inside a logfile directive.")
+                        %(key)
+                    )
+                )
+                return False
+            if key in options_with_values:
+                if self.verbose > 5:
+                    self.logger.debug(
+                        ( _("Option »%s« must have a value.")
+                            %(key)
+                        )
+                    )
+                if (val is None) or (re.search(r'^\s*$', val) is None):
+                    self.logger.warning(
+                        ( _("Option »%s« without a value")
+                            %(key)
+                        )
+                    )
+                    return False
+            if key in path_options:
+                if not os.path.abspath(val):
+                    self.logger.warning(
+                        ( _("Value »%s« for option »%s« is not an absolute "
+                             + "an absolute path") % (val, key)
+                        )
+                    )
+                    return False
+            if self.verbose > 4:
+                self.logger.debug(
+                    ( _("Setting »%s« to »%s«. (file »%s«, line %s)")
+                      % (key, str(val), filename, linenr)
+                    )
+                )
+            directive[key] = val
+            return True
 
         return True
 
