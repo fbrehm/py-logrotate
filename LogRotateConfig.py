@@ -98,20 +98,36 @@ path_options = (
 )
 
 valid_periods = {
-  'hourly':   (1/24),
-  '2hourly':  (1/12),
-  '4hourly':  (1/6),
-  '6hourly':  (1/4),
-  '12hourly': (1/2),
-  'daily':    1,
-  '2daily':   2,
-  'weekly':   7,
-  'monthly':  30,
-  '2monthly': 60,
-  '4monthly': 120,
-  '6monthly': 182,
-  'yearly':   365,
+    'hourly':   (1/24),
+    '2hourly':  (1/12),
+    '4hourly':  (1/6),
+    '6hourly':  (1/4),
+    '12hourly': (1/2),
+    'daily':    1,
+    '2daily':   2,
+    'weekly':   7,
+    'monthly':  30,
+    '2monthly': 60,
+    '4monthly': 120,
+    '6monthly': 182,
+    'yearly':   365,
 }
+
+yes_values = (
+    '1',
+    'on',
+    'y',
+    'yes',
+    'true',
+)
+
+no_values = (
+    '0',
+    'off',
+    'n',
+    'no',
+    'false',
+)
 
 
 #========================================================================
@@ -1199,6 +1215,97 @@ class LogrotateConfigurationReader(object):
                 )
             directive['period'] = option_value
             return True
+
+        # get maximum age of old rotated log files
+        match = re.search(r'^(not?)?maxage$', option, re.IGNORECASE)
+        if match:
+            negated = False
+            if match.group(1) is not None:
+                negated = True
+            if (val is None) or re.search(r'^\s*$', val) is not None:
+                negated = True
+            option_value = 0
+            if not negated:
+                try:
+                    option_value = period2days(val, verbose = self.verbose)
+                except ValueError, e:
+                    self.logger.warning(
+                        ( _("Invalid maxage definition: »%s«") %(val) )
+                    )
+                    return False
+            if self.verbose > 4:
+                self.logger.debug(
+                    ( _("Setting »maxage« to %f days. (file »%s«, line %s)")
+                      % (option_value, filename, linenr)
+                    )
+                )
+            directive['maxage'] = option_value
+            return True
+
+        # Setting date extension of rotated log files
+        match = re.search(r'^(no)?dateext$', option, re.IGNORECASE)
+        if match:
+
+            negated = False
+            if match.group(1) is not None:
+                negated = True
+            use_dateext = False
+            dateext = None
+
+            if self.verbose > 4:
+                self.logger.debug(
+                    ( _("Checking »dateext«, negated: »%s«. "
+                        + "(file »%s«, line %s)")
+                      % (str(negated), filename, linenr)
+                    )
+                )
+            values = []
+            if val is not None:
+                values = split_parts(val) 
+
+            if not negated:
+                first_val = ''
+                if len(values) > 0:
+                    first_val = values[0].lower()
+                option_value = first_val
+                if first_val is None or \
+                        re.search(r'^\s*$', first_val) is not None:
+                    option_value = 'true'
+                if self.verbose > 4:
+                    self.logger.debug(
+                        ( _("»dateext«: first_val: »%s«, option_value: »%s«. "
+                            + "(file »%s«, line %s)")
+                            % (first_val, option_value, filename, linenr)
+                        )
+                    )
+                if option_value in yes_values:
+                    use_dateext = True
+                elif option_value in no_values:
+                    use_dateext = False
+                else:
+                    use_dateext = True
+                    dateext = val
+
+            if self.verbose > 4:
+                self.logger.debug(
+                    ( _("Setting »dateext« to »%s«. (file »%s«, line %s)")
+                      % (str(use_dateext), filename, linenr)
+                    )
+                )
+            directive['dateext'] = use_dateext
+
+            if dateext is not None:
+                if self.verbose > 4:
+                    self.logger.debug(
+                        ( _("Setting »datepattern« to »%s«. "
+                            + "(file »%s«, line %s)")
+                            % (dateext, filename, linenr)
+                        )
+                    )
+                directive['datepattern'] = dateext
+
+            return True
+                    
 
         return True
 
