@@ -20,7 +20,7 @@ import pprint
 import os
 import os.path
 
-from LogRotateCommon import split_parts, email_valid
+from LogRotateCommon import split_parts, email_valid, period2days
 
 revision = '$Revision$'
 revision = re.sub( r'\$', '', revision )
@@ -96,6 +96,23 @@ path_options = (
     'statusfile',
     'pidfile',
 )
+
+valid_periods = {
+  'hourly':   (1/24),
+  '2hourly':  (1/12),
+  '4hourly':  (1/6),
+  '6hourly':  (1/4),
+  '12hourly': (1/2),
+  'daily':    1,
+  '2daily':   2,
+  'weekly':   7,
+  'monthly':  30,
+  '2monthly': 60,
+  '4monthly': 120,
+  '6monthly': 182,
+  'yearly':   365,
+}
+
 
 #========================================================================
 
@@ -1130,7 +1147,7 @@ class LogrotateConfigurationReader(object):
             if key in path_options:
                 if not os.path.abspath(val):
                     self.logger.warning(
-                        ( _("Value »%s« for option »%s« is not an absolute "
+                        ( _("Value »%s« for option »%s« is not "
                              + "an absolute path") % (val, key)
                         )
                     )
@@ -1142,6 +1159,45 @@ class LogrotateConfigurationReader(object):
                     )
                 )
             directive[key] = val
+            return True
+
+        # Check for rotation period
+        pattern = r'^(' + '|'.join(valid_periods.keys()) + r'|period)$'
+        match = re.search(pattern, option, re.IGNORECASE)
+        if match:
+            key = match.group(1).lower()
+            if self.verbose > 4:
+                self.logger.debug(
+                    ( _("Checking »period«: key »%s«, value »%s«. "
+                        + "(file »%s«, line %s)")
+                      % (key, val, filename, linenr)
+                    )
+                )
+            option_value = 1
+            if key in valid_periods:
+                if (val is not None) and (re.search(r'^\s*$', val) is None):
+                    self.logger.warning(
+                        ( _("Option »%s« may not have a value (»%s«). "
+                            + "(file »%s«, line %s)")
+                            %(key, val, filename, linenr)
+                        )
+                    )
+                option_value = valid_periods[key]
+            else:
+                try:
+                    option_value = period2days(val, verbose = self.verbose)
+                except ValueError, e:
+                    self.logger.warning(
+                        ( _("Invalid period definition: »%s«") %(val) )
+                    )
+                    return False
+            if self.verbose > 4:
+                self.logger.debug(
+                    ( _("Setting »period« to %f days. (file »%s«, line %s)")
+                      % (option_value, filename, linenr)
+                    )
+                )
+            directive['period'] = option_value
             return True
 
         return True

@@ -11,6 +11,7 @@
   rotate 10
   error bla
   weekly
+  #period 4.5days 2 hours 3.4y
   size 1m
   mail	test@uhu-banane.de
   olddir /var/log/apache2/%Y-%m

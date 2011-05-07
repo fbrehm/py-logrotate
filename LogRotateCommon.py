@@ -15,6 +15,7 @@
 
 import re
 import sys
+import locale
 
 revision = '$Revision$'
 revision = re.sub( r'\$', '', revision )
@@ -147,6 +148,157 @@ def email_valid(address):
         return False
 
     return True
+
+#------------------------------------------------------------------------
+
+def period2days(period, use_locale_radix = False, verbose = 0):
+    '''
+    Converts the given string of the form »5d 8h« in an amount of days.
+    It raises a ValueError on invalid values.
+
+    Special values of period:
+        - now (returns 0)
+        - never (returns float('inf'))
+
+    Valid units for periods are:
+        - »h[ours]«
+        - »d[ays]«   - default, if bare numbers are given
+        - »w[eeks]«  - == 7 days
+        - »m[onths]« - == 30 days
+        - »y[ears]«  - == 365 days
+
+    @param period:           the period to convert
+    @type period:            str
+    @param use_locale_radix: use the locale version of radix instead of the
+                             english decimal dot.
+    @type use_locale_radix:  bool
+    @param verbose:          level of verbosity
+    @type verbose:           int
+
+    @return: amount of days
+    @rtype:  float
+    '''
+
+    if period is None:
+        raise ValueError("Given period is »None«")
+
+    value = str(period).strip().lower()
+    if period == '':
+        raise ValueError("Given period was empty")
+
+    if verbose > 4:
+        sys.stderr.write("period2days() called with: »%s«\n" % (period))
+
+    if period == 'now':
+        return float(0)
+
+    # never - returns a positive infinite value
+    if period == 'never':
+        return float('inf')
+
+    days = float(0)
+    radix = '.'
+    if use_locale_radix:
+        radix = locale.RADIXCHAR
+    radix = re.escape(radix)
+    if verbose > 5:
+        sys.stderr.write("period2days(): using radix »%s«\n" % (radix))
+
+    # Search for hours in value
+    pattern = r'(\d+(?:' + radix + r'\d*)?)\s*h(?:ours?)?'
+    if verbose > 5:
+        sys.stderr.write("period2days(): pattern »%s«\n" % (pattern))
+    match = re.search(pattern, value, re.IGNORECASE)
+    if match:
+        hours_str = match.group(1)
+        if use_locale_radix:
+            hours_str = re.sub(radix, '.', hours_str, 1)
+        hours = float(hours_str)
+        days += (hours/24)
+        if verbose > 4:
+            sys.stderr.write("period2days(): found %f hours.\n" %(hours))
+        value = re.sub(pattern, '', value, re.IGNORECASE)
+    if verbose > 5:
+        sys.stderr.write("period2days(): rest after hours: »%s«\n" %(value))
+
+    # Search for weeks in value
+    pattern = r'(\d+(?:' + radix + r'\d*)?)\s*w(?:eeks?)?'
+    if verbose > 5:
+        sys.stderr.write("period2days(): pattern »%s«\n" % (pattern))
+    match = re.search(pattern, value, re.IGNORECASE)
+    if match:
+        weeks_str = match.group(1)
+        if use_locale_radix:
+            weeks_str = re.sub(radix, '.', weeks_str, 1)
+        weeks = float(weeks_str)
+        days += (weeks*7)
+        if verbose > 4:
+            sys.stderr.write("period2days(): found %f weeks.\n" %(weeks))
+        value = re.sub(pattern, '', value, re.IGNORECASE)
+    if verbose > 5:
+        sys.stderr.write("period2days(): rest after weeks: »%s«\n" %(value))
+
+    # Search for months in value
+    pattern = r'(\d+(?:' + radix + r'\d*)?)\s*m(?:onths?)?'
+    if verbose > 5:
+        sys.stderr.write("period2days(): pattern »%s«\n" % (pattern))
+    match = re.search(pattern, value, re.IGNORECASE)
+    if match:
+        months_str = match.group(1)
+        if use_locale_radix:
+            months_str = re.sub(radix, '.', months_str, 1)
+        months = float(months_str)
+        days += (months*30)
+        if verbose > 4:
+            sys.stderr.write("period2days(): found %f months.\n" %(months))
+        value = re.sub(pattern, '', value, re.IGNORECASE)
+    if verbose > 5:
+        sys.stderr.write("period2days(): rest after months: »%s«\n" %(value))
+
+    # Search for years in value
+    pattern = r'(\d+(?:' + radix + r'\d*)?)\s*y(?:ears?)?'
+    if verbose > 5:
+        sys.stderr.write("period2days(): pattern »%s«\n" % (pattern))
+    match = re.search(pattern, value, re.IGNORECASE)
+    if match:
+        years_str = match.group(1)
+        if use_locale_radix:
+            years_str = re.sub(radix, '.', years_str, 1)
+        years = float(years_str)
+        days += (years*365)
+        if verbose > 4:
+            sys.stderr.write("period2days(): found %f years.\n" %(years))
+        value = re.sub(pattern, '', value, re.IGNORECASE)
+    if verbose > 5:
+        sys.stderr.write("period2days(): rest after years: »%s«\n" %(value))
+
+    # At last search for days in value
+    pattern = r'(\d+(?:' + radix + r'\d*)?)\s*(?:d(?:ays?)?)?'
+    if verbose > 5:
+        sys.stderr.write("period2days(): pattern »%s«\n" % (pattern))
+    match = re.search(pattern, value, re.IGNORECASE)
+    if match:
+        days_str = match.group(1)
+        if use_locale_radix:
+            days_str = re.sub(radix, '.', days_str, 1)
+        days_float = float(days_str)
+        days += days_float
+        if verbose > 4:
+            sys.stderr.write("period2days(): found %f days.\n" %(days_float))
+        value = re.sub(pattern, '', value, re.IGNORECASE)
+    if verbose > 5:
+        sys.stderr.write("period2days(): rest after days: »%s«\n" %(value))
+
+    # warn, if there is a rest
+    if re.search(r'^\s*$', value) is None:
+        sys.stderr.write(
+            "period2days(): invalid content for a period: »%s«\n" %(value)
+        )
+
+    if verbose > 4:
+        sys.stderr.write("period2days(): total %f days found.\n" %(days))
+
+    return days
 
 #========================================================================
 
