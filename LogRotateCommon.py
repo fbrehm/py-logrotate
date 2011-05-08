@@ -151,6 +151,95 @@ def email_valid(address):
 
 #------------------------------------------------------------------------
 
+def human2bytes(value, si_conform = True, use_locale_radix = False, verbose = 0):
+    '''
+    Converts the given human readable byte value (e.g. 5MB, 8.4GiB etc.)
+    with a prefix into an integer/long value (without a prefix).
+    It raises a ValueError on invalid values.
+
+    Available prefixes are:
+        - kB (1000), KB (1024), KiB (1024)
+        - MB (1000*1000), MiB (1024*1024)
+        - GB (1000³), GiB (1024³)
+        - TB (1000^4), TiB (1024^4)
+        - PB (1000^5), PiB (1024^5)
+
+    @param value:            the value to convert
+    @type value:             str
+    @param si_conform:       use factor 1000 instead of 1024 for kB a.s.o.
+    @type si_conform:        bool
+    @param use_locale_radix: use the locale version of radix instead of the
+                             english decimal dot.
+    @type use_locale_radix:  bool
+    @param verbose:          level of verbosity
+    @type verbose:           int
+
+    @return: amount of bytes
+    @rtype:  long
+    '''
+
+    if value is None:
+        raise ValueError("Given value is »None«")
+
+    radix = '.'
+    if use_locale_radix:
+        radix = locale.RADIXCHAR
+    radix = re.escape(radix)
+    if verbose > 5:
+        sys.stderr.write("human2bytes(): using radix »%s«\n" % (radix))
+
+    value_raw = ''
+    prefix = None
+    pattern = r'^\s*\+?(\d+(?:' + radix + r'\d*)?)\s*(\S+)?'
+    match = re.search(pattern, value)
+    if match is not None:
+        value_raw = match.group(1)
+        prefix = match.group(2)
+    else:
+        raise ValueError("human2bytes(): Could not determine bytes in »%s«." %(value))
+
+    if use_locale_radix:
+        value_raw = re.sub(radix, '.', value_raw, 1)
+    value_float = float(value_raw)
+    if prefix is None:
+        prefix = ''
+
+    factor_bin = long(1024)
+    factor_si  = long(1000)
+    if not si_conform:
+        factor_si = factor_bin
+
+    factor = long(1)
+
+    if re.search(r'^\s*(?:b(?:yte)?)?\s*$', prefix, re.IGNORECASE):
+        factor = long(1)
+    elif re.search(r'^\s*k[bB](?i:yte)?\s*$', prefix):
+        factor = factor_si
+    elif re.search(r'^\s*Ki?[bB](?i:yte)?\s*$', prefix):
+        factor = factor_bin
+    elif re.search(r'^\s*MB(?:yte)?\s*$', prefix, re.IGNORECASE):
+        factor = (factor_si * factor_si)
+    elif re.search(r'^\s*MiB(?:yte)?\s*$', prefix, re.IGNORECASE):
+        factor = (factor_bin * factor_bin)
+    elif re.search(r'^\s*GB(?:yte)?\s*$', prefix, re.IGNORECASE):
+        factor = (factor_si * factor_si * factor_si)
+    elif re.search(r'^\s*GiB(?:yte)?\s*$', prefix, re.IGNORECASE):
+        factor = (factor_bin * factor_bin * factor_bin)
+    elif re.search(r'^\s*TB(?:yte)?\s*$', prefix, re.IGNORECASE):
+        factor = (factor_si * factor_si * factor_si * factor_si)
+    elif re.search(r'^\s*TiB(?:yte)?\s*$', prefix, re.IGNORECASE):
+        factor = (factor_bin * factor_bin * factor_bin * factor_bin)
+    elif re.search(r'^\s*PB(?:yte)?\s*$', prefix, re.IGNORECASE):
+        factor = (factor_si * factor_si * factor_si * factor_si * factor_si)
+    elif re.search(r'^\s*PiB(?:yte)?\s*$', prefix, re.IGNORECASE):
+        factor = (factor_bin * factor_bin * factor_bin * factor_bin * factor_bin)
+    else:
+        raise ValueError("human2bytes(): Couldn't detect prefix »%s«." %(prefix))
+
+    return long(factor * value_float)
+
+#------------------------------------------------------------------------
+
 def period2days(period, use_locale_radix = False, verbose = 0):
     '''
     Converts the given string of the form »5d 8h« in an amount of days.
