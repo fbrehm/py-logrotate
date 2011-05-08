@@ -19,6 +19,8 @@ import gettext
 import pprint
 import os
 import os.path
+import pwd
+import grp
 
 from LogRotateCommon import split_parts, email_valid, period2days
 
@@ -385,6 +387,7 @@ class LogrotateConfigurationReader(object):
         self.default['olddir']        = {
             'dirname':    '',
             'dateformat': False,
+            'enabled':    False,
             'mode':       None,
             'owner':      None,
             'group':      None,
@@ -1140,40 +1143,20 @@ class LogrotateConfigurationReader(object):
         if match:
             key = match.group(1).lower()
             if in_fd:
-                self.logger.warning(
-                    ( _("Option »%s« not allowd inside a logfile directive.")
-                        %(key)
-                    )
-                )
+                self.logger.warning( ( _("Option »%s« not allowd inside a logfile directive.") %(key)))
                 return False
             if key in options_with_values:
                 if self.verbose > 5:
-                    self.logger.debug(
-                        ( _("Option »%s« must have a value.")
-                            %(key)
-                        )
-                    )
-                if (val is None) or (re.search(r'^\s*$', val) is None):
-                    self.logger.warning(
-                        ( _("Option »%s« without a value")
-                            %(key)
-                        )
-                    )
+                    self.logger.debug( ( _("Option »%s« must have a value.") %(key)))
+                if (val is None) or (re.search(r'^\s*$', val) is not None):
+                    self.logger.warning( ( _("Option »%s« without a value") %(key)))
                     return False
             if key in path_options:
                 if not os.path.abspath(val):
-                    self.logger.warning(
-                        ( _("Value »%s« for option »%s« is not "
-                             + "an absolute path") % (val, key)
-                        )
-                    )
+                    self.logger.warning( ( _("Value »%s« for option »%s« is not an absolute path") % (val, key)))
                     return False
             if self.verbose > 4:
-                self.logger.debug(
-                    ( _("Setting »%s« to »%s«. (file »%s«, line %s)")
-                      % (key, str(val), filename, linenr)
-                    )
-                )
+                self.logger.debug( ( _("Setting »%s« to »%s«. (file »%s«, line %s)") % (key, str(val), filename, linenr)))
             directive[key] = val
             return True
 
@@ -1183,36 +1166,20 @@ class LogrotateConfigurationReader(object):
         if match:
             key = match.group(1).lower()
             if self.verbose > 4:
-                self.logger.debug(
-                    ( _("Checking »period«: key »%s«, value »%s«. "
-                        + "(file »%s«, line %s)")
-                      % (key, val, filename, linenr)
-                    )
-                )
+                self.logger.debug( ( _("Checking »period«: key »%s«, value »%s«. " + "(file »%s«, line %s)") % (key, val, filename, linenr)))
             option_value = 1
             if key in valid_periods:
                 if (val is not None) and (re.search(r'^\s*$', val) is None):
-                    self.logger.warning(
-                        ( _("Option »%s« may not have a value (»%s«). "
-                            + "(file »%s«, line %s)")
-                            %(key, val, filename, linenr)
-                        )
-                    )
+                    self.logger.warning( ( _("Option »%s« may not have a value (»%s«). (file »%s«, line %s)") %(key, val, filename, linenr)))
                 option_value = valid_periods[key]
             else:
                 try:
                     option_value = period2days(val, verbose = self.verbose)
                 except ValueError, e:
-                    self.logger.warning(
-                        ( _("Invalid period definition: »%s«") %(val) )
-                    )
+                    self.logger.warning( ( _("Invalid period definition: »%s«") %(val) ))
                     return False
             if self.verbose > 4:
-                self.logger.debug(
-                    ( _("Setting »period« to %f days. (file »%s«, line %s)")
-                      % (option_value, filename, linenr)
-                    )
-                )
+                self.logger.debug( ( _("Setting »period« to %f days. (file »%s«, line %s)") % (option_value, filename, linenr)))
             directive['period'] = option_value
             return True
 
@@ -1229,16 +1196,10 @@ class LogrotateConfigurationReader(object):
                 try:
                     option_value = period2days(val, verbose = self.verbose)
                 except ValueError, e:
-                    self.logger.warning(
-                        ( _("Invalid maxage definition: »%s«") %(val) )
-                    )
+                    self.logger.warning( ( _("Invalid maxage definition: »%s«") %(val) ))
                     return False
             if self.verbose > 4:
-                self.logger.debug(
-                    ( _("Setting »maxage« to %f days. (file »%s«, line %s)")
-                      % (option_value, filename, linenr)
-                    )
-                )
+                self.logger.debug( ( _("Setting »maxage« to %f days. (file »%s«, line %s)") % (option_value, filename, linenr)))
             directive['maxage'] = option_value
             return True
 
@@ -1253,12 +1214,7 @@ class LogrotateConfigurationReader(object):
             dateext = None
 
             if self.verbose > 4:
-                self.logger.debug(
-                    ( _("Checking »dateext«, negated: »%s«. "
-                        + "(file »%s«, line %s)")
-                      % (str(negated), filename, linenr)
-                    )
-                )
+                self.logger.debug( ( _("Checking »dateext«, negated: »%s«. (file »%s«, line %s)") % (str(negated), filename, linenr)))
             values = []
             if val is not None:
                 values = split_parts(val) 
@@ -1272,12 +1228,7 @@ class LogrotateConfigurationReader(object):
                         re.search(r'^\s*$', first_val) is not None:
                     option_value = 'true'
                 if self.verbose > 4:
-                    self.logger.debug(
-                        ( _("»dateext«: first_val: »%s«, option_value: »%s«. "
-                            + "(file »%s«, line %s)")
-                            % (first_val, option_value, filename, linenr)
-                        )
-                    )
+                    self.logger.debug( ( _("»dateext«: first_val: »%s«, option_value: »%s«. (file »%s«, line %s)") % (first_val, option_value, filename, linenr)))
                 if option_value in yes_values:
                     use_dateext = True
                 elif option_value in no_values:
@@ -1287,25 +1238,95 @@ class LogrotateConfigurationReader(object):
                     dateext = val
 
             if self.verbose > 4:
-                self.logger.debug(
-                    ( _("Setting »dateext« to »%s«. (file »%s«, line %s)")
-                      % (str(use_dateext), filename, linenr)
-                    )
-                )
+                self.logger.debug( ( _("Setting »dateext« to »%s«. (file »%s«, line %s)") % (str(use_dateext), filename, linenr)))
             directive['dateext'] = use_dateext
 
             if dateext is not None:
                 if self.verbose > 4:
-                    self.logger.debug(
-                        ( _("Setting »datepattern« to »%s«. "
-                            + "(file »%s«, line %s)")
-                            % (dateext, filename, linenr)
-                        )
-                    )
+                    self.logger.debug( ( _("Setting »datepattern« to »%s«. (file »%s«, line %s)") % (dateext, filename, linenr)))
                 directive['datepattern'] = dateext
 
             return True
-                    
+
+        # checking for olddir ...
+        match = re.search(r'^(not?)?olddir$', option, re.IGNORECASE)
+        if match:
+
+            negated = False
+            if match.group(1) is not None:
+                negated = True
+
+            if self.verbose > 5:
+                self.logger.debug( ( _("Checking for »olddir« ... (file »%s«, line %s)") % (filename, linenr)))
+
+            if negated:
+                if self.verbose > 4:
+                    self.logger.debug( ( _("Removing »olddir«. (file »%s«, line %s)") % (filename, linenr))) 
+                directive['olddir']['enabled'] = False
+                return True
+
+            values = []
+            if val is not None:
+                values = split_parts(val)
+
+            # Check for dirname of olddir
+            if len(values) < 1 or values[0] is None or re.search(r'^\s*$', values[0]) is not None:
+                self.logger.warning( ( _("Option »olddir« without a value given.")))
+                return False
+            directive['olddir']['dirname'] = values[0]
+            directive['olddir']['enabled'] = True
+
+            mode  = None
+            owner = None
+            group = None
+
+            # Check for create mode of olddir
+            if len(values) > 1:
+                if self.verbose > 5:
+                    self.logger.debug( ( _("Trying to determine olddir create mode »%s« ... (file »%s«, line %s)") % (values[1], filename, linenr)))
+                mode_octal = values[1]
+                if re.search(r'^0', mode_octal) is None:
+                    mode_octal = '0' + mode_octal
+                try:
+                    mode = int(mode_octal, 8)
+                except ValueError:
+                    self.logger.warning( ( _("Invalid create mode »%s« in »olddir«.") %(values[1])))
+                    return False
+
+            # Check for Owner (user, uid)
+            if len(values) > 2:
+                owner_raw = values[2]
+                if self.verbose > 5:
+                    self.logger.debug( ( _("Trying to determine olddir owner »%s« ... (file »%s«, line %s)") % (owner_raw, filename, linenr)))
+                if re.search(r'^[1-9]\d*$', owner_raw) is not None:
+                    owner = int(owner_raw)
+                else:
+                    try:
+                        owner = pwd.getpwnam(owner_raw)[2]
+                    except KeyError:
+                        self.logger.warning( ( _("Invalid owner »%s« in »olddir«.") %(owner_raw)))
+                        return False
+
+            # Check for Group (gid)
+            if len(values) > 3:
+                group_raw = values[3]
+                if self.verbose > 5:
+                    self.logger.debug( ( _("Trying to determine olddir group »%s« ... (file »%s«, line %s)") % (group_raw, filename, linenr)))
+                if re.search(r'^[1-9]\d*$', group_raw) is not None:
+                    group = int(group_raw)
+                else:
+                    try:
+                        group = grp.getgrnam(group_raw)[2]
+                    except KeyError:
+                        self.logger.warning( ( _("Invalid group »%s« in »olddir«.") %(group_raw)))
+                        return False
+
+            # Give values back ...
+            directive['olddir']['mode']  = mode
+            directive['olddir']['owner'] = owner
+            directive['olddir']['group'] = group
+            return True
+
 
         return True
 
@@ -1704,6 +1725,7 @@ class LogrotateConfigurationReader(object):
         self.new_log['olddir']        = {
             'dirname':    self.default['olddir']['dirname'],
             'dateformat': self.default['olddir']['dateformat'],
+            'enabled':    self.default['olddir']['enabled'],
             'mode':       self.default['olddir']['mode'],
             'owner':      self.default['olddir']['owner'],
             'group':      self.default['olddir']['group'],
