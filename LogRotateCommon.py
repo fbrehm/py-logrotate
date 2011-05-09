@@ -213,9 +213,9 @@ def human2bytes(value, si_conform = True, use_locale_radix = False, verbose = 0)
 
     if re.search(r'^\s*(?:b(?:yte)?)?\s*$', prefix, re.IGNORECASE):
         factor = long(1)
-    elif re.search(r'^\s*k[bB](?:[Yy][Tt][Ee])?\s*$', prefix):
+    elif re.search(r'^\s*k(?:[bB](?:[Yy][Tt][Ee])?)?\s*$', prefix):
         factor = factor_si
-    elif re.search(r'^\s*Ki?[bB](?:[Yy][Tt][Ee])?\s*$', prefix):
+    elif re.search(r'^\s*Ki?(?:[bB](?:[Yy][Tt][Ee])?)?\s*$', prefix):
         factor = factor_bin
     elif re.search(r'^\s*M(?:B(?:yte)?)?\s*$', prefix, re.IGNORECASE):
         factor = (factor_si * factor_si)

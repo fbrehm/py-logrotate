@@ -370,9 +370,10 @@ class LogrotateConfigurationReader(object):
         self.default['copy']          = False
         self.default['copytruncate']  = False
         self.default['create']        = {
-            'mode':  None,
-            'owner': None,
-            'group': None,
+            'enabled': False,
+            'mode':    None,
+            'owner':   None,
+            'group':   None,
         }
         self.default['period']        = 7
         self.default['dateext']       = False
@@ -837,6 +838,8 @@ class LogrotateConfigurationReader(object):
                 in_fd = False
                 in_logfile_list = False
 
+                continue
+
             # performing includes
             match = re.search(r'^include(?:\s+(.*))?$', line, re.IGNORECASE)
             if match:
@@ -850,6 +853,7 @@ class LogrotateConfigurationReader(object):
                     )
                     continue
                 self._do_include(line, rest, configfile, linenr)
+                continue
 
             # start of a (regular) script definition
             pattern = r'^(' + '|'.join(script_directives) + r')(\s+.*)?$'
@@ -882,6 +886,7 @@ class LogrotateConfigurationReader(object):
                     self.logger.debug(
                         ( _("New log script name: »%s«.") % (newscript) )
                     )
+                continue
 
             # start of an explicite external script definition
             match = re.search(r'^script(\s+.*)?$', line, re.IGNORECASE)
@@ -912,6 +917,7 @@ class LogrotateConfigurationReader(object):
                     self.logger.debug(
                         ( _("New external script name: »%s«.") % (newscript) )
                     )
+                continue
 
             # all other options
             if not self._option(line, in_fd, configfile, linenr):
@@ -1027,6 +1033,9 @@ class LogrotateConfigurationReader(object):
                             )
                         )
                         return False
+                else:
+                    if val is None or val == '':
+                        val = '1'
                 try:
                     option_value = long(val)
                 except ValueError, e:
@@ -1143,7 +1152,7 @@ class LogrotateConfigurationReader(object):
         if match:
             key = match.group(1).lower()
             if in_fd:
-                self.logger.warning( ( _("Option »%s« not allowd inside a logfile directive.") %(key)))
+                self.logger.warning( ( _("Option »%s« not allowed inside a logfile directive.") %(key)))
                 return False
             if key in options_with_values:
                 if self.verbose > 5:
@@ -1248,6 +1257,80 @@ class LogrotateConfigurationReader(object):
 
             return True
 
+        # Checking for create options ...
+        match = re.search(r'(not?)?create$', option, re.IGNORECASE)
+        if match:
+
+            negated = False
+            if match.group(1) is not None:
+                negated = True
+
+            if self.verbose > 5:
+                self.logger.debug( ( _("Checking for »create« ... (file »%s«, line %s)") % (filename, linenr)))
+
+            if negated:
+                if self.verbose > 4:
+                    self.logger.debug( ( _("Removing »create«. (file »%s«, line %s)") % (filename, linenr))) 
+                directive['create']['enabled'] = False
+                return True
+
+            values = []
+            if val is not None:
+                values = split_parts(val)
+
+            directive['create']['enabled'] = True
+
+            mode  = None
+            owner = None
+            group = None
+
+            # Check for create mode
+            if len(values) > 0:
+                if self.verbose > 5:
+                    self.logger.debug( ( _("Trying to determine create mode »%s« ... (file »%s«, line %s)") % (values[0], filename, linenr)))
+                mode_octal = values[0]
+                if re.search(r'^0', mode_octal) is None:
+                    mode_octal = '0' + mode_octal
+                try:
+                    mode = int(mode_octal, 8)
+                except ValueError:
+                    self.logger.warning( ( _("Invalid create mode »%s«.") %(values[1])))
+                    return False
+
+            # Check for Owner (user, uid)
+            if len(values) > 1:
+                owner_raw = values[1]
+                if self.verbose > 5:
+                    self.logger.debug( ( _("Trying to determine create owner »%s« ... (file »%s«, line %s)") % (owner_raw, filename, linenr)))
+                if re.search(r'^[1-9]\d*$', owner_raw) is not None:
+                    owner = int(owner_raw)
+                else:
+                    try:
+                        owner = pwd.getpwnam(owner_raw)[2]
+                    except KeyError:
+                        self.logger.warning( ( _("Invalid owner »%s« in »create«.") %(owner_raw)))
+                        return False
+
+            # Check for Group (gid)
+            if len(values) > 2:
+                group_raw = values[2]
+                if self.verbose > 5:
+                    self.logger.debug( ( _("Trying to determine create group »%s« ... (file »%s«, line %s)") % (group_raw, filename, linenr)))
+                if re.search(r'^[1-9]\d*$', group_raw) is not None:
+                    group = int(group_raw)
+                else:
+                    try:
+                        group = grp.getgrnam(group_raw)[2]
+                    except KeyError:
+                        self.logger.warning( ( _("Invalid group »%s« in »create«.") %(group_raw)))
+                        return False
+
+            # Give values back ...
+            directive['create']['mode']  = mode
+            directive['create']['owner'] = owner
+            directive['create']['group'] = group
+            return True
+
         # checking for olddir ...
         match = re.search(r'^(not?)?olddir$', option, re.IGNORECASE)
         if match:
@@ -1345,9 +1428,43 @@ class LogrotateConfigurationReader(object):
             if self.verbose > 4:
                 self.logger.debug( ( _("Got a rotation size of %d bytes. (file »%s«, line %s)") % (size_bytes, filename, linenr)))
             directive['size'] = size_bytes
-                
+            return True
 
-        return True
+        # Check for taboo options
+        pattern = r'^taboo(ext|file|prefix)$'
+        match = re.search(pattern, option, re.IGNORECASE)
+        if match:
+            key = match.group(1).lower()
+            if self.verbose > 5:
+                self.logger.debug( ( _("Checking for option »taboo%s«, value: »%s« ... (file »%s«, line %s)") % (key, val, filename, linenr)))
+
+            if in_fd:
+                self.logger.warning( ( _("Option »taboo%s« not allowed inside a logfile directive.") %(key)))
+                return False
+
+            values = []
+            if val is not None:
+                values = split_parts(val)
+
+            extend = False
+            if len(values) > 0 and values[0] is not None and values[0] == '+':
+                extend = True
+                values.pop(0)
+
+            if len(values) < 1:
+                self.logger.warning( ( _("Option »taboo%s« needs a value.") %(key)))
+                return False
+
+            if not extend:
+                self.taboo = []
+            for extension in values:
+                self.add_taboo(extension, key)
+
+            return True
+
+        # Option not found, I'm angry
+        self.logger.warning( ( _("Unknown option »%s«.") %(option)))
+        return False
 
     #------------------------------------------------------------
     def _ext_script_definition(self, line, rest, filename, linenr):
@@ -1727,9 +1844,10 @@ class LogrotateConfigurationReader(object):
         self.new_log['copy']          = self.default['copy']
         self.new_log['copytruncate']  = self.default['copytruncate']
         self.new_log['create']        = {
-            'mode':  self.default['create']['mode'],
-            'owner': self.default['create']['owner'],
-            'group': self.default['create']['group'],
+            'enabled': self.default['create']['enabled'],
+            'mode':    self.default['create']['mode'],
+            'owner':   self.default['create']['owner'],
+            'group':   self.default['create']['group'],
         }
         self.new_log['period']        = self.default['period']
         self.new_log['dateext']       = self.default['dateext']
