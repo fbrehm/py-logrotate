@@ -14,7 +14,7 @@
   #error bla
   weekly
   #period 4.5days 2 hours 3.4y
-  size 1m
+  size 1M
   maxage 0.5y
   mail	test@uhu-banane.de
   #olddir /var/log/apache2/%Y-%m

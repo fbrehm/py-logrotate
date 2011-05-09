@@ -22,7 +22,7 @@ import os.path
 import pwd
 import grp
 
-from LogRotateCommon import split_parts, email_valid, period2days
+from LogRotateCommon import split_parts, email_valid, period2days, human2bytes
 
 revision = '$Revision$'
 revision = re.sub( r'\$', '', revision )
@@ -1327,6 +1327,25 @@ class LogrotateConfigurationReader(object):
             directive['olddir']['group'] = group
             return True
 
+        # Check for minimum size for ratation
+        match = re.search(r'^size(?:(?:\s*=|\s)|$)', line, re.IGNORECASE)
+        if match:
+            size_str = re.sub(r'^size(?:\s*=\s*|\s+)', '', line)
+            if self.verbose > 5:
+                self.logger.debug( ( _("Checking for option »size«, value: »%s« ... (file »%s«, line %s)") % (size_str, filename, linenr)))
+            if size_str is None:
+                self.logger.warning( _("Failing size definition."))
+                return False
+            size_bytes = None
+            try:
+                size_bytes = human2bytes(size_str, verbose = self.verbose)
+            except ValueError, e:
+                self.logger.warning( ( _("Invalid definition for »size«: »%s«.") %(size_str)))
+                return False
+            if self.verbose > 4:
+                self.logger.debug( ( _("Got a rotation size of %d bytes. (file »%s«, line %s)") % (size_bytes, filename, linenr)))
+            directive['size'] = size_bytes
+                
 
         return True
 

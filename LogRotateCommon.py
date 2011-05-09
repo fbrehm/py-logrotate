@@ -213,28 +213,31 @@ def human2bytes(value, si_conform = True, use_locale_radix = False, verbose = 0)
 
     if re.search(r'^\s*(?:b(?:yte)?)?\s*$', prefix, re.IGNORECASE):
         factor = long(1)
-    elif re.search(r'^\s*k[bB](?i:yte)?\s*$', prefix):
+    elif re.search(r'^\s*k[bB](?:[Yy][Tt][Ee])?\s*$', prefix):
         factor = factor_si
-    elif re.search(r'^\s*Ki?[bB](?i:yte)?\s*$', prefix):
+    elif re.search(r'^\s*Ki?[bB](?:[Yy][Tt][Ee])?\s*$', prefix):
         factor = factor_bin
-    elif re.search(r'^\s*MB(?:yte)?\s*$', prefix, re.IGNORECASE):
+    elif re.search(r'^\s*M(?:B(?:yte)?)?\s*$', prefix, re.IGNORECASE):
         factor = (factor_si * factor_si)
     elif re.search(r'^\s*MiB(?:yte)?\s*$', prefix, re.IGNORECASE):
         factor = (factor_bin * factor_bin)
-    elif re.search(r'^\s*GB(?:yte)?\s*$', prefix, re.IGNORECASE):
+    elif re.search(r'^\s*G(?:B(?:yte)?)?\s*$', prefix, re.IGNORECASE):
         factor = (factor_si * factor_si * factor_si)
     elif re.search(r'^\s*GiB(?:yte)?\s*$', prefix, re.IGNORECASE):
         factor = (factor_bin * factor_bin * factor_bin)
-    elif re.search(r'^\s*TB(?:yte)?\s*$', prefix, re.IGNORECASE):
+    elif re.search(r'^\s*T(?:B(?:yte)?)?\s*$', prefix, re.IGNORECASE):
         factor = (factor_si * factor_si * factor_si * factor_si)
     elif re.search(r'^\s*TiB(?:yte)?\s*$', prefix, re.IGNORECASE):
         factor = (factor_bin * factor_bin * factor_bin * factor_bin)
-    elif re.search(r'^\s*PB(?:yte)?\s*$', prefix, re.IGNORECASE):
+    elif re.search(r'^\s*P(?:B(?:yte)?)?\s*$', prefix, re.IGNORECASE):
         factor = (factor_si * factor_si * factor_si * factor_si * factor_si)
     elif re.search(r'^\s*PiB(?:yte)?\s*$', prefix, re.IGNORECASE):
         factor = (factor_bin * factor_bin * factor_bin * factor_bin * factor_bin)
     else:
         raise ValueError("human2bytes(): Couldn't detect prefix »%s«." %(prefix))
+
+    if verbose > 5:
+        sys.stderr.write("human2bytes(): found factor %d\n" % (factor))
 
     return long(factor * value_float)
 
