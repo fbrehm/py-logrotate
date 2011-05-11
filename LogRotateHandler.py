@@ -32,7 +32,7 @@ revision = re.sub( r'\s*$', '', revision )
 __author__    = 'Frank Brehm'
 __copyright__ = '(C) 2011 by Frank Brehm, Berlin'
 __contact__    = 'frank@brehm-online.com'
-__version__    = '0.1.0 ' + revision
+__version__    = '0.3.0 ' + revision
 __license__    = 'GPL3'
 
 

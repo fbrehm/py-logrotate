@@ -1394,7 +1394,6 @@ class LogrotateConfigurationReader(object):
                 self.logger.warning( ( _("Invalid definition for »size«: »%s«.") %(size_str)))
                 return False
             if self.verbose > 4:
-                self.logger.debug( ( _("Got a rotation size of %d bytes. (file »%s«, line %s)") % (size_bytes, filename, linenr)))
                 self.logger.debug(
                     ( _("Got a rotation size in »%(directive)s« of %(bytes)d bytes. (file »%(file)s«, line %(lnr)s)")
                         % {'directive': directive_str, 'bytes': size_bytes, 'file': filename, 'lnr': linenr})
@@ -1408,7 +1407,10 @@ class LogrotateConfigurationReader(object):
         if match:
             key = match.group(1).lower()
             if self.verbose > 5:
-                self.logger.debug( ( _("Checking for option »taboo%s«, value: »%s« ... (file »%s«, line %s)") % (key, val, filename, linenr)))
+                self.logger.debug(
+                    ( _("Checking for option »taboo%(type)s«, value: »%(value)s« ... (file »%(file)s«, line %(lnr)s)")
+                        % {'type': key, 'value': val, 'file': filename, 'lnr': linenr})
+                )
 
             if in_fd:
                 self.logger.warning( ( _("Option »taboo%s« not allowed inside a logfile directive.") %(key)))
@@ -1465,32 +1467,24 @@ class LogrotateConfigurationReader(object):
         # insufficient arguments to include ...
         if len(values) < 1:
             self.logger.warning(
-                ( _("No script name given in a script directive "
-                    + "(file »%s«, line %s)")
-                    % (filename, linenr)
-                )
+                ( _("No script name given in a script directive (file »%(file)s«, line %(lnr)s)")
+                    % {'file': filename, 'lnr': linenr})
             )
             return None
 
         # to much arguments to include ...
         if len(values) > 1:
             self.logger.warning(
-                ( _("Only one script name is allowed "
-                    + "in a script directive, the first one is used. "
-                    + "(file »%s«, line %s)")
-                    % (filename, linenr)
-                )
+                ( _("Only one script name is allowed in a script directive, the first one is used. (file »%(file)s«, line %(lnr)s)")
+                    % {'file': filename, 'lnr': linenr})
             )
 
         script_name = values[0]
 
         if script_name in self.scripts:
             self.logger.warning(
-                ( _("Script name »%s« is allready declared, "
-                    + "it will be overwritten. "
-                    + "(file »%s«, line %s)")
-                    % (script_name, filename, linenr)
-                )
+                ( _("Script name »%(name)s« is allready declared, it will be overwritten. (file »%(file)s«, line %(lnr)s)")
+                    % {'name': script_name, 'file': filename, 'lnr': linenr})
             )
 
         self.scripts[script_name] = {}
@@ -1530,27 +1524,37 @@ class LogrotateConfigurationReader(object):
 
         # insufficient arguments to include ...
         if len(values) < 1:
-            self.logger.warning( ( _("No file or directory given in a include directive (file »%s«, line %s)") % (filename, linenr)))
+            self.logger.warning(
+                ( _("No file or directory given in a include directive (file »%(file)s«, line %(lnr)s)")
+                    % {'file': filename, 'lnr': linenr})
+            )
             return False
 
         # to much arguments to include ...
         if len(values) > 1:
             self.logger.warning(
-                ( _("Only one declaration of a file or directory is allowed in a include directive, the first one is used. (file »%s«, line %s)") % (filename, linenr))
+                ( _("Only one declaration of a file or directory is allowed in a include directive, the first one is used. (file »%(file)s«, line %(lnr)s)")
+                    % {'file': filename, 'lnr': linenr})
             )
 
         include = values[0]
 
         # including object doesn't exists
         if not os.path.exists(include):
-            self.logger.warning( ( _("Including object »%s« doesn't exists. (file »%s«, line %s)") % (include, filename, linenr)))
+            self.logger.warning(
+                ( _("Including object »%(include)s« doesn't exists. (file »%(file)s«, line %(lnr)s)")
+                    % {'include': include, 'file': filename, 'lnr': linenr})
+            )
             return False
 
         include = os.path.abspath(include)
 
         # including object is neither a regular file nor a directory
         if not (os.path.isfile(include) or os.path.isdir(include)):
-            self.logger.warning( ( _("Including object »%s« is neither a regular file  nor a directory. (file »%s«, line %s)") % (include, filename, linenr)))
+            self.logger.warning(
+                ( _("Including object »%(include)s« is neither a regular file  nor a directory. (file »%(file)s«, line %(lnr)s)")
+                    % {'include': include, 'file': filename, 'lnr': linenr})
+            )
             return False
 
         if self.verbose > 1:
@@ -1559,13 +1563,19 @@ class LogrotateConfigurationReader(object):
         # including object is a regular file
         if os.path.isfile(include):
             if include in self.config_files:
-                self.logger.warning( ( _("Recursive including of »%s« (file »%s«, line %s)") % (include, filename, linenr)))
+                self.logger.warning(
+                    ( _("Recursive including of »%(include)s« (file »%(file)s«, line %(lnr)s)")
+                        % {'include': include, 'file': filename, 'lnr': linenr})
+                )
                 return False
             return self._read(include)
 
         # This should never happen ...
         if not os.path.isdir(include):
-            raise Exception( ( _("What the hell is this: »%s«. (file »%s«, line %s)") % (include, filename, linenr)))
+            raise Exception(
+                ( _("What the hell is this: »%(include)s«. (file »%(file)s«, line %(lnr)s)")
+                    % {'include': include, 'file': filename, 'lnr': linenr})
+            )
 
         # including object is a directory - include all files
         if self.verbose > 1:
@@ -1595,7 +1605,10 @@ class LogrotateConfigurationReader(object):
                 match = re.search(pattern, item)
                 if match:
                     if self.verbose > 1:
-                        self.logger.debug( ( _("Item »%s« is matching pattern »%s«, skiping.") % (item, pattern)))
+                        self.logger.debug(
+                            ( _("Item »%(item)s« is matching pattern »%(pattern)s«, skiping.")
+                                % {'item': item, 'pattern': pattern})
+                        )
                     taboo_found = True
                     break
             if taboo_found:
@@ -1603,7 +1616,10 @@ class LogrotateConfigurationReader(object):
 
             # Check, whther it was former included
             if item_path in self.config_files:
-                self.logger.warning( ( _("Recursive including of »%s« (file »%s«, line %s)") % (item_path, filename, linenr)))
+                self.logger.warning(
+                    ( _("Recursive including of »%(include)s« (file »%(file)s«, line %(lnr)s)")
+                        % {'include': item_path, 'file': filename, 'lnr': linenr})
+                )
                 return False
             self._read(item_path)
 
@@ -1633,10 +1649,16 @@ class LogrotateConfigurationReader(object):
         _ = self.t.lgettext
 
         if in_fd:
-            raise LogrotateConfigurationError( ( _("Nested logfile definitions are not allowed (file »%s«, line %s)") % (filename, linenr) ))
+            raise LogrotateConfigurationError(
+                ( _("Nested logfile definitions are not allowed (file »%(file)s«, line %(lnr)s)")
+                    % {'file': filename, 'lnr': linenr})
+            )
 
         if not in_logfile_list:
-            raise LogrotateConfigurationError( ( _("No logfile pattern defined on starting a logfile definition (file »%s«, line %s)") % (filename, linenr) ))
+            raise LogrotateConfigurationError(
+                ( _("No logfile pattern defined on starting a logfile definition (file »%(file)s«, line %(lnr)s)")
+                    % {'file': filename, 'lnr': linenr})
+            )
 
     #------------------------------------------------------------
     def _start_log_script_definition( self, script_type, script_name, line, filename, in_fd, linenr):
@@ -1666,7 +1688,10 @@ class LogrotateConfigurationReader(object):
         _ = self.t.lgettext
 
         if not in_fd:
-            raise LogrotateConfigurationError( ( _("Directive »%s« is not allowed outside of a logfile definition (file »%s«, line %s)") % (script_type, filename, linenr) ))
+            raise LogrotateConfigurationError(
+                ( _("Directive »%(directive)s« is not allowed outside of a logfile definition (file »%(file)s«, line %(lnr)s)")
+                    % {'directive': script_type, 'file': filename, 'lnr': linenr})
+            )
 
         if script_name:
             self.new_log[script_type] = script_name
