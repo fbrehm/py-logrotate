@@ -415,7 +415,7 @@ class LogrotateConfigurationReader(object):
         _ = self.t.lgettext
 
         if not pattern_type in pattern_types:
-            raise Exception( _('Invalid taboo pattern type »%s« given') % (pattern_type) )
+            raise Exception( _("Invalid taboo pattern type '%s' given") % (pattern_type) )
 
         pattern = ( pattern_types[pattern_type] % pattern )
         if self.verbose > 3:
@@ -647,23 +647,23 @@ class LogrotateConfigurationReader(object):
 
         _ = self.t.lgettext
         pp = pprint.PrettyPrinter(indent=4)
-        self.logger.debug( _("Try reading configuration from »%s« ...") % (configfile) )
+        self.logger.debug( _("Try reading configuration from '%s' ...") % (configfile) )
 
         if not os.path.exists(configfile):
-            raise LogrotateConfigurationError( _("File »%s« doesn't exists.") % (configfile))
+            raise LogrotateConfigurationError( _("File '%s' doesn't exists.") % (configfile))
 
         if not os.path.isfile(configfile):
-            raise LogrotateConfigurationError( _("»%s« is not a regular file.") % (configfile))
+            raise LogrotateConfigurationError( _("'%s' is not a regular file.") % (configfile))
 
         self.config_files[configfile] = True
 
-        self.logger.info( _("Reading configuration from »%s« ...") % (configfile) )
+        self.logger.info( _("Reading configuration from '%s' ...") % (configfile) )
 
         cfile = None
         try:
             cfile = open(configfile, 'Ur')
         except IOError, e:
-            raise LogrotateConfigurationError( ( _("Could not read configuration file »%s«") % (configfile) ) + ': ' + str(e))
+            raise LogrotateConfigurationError( ( _("Could not read configuration file '%s'") % (configfile) ) + ': ' + str(e))
         lines = cfile.readlines()
         cfile.close()
 
@@ -708,7 +708,7 @@ class LogrotateConfigurationReader(object):
             if line == '{':
 
                 if self.verbose > 3:
-                    self.logger.debug( ( _("Starting a logfile definition (file »%(file)s«, line %(line)s)") 
+                    self.logger.debug( ( _("Starting a logfile definition (file '%(file)s', line %(line)s)") 
                                         % {'file': configfile, 'line': linenr}))
 
                 self._start_logfile_definition( 
@@ -728,7 +728,7 @@ class LogrotateConfigurationReader(object):
 
                 if in_fd:
                     raise LogrotateConfigurationError(
-                        ( _("Logfile pattern definition not allowed inside a logfile definition (file »%(file)s«, line %(line)s)")
+                        ( _("Logfile pattern definition not allowed inside a logfile definition (file '%(file)s', line %(line)s)")
                             % {'file': configfile, 'line': linenr})
                     )
                 do_start_logfile_definition = False
@@ -745,14 +745,14 @@ class LogrotateConfigurationReader(object):
                 parts = split_parts(line)
                 if self.verbose > 3:
                     self.logger.debug(
-                        ( _("Split into parts of: »%s«") % (line))
+                        ( _("Split into parts of: '%s'") % (line))
                         + ":\n" + pp.pformat(parts)
                     )
 
                 for pattern in parts:
                     if pattern == '{':
                         raise LogrotateConfigurationError(
-                            ( _("Syntax error: open curly bracket inside a logfile pattern definition (file »%(file)s«, line %(line)s)")
+                            ( _("Syntax error: open curly bracket inside a logfile pattern definition (file '%(file)s', line %(line)s)")
                                 % {'file': configfile, 'line': linenr})
                         )
                     self.new_log['file_patterns'].append(pattern)
@@ -776,15 +776,15 @@ class LogrotateConfigurationReader(object):
             if match:
                 if not in_fd:
                     raise LogrotateConfigurationError(
-                        ( _("Syntax error: unbalanced closing curly bracket found (file »%(file)s«, line %(line)s)")
+                        ( _("Syntax error: unbalanced closing curly bracket found (file '%(file)s', line %(line)s)")
                             % {'file': configfile, 'line': linenr})
                     )
                 rest = match.group(1)
                 if self.verbose > 2:
-                    self.logger.debug( ( _("End of a logfile definition (file »%(file)s«, line %(line)s)") % {'file': configfile, 'line': linenr}))
+                    self.logger.debug( ( _("End of a logfile definition (file '%(file)s', line %(line)s)") % {'file': configfile, 'line': linenr}))
                 if rest:
                     self.logger.warning(
-                        ( _("Needless content found at the end of a logfile definition found: »%(rest)s« (file »%(file)s«, line %(line)s)")
+                        ( _("Needless content found at the end of a logfile definition found: '%(rest)s' (file '%(file)s', line %(line)s)")
                             % { 'rest': str(rest), 'file': configfile, 'line': linenr})
                     )
                 if self.verbose > 3:

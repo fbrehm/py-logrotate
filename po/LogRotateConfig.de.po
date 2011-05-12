@@ -31,7 +31,7 @@ msgstr "Setze Vorgabewerte für Direktiven auf hardkodierte Werte zurück"
 
 #: LogRotateConfig.py:418
 #, python-format
-msgid "Invalid taboo pattern type »%s« given"
+msgid "Invalid taboo pattern type '%s' given"
 msgstr "Ungültiger Tabutyp »%s« gegeben"
 
 #: LogRotateConfig.py:422
@@ -58,82 +58,77 @@ msgstr "Shred Befehl gefunden: »%s«"
 msgid "Shred command not found, shred disabled"
 msgstr "Shred Befehl nicht gefunden, shred wird deaktiviert"
 
-#: LogRotateConfig.py:628
+#: LogRotateConfig.py:628 LogRotateConfig.py:653
 #, python-format
 msgid "File '%s' doesn't exists."
 msgstr "Die Datei »%s« existiert nicht."
 
 #: LogRotateConfig.py:650
 #, python-format
-msgid "Try reading configuration from »%s« ..."
+msgid "Try reading configuration from '%s' ..."
 msgstr "Versuche, die Konfiguration aus »%s« zu lesen ..."
-
-#: LogRotateConfig.py:653
-#, python-format
-msgid "File »%s« doesn't exists."
-msgstr "Die Datei »%s« existiert nicht."
 
 #: LogRotateConfig.py:656
 #, python-format
-msgid "»%s« is not a regular file."
+msgid "'%s' is not a regular file."
 msgstr "»%s« ist keine reguläre Datei."
 
 #: LogRotateConfig.py:660
 #, python-format
-msgid "Reading configuration from »%s« ..."
+msgid "Reading configuration from '%s' ..."
 msgstr "Lese Konfiguration aus »%s« ..."
 
 #: LogRotateConfig.py:666
 #, python-format
-msgid "Could not read configuration file »%s«"
+msgid "Could not read configuration file '%s'"
 msgstr "Konnte Konfigurationsdatei »%s« nicht lesen"
 
 #: LogRotateConfig.py:711
 #, python-format
-msgid "Starting a logfile definition (file »%(file)s«, line %(line)s)"
+msgid "Starting a logfile definition (file '%(file)s', line %(line)s)"
 msgstr "Beginne eine Logdateidefinition (Datei »%(file)s«, Zeil %(line)s)"
 
 #: LogRotateConfig.py:731
 #, python-format
 msgid ""
 "Logfile pattern definition not allowed inside a logfile definition (file "
-"»%(file)s«, line %(line)s)"
-msgstr ""
+"'%(file)s', line %(line)s)"
+msgstr "Die Definition eines Logdateimusters ist innerhalb einer Logdateidefinition nicht erlaubt. Datei »%(file)s«, Zeil %(line)s)"
 
 #: LogRotateConfig.py:748
 #, python-format
-msgid "Split into parts of: »%s«"
-msgstr ""
+msgid "Split into parts of: '%s'"
+msgstr "Zerteile: »%s«"
 
 #: LogRotateConfig.py:755
 #, python-format
 msgid ""
 "Syntax error: open curly bracket inside a logfile pattern definition (file "
-"»%(file)s«, line %(line)s)"
-msgstr ""
+"'%(file)s', line %(line)s)"
+msgstr "Syntaxfehler: öffnende geschweifte Klammer innerhalb einer Logdateidefinition (Datei »%(file)s«, Zeile %(line)s)"
 
 #: LogRotateConfig.py:779
 #, python-format
 msgid ""
-"Syntax error: unbalanced closing curly bracket found (file »%(file)s«, line "
+"Syntax error: unbalanced closing curly bracket found (file '%(file)s', line "
 "%(line)s)"
-msgstr ""
+msgstr "Syntaxfehler: unausgeglichene Zahl von öffnenden und schließenden Klammern (Datei »%(file)s«, Zeile %(line)s)"
 
 #: LogRotateConfig.py:784
 #, python-format
-msgid "End of a logfile definition (file »%(file)s«, line %(line)s)"
-msgstr ""
+msgid "End of a logfile definition (file '%(file)s', line %(line)s)"
+msgstr "Ende einer Logdateidefinition (Datei »%(file)s«, Zeil %(line)s)"
 
 #: LogRotateConfig.py:787
 #, python-format
 msgid ""
 "Needless content found at the end of a logfile definition found: "
-"»%(rest)s« (file »%(file)s«, line %(line)s)"
-msgstr ""
+"'%(rest)s' (file '%(file)s', line %(line)s)"
+msgstr "Nutzloser Inhalt am Ende einer Logdateidefinition gefunden: »%(rest)s« (Datei »%(file)s«, Zeil %(line)s)"
 
 #: LogRotateConfig.py:791
 msgid "New logfile definition:"
-msgstr ""
+msgstr "Neue Logdateidefinition:"
 
 #: LogRotateConfig.py:804
 #, python-format
