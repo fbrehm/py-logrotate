@@ -415,7 +415,7 @@ class LogrotateConfigurationReader(object):
         _ = self.t.lgettext
 
         if not pattern_type in pattern_types:
-            raise Exception( _('Invalid pattern type "%s" given') % (pattern_type) )
+            raise Exception( _('Invalid taboo pattern type »%s« given') % (pattern_type) )
 
         pattern = ( pattern_types[pattern_type] % pattern )
         if self.verbose > 3:
@@ -891,7 +891,7 @@ class LogrotateConfigurationReader(object):
         _ = self.t.lgettext
         if self.verbose > 4:
             self.logger.debug(
-                ( _("Checking line »%(line)s« for a logrotate option. (file »%(file)s«, line %(lnr)s)")
+                ( _("Checking line '%(line)s' for a logrotate option. (file '%(file)s', line %(lnr)s)")
                     % {'line': line, 'file': filename, 'lnr': linenr})
             )
 

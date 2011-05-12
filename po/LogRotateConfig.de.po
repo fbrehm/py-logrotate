@@ -1,96 +1,97 @@
-# SOME DESCRIPTIVE TITLE.
-# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
-# This file is distributed under the same license as the PACKAGE package.
+# German translations for pylogrotate package
+# German messages for pylogrotate.
+# Copyright (C) 2011 Frank Brehm <frank@brehm-online.com>
+# This file is distributed under the same license as the pylogrotate package.
 # Frank Brehm <frank@brehm-online.com>, 2011.
 #
-# $Id$
-# $URL$
+# $Id: LogRotateConfig.pot 235 2011-05-11 10:14:32Z frank $
+# $URL: http://svn.brehm-online.com/svn/my-stuff/python/PyLogrotate/trunk/po/LogRotateConfig.pot $
 #
-#, fuzzy
 msgid ""
 msgstr ""
 "Project-Id-Version: pylogrotate 0.3\n"
-"Report-Msgid-Bugs-To: \n"
+"Report-Msgid-Bugs-To: Frank Brehm <frank@brehm-online.com>\n"
 "POT-Creation-Date: 2011-05-11 12:03+0200\n"
-"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
-"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
-"Language-Team: LANGUAGE <LL@li.org>\n"
-"Language: \n"
+"PO-Revision-Date: 2011-05-12 07:00+0200\n"
+"Last-Translator: Frank Brehm <frank@brehm-online.com>\n"
+"Language-Team: German\n"
+"Language: de\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
 #: LogRotateConfig.py:322
 msgid "Logrotate config reader initialised"
-msgstr ""
+msgstr "Logrotate-Konfigurationsleser initialisiert"
 
 #: LogRotateConfig.py:360
 msgid "Resetting default values for directives to hard coded values"
-msgstr ""
+msgstr "Setze Vorgabewerte für Direktiven auf hardkodierte Werte zurück"
 
 #: LogRotateConfig.py:418
 #, python-format
 msgid "Invalid taboo pattern type »%s« given"
-msgstr ""
+msgstr "Ungültiger Tabutyp »%s« gegeben"
 
 #: LogRotateConfig.py:422
 #, python-format
-msgid "New taboo pattern: »%s«."
-msgstr ""
+msgid "New taboo pattern: '%s'."
+msgstr "Neues Tabu-Muster: »%s«."
 
 #: LogRotateConfig.py:451 LogRotateConfig.py:463 LogRotateConfig.py:473
 #, python-format
 msgid "'%s' is not a directory"
-msgstr ""
+msgstr "»%s« ist kein Verzeichnis"
 
 #: LogRotateConfig.py:522 LogRotateConfig.py:578
 #, python-format
 msgid "Search path '%s' doesn't exists or is not a directory"
-msgstr ""
+msgstr "Der Suchpfad »%s« existiert entweder nicht oder ist kein Verzeichnis"
 
 #: LogRotateConfig.py:525
 #, python-format
 msgid "Shred command found: '%s'"
-msgstr ""
+msgstr "Shred Befehl gefunden: »%s«"
 
 #: LogRotateConfig.py:529
 msgid "Shred command not found, shred disabled"
-msgstr ""
+msgstr "Shred Befehl nicht gefunden, shred wird deaktiviert"
 
 #: LogRotateConfig.py:628
 #, python-format
 msgid "File '%s' doesn't exists."
-msgstr ""
+msgstr "Die Datei »%s« existiert nicht."
 
 #: LogRotateConfig.py:650
 #, python-format
 msgid "Try reading configuration from »%s« ..."
-msgstr ""
+msgstr "Versuche, die Konfiguration aus »%s« zu lesen ..."
 
 #: LogRotateConfig.py:653
 #, python-format
 msgid "File »%s« doesn't exists."
-msgstr ""
+msgstr "Die Datei »%s« existiert nicht."
 
 #: LogRotateConfig.py:656
 #, python-format
 msgid "»%s« is not a regular file."
-msgstr ""
+msgstr "»%s« ist keine reguläre Datei."
 
 #: LogRotateConfig.py:660
 #, python-format
 msgid "Reading configuration from »%s« ..."
-msgstr ""
+msgstr "Lese Konfiguration aus »%s« ..."
 
 #: LogRotateConfig.py:666
 #, python-format
 msgid "Could not read configuration file »%s«"
-msgstr ""
+msgstr "Konnte Konfigurationsdatei »%s« nicht lesen"
 
 #: LogRotateConfig.py:711
 #, python-format
 msgid "Starting a logfile definition (file »%(file)s«, line %(line)s)"
-msgstr ""
+msgstr "Beginne eine Logdateidefinition (Datei »%(file)s«, Zeil %(line)s)"
 
 #: LogRotateConfig.py:731
 #, python-format
@@ -179,9 +180,9 @@ msgstr ""
 #: LogRotateConfig.py:894
 #, python-format
 msgid ""
-"Checking line »%(line)s« for a logrotate option. (file »%(file)s«, line "
+"Checking line '%(line)s' for a logrotate option. (file '%(file)s', line "
 "%(lnr)s)"
-msgstr ""
+msgstr "Überprüfe Zeile »%(line)s« nach einer Logrotate-Option. (Datei »%(file)s«, Zeile %(lnr)s)"
 
 #: LogRotateConfig.py:913
 #, python-format

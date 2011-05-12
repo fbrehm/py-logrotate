@@ -5,7 +5,7 @@
 # $URL$
 #
 
-all: pylogrotate.de.mo LogRotateGetopts.de.mo
+all: pylogrotate.de.mo LogRotateGetopts.de.mo LogRotateConfig.de.mo
 
 pylogrotate.de.mo: pylogrotate.de.po
 	@echo
@@ -20,4 +20,11 @@ LogRotateGetopts.de.mo: LogRotateGetopts.de.po
 	msgfmt -o LogRotateGetopts.de.mo --check -v LogRotateGetopts.de.po
 	@if [ ! -d de_DE/LC_MESSAGES ] ; then mkdir -vp de_DE/LC_MESSAGES; fi
 	@cp -pv LogRotateGetopts.de.mo de_DE/LC_MESSAGES/LogRotateGetopts.mo
+
+LogRotateConfig.de.mo: LogRotateConfig.de.po
+	@echo
+	@echo "Compiling $@ ..."
+	msgfmt -o LogRotateConfig.de.mo --check -v LogRotateConfig.de.po
+	@if [ ! -d de_DE/LC_MESSAGES ] ; then mkdir -vp de_DE/LC_MESSAGES; fi
+	@cp -pv LogRotateConfig.de.mo de_DE/LC_MESSAGES/LogRotateConfig.mo
 
