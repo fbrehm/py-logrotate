@@ -801,7 +801,7 @@ class LogrotateConfigurationReader(object):
                 rest = match.group(1)
                 if in_fd or in_logfile_list:
                     self.logger.warning(
-                        ( _("Syntax error: include may not appear inside of log file definition (file »%(file)s«, line %(line)s)")
+                        ( _("Syntax error: include may not appear inside of log file definition (file '%(file)s', line %(line)s)")
                             % {'file': configfile, 'line': linenr})
                     )
                     continue
@@ -820,7 +820,7 @@ class LogrotateConfigurationReader(object):
                         script_name = values[0]
                 if self.verbose > 3:
                     self.logger.debug(
-                        ( _("Found start of a regular script definition: type: »%(type)s«, name: »%(name)s« (file »%(file)s«, line %(line)s)")
+                        ( _("Found start of a regular script definition: type: '%(type)s', name: '%(name)s' (file '%(file)s', line %(line)s)")
                             % {'type': script_type, 'name': script_name, 'file': configfile, 'line': linenr})
                     )
                 newscript = self._start_log_script_definition(
@@ -834,20 +834,20 @@ class LogrotateConfigurationReader(object):
                 if newscript:
                     in_script = True
                 if self.verbose > 3:
-                    self.logger.debug( ( _("New log script name: »%s«.") % (newscript) ))
+                    self.logger.debug( ( _("New log script name: '%s'.") % (newscript) ))
                 continue
 
             # start of an explicite external script definition
             match = re.search(r'^script(\s+.*)?$', line, re.IGNORECASE)
             if match:
                 if self.verbose > 3:
-                    self.logger.debug( ( _("Found start of a external script definition. (file »%(file)s«, line %(line)s)")
+                    self.logger.debug( ( _("Found start of a external script definition. (file '%(file)s', line %(line)s)")
                                         % {'file': configfile, 'line': linenr})
                     )
                 rest = match.group(1)
                 if in_fd or in_logfile_list:
                     self.logger.warning(
-                        ( _("Syntax error: external script definition may not appear inside of a log file definition (file »%(file)s«, line %(line)s)")
+                        ( _("Syntax error: external script definition may not appear inside of a log file definition (file '%(file)s', line %(line)s)")
                             % {'file': configfile, 'line': linenr})
                     )
                     continue
@@ -857,12 +857,12 @@ class LogrotateConfigurationReader(object):
                 if newscript:
                     in_script = True
                 if self.verbose > 3:
-                    self.logger.debug( ( _("New external script name: »%s«.") % (newscript) ))
+                    self.logger.debug( ( _("New external script name: '%s'.") % (newscript) ))
                 continue
 
             # all other options
             if not self._option(line, in_fd, configfile, linenr):
-                self.logger.warning( ( _("Syntax error in file »%(file)s«, line %(line)s")
+                self.logger.warning( ( _("Syntax error in file '%(file)s', line %(line)s")
                     % {'file': configfile, 'line': linenr})
                 )
 
@@ -910,7 +910,7 @@ class LogrotateConfigurationReader(object):
             option = match.group(1).lower()
             val    = match.group(2)
         else:
-            self.logger.warning( ( _("Could not detect option in line »%s«.") % (line)))
+            self.logger.warning( ( _("Could not detect option in line '%s'.") % (line)))
             return False
 
         # Check for unsupported options
@@ -918,7 +918,7 @@ class LogrotateConfigurationReader(object):
         match = re.search(pattern, option, re.IGNORECASE)
         if match:
             self.logger.info(
-                ( _("Unsupported option »%(option)s«. (file »%(file)s«, line %(lnr)s)")
+                ( _("Unsupported option '%(option)s'. (file '%(file)s', line %(lnr)s)")
                     % {'option': match.group(1).lower(), 'file': filename, 'lnr': linenr})
             )
             return True
@@ -931,7 +931,7 @@ class LogrotateConfigurationReader(object):
             key     = match.group(2).lower()
             if val:
                 self.logger.warning(
-                    ( _("Found value »%(value)s« behind the boolean option »%(option)s«, ignoring. (file »%(file)s«, line %(lnr)s)")
+                    ( _("Found value '%(value)s' behind the boolean option '%(option)s', ignoring. (file '%(file)s', line %(lnr)s)")
                         % {'value': val, 'option': option, 'file': filename, 'lnr': linenr})
                 )
             if negated is None:
@@ -940,7 +940,7 @@ class LogrotateConfigurationReader(object):
                 option_value = False
             if self.verbose > 4:
                 self.logger.debug(
-                    ( _("Setting boolean option »%(option)s« in »%(directive)s« to »%(value)s«. (file »%(file)s«, line %(lnr)s)")
+                    ( _("Setting boolean option '%(option)s' in '%(directive)s' to '%(value)s'. (file '%(file)s', line %(lnr)s)")
                         % {'option': key, 'directive': directive_str, 'value': str(option_value), 'file': filename, 'lnr': linenr})
                 )
             directive[key] = option_value
@@ -956,7 +956,7 @@ class LogrotateConfigurationReader(object):
             if negated is None:
                 if key in options_with_values:
                     if val is None or val == '':
-                        self.logger.warning( ( _("Option »%s« without a necessary value.") % (key)))
+                        self.logger.warning( ( _("Option '%s' without a necessary value.") % (key)))
                         return False
                 else:
                     if val is None or val == '':
@@ -965,13 +965,13 @@ class LogrotateConfigurationReader(object):
                     option_value = long(val)
                 except ValueError, e:
                     self.logger.warning(
-                        ( _("Option »%(option)s« has no integer value: %(msg)s.")
+                        ( _("Option '%(option)s' has no integer value: %(msg)s.")
                             % {'option': key, 'msg': str(e)})
                     )
                     return False
             if option_value < 0:
                 self.logger.warning(
-                    ( _("Negative value %(value)s for option »%(option)s« is not allowed.")
+                    ( _("Negative value %(value)s for option '%(option)s' is not allowed.")
                         % {'value': str(option_value), 'option': key})
                 )
                 return False

@@ -117,14 +117,14 @@ msgstr "Syntaxfehler: unausgeglichene Zahl von öffnenden und schließenden Klam
 #: LogRotateConfig.py:784
 #, python-format
 msgid "End of a logfile definition (file '%(file)s', line %(line)s)"
-msgstr "Ende einer Logdateidefinition (Datei »%(file)s«, Zeil %(line)s)"
+msgstr "Ende einer Logdateidefinition (Datei »%(file)s«, Zeile %(line)s)"
 
 #: LogRotateConfig.py:787
 #, python-format
 msgid ""
 "Needless content found at the end of a logfile definition found: "
 "'%(rest)s' (file '%(file)s', line %(line)s)"
-msgstr "Nutzloser Inhalt am Ende einer Logdateidefinition gefunden: »%(rest)s« (Datei »%(file)s«, Zeil %(line)s)"
+msgstr "Nutzloser Inhalt am Ende einer Logdateidefinition gefunden: »%(rest)s« (Datei »%(file)s«, Zeile %(line)s)"
 
 #: LogRotateConfig.py:791
 msgid "New logfile definition:"
@@ -134,43 +134,43 @@ msgstr "Neue Logdateidefinition:"
 #, python-format
 msgid ""
 "Syntax error: include may not appear inside of log file definition (file "
-"»%(file)s«, line %(line)s)"
-msgstr ""
+"'%(file)s', line %(line)s)"
+msgstr "Syntaxfehler: Eine include-Anweisung darf nicht einer Logdateidefinition auftreten Datei »%(file)s«, Zeile %(line)s)"
 
 #: LogRotateConfig.py:823
 #, python-format
 msgid ""
-"Found start of a regular script definition: type: »%(type)s«, name: "
-"»%(name)s« (file »%(file)s«, line %(line)s)"
-msgstr ""
+"Found start of a regular script definition: type: '%(type)s', name: "
+"'%(name)s' (file '%(file)s', line %(line)s)"
+msgstr "Beginn einer regulären Scriptdefinition gefunden: »%(type)s«, Name: »%(name)s« (Datei »%(file)s«, Zeile %(line)s)"
 
 #: LogRotateConfig.py:837
 #, python-format
-msgid "New log script name: »%s«."
-msgstr ""
+msgid "New log script name: '%s'."
+msgstr "Neuer Scriptname: »%s«"
 
 #: LogRotateConfig.py:844
 #, python-format
 msgid ""
-"Found start of a external script definition. (file »%(file)s«, line %(line)s)"
-msgstr ""
+"Found start of a external script definition. (file '%(file)s', line %(line)s)"
+msgstr "Beginn einer externen Scriptdefinition gefunden. (Datei »%(file)s«, Zeile %(line)s)"
 
 #: LogRotateConfig.py:850
 #, python-format
 msgid ""
 "Syntax error: external script definition may not appear inside of a log file "
-"definition (file »%(file)s«, line %(line)s)"
-msgstr ""
+"definition (file '%(file)s', line %(line)s)"
+msgstr "Syntaxfehler: eine externe Scriptdefinition darf nicht innerhalb einer Logdateidefinition auftreten (Datei »%(file)s«, Zeile %(line)s)"
 
 #: LogRotateConfig.py:860
 #, python-format
-msgid "New external script name: »%s«."
-msgstr ""
+msgid "New external script name: '%s'."
+msgstr "Neuer externer Scriptname: »%s«"
 
 #: LogRotateConfig.py:865
 #, python-format
-msgid "Syntax error in file »%(file)s«, line %(line)s"
-msgstr ""
+msgid "Syntax error in file '%(file)s', line %(line)s"
+msgstr "Syntaxfehler in Datei Datei »%(file)s«, Zeile %(line)s"
 
 #: LogRotateConfig.py:894
 #, python-format
@@ -181,42 +181,42 @@ msgstr "Überprüfe Zeile »%(line)s« nach einer Logrotate-Option. (Datei »%(f
 
 #: LogRotateConfig.py:913
 #, python-format
-msgid "Could not detect option in line »%s«."
-msgstr ""
+msgid "Could not detect option in line '%s'."
+msgstr "Konnte keine Option in Zeile »%s« ermitteln."
 
 #: LogRotateConfig.py:921
 #, python-format
-msgid "Unsupported option »%(option)s«. (file »%(file)s«, line %(lnr)s)"
-msgstr ""
+msgid "Unsupported option '%(option)s'. (file '%(file)s', line %(lnr)s)"
+msgstr "Nicht unterstützte Option »%(option)s«. (Datei »%(file)s«, Zeile %(lnr)s)"
 
 #: LogRotateConfig.py:934
 #, python-format
 msgid ""
-"Found value »%(value)s« behind the boolean option »%(option)s«, ignoring. "
-"(file »%(file)s«, line %(lnr)s)"
-msgstr ""
+"Found value '%(value)s' behind the boolean option '%(option)s', ignoring. "
+"(file '%(file)s', line %(lnr)s)"
+msgstr "Wert »%(value)s« nach boolscher Option »%(option)s« gefunden, wird ignoriert. (Datei »%(file)s«, Zeile %(lnr)s)"
 
 #: LogRotateConfig.py:943
 #, python-format
 msgid ""
-"Setting boolean option »%(option)s« in »%(directive)s« to »%(value)s«. (file "
-"»%(file)s«, line %(lnr)s)"
-msgstr ""
+"Setting boolean option '%(option)s' in '%(directive)s' to '%(value)s'. (file "
+"'%(file)s', line %(lnr)s)"
+msgstr "Setze boolsche Option »%(option)s« in »%(directive)s« auf »%(value)s«. (Datei »%(file)s«, Zeile %(lnr)s)"
 
 #: LogRotateConfig.py:959
 #, python-format
-msgid "Option »%s« without a necessary value."
-msgstr ""
+msgid "Option '%s' without a necessary value."
+msgstr "Der Option »%s« wurde kein Wert zugewiesen."
 
 #: LogRotateConfig.py:968
 #, python-format
-msgid "Option »%(option)s« has no integer value: %(msg)s."
-msgstr ""
+msgid "Option '%(option)s' has no integer value: %(msg)s."
+msgstr "Der Option »%(option)s« wurde kein Integerwert zugewiesen: %(msg)s."
 
 #: LogRotateConfig.py:974
 #, python-format
-msgid "Negative value %(value)s for option »%(option)s« is not allowed."
-msgstr ""
+msgid "Negative value %(value)s for option '%(option)s' is not allowed."
+msgstr "Der negative Wert %(value)s für die Option »%(option)s« ist nicht erlaubt."
 
 #: LogRotateConfig.py:980
 #, python-format
