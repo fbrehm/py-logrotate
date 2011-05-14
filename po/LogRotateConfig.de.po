@@ -221,91 +221,91 @@ msgstr "Der negative Wert %(value)s für die Option »%(option)s« ist nicht erl
 #: LogRotateConfig.py:980
 #, python-format
 msgid ""
-"Setting integer option »%(option)s« in »%(directive)s« to »%(value)s«. (file "
-"»%(file)s«, line %(lnr)s)"
-msgstr ""
+"Setting integer option '%(option)s' in '%(directive)s' to '%(value)s'. (file "
+"'%(file)s', line %(lnr)s)"
+msgstr "Setze die Integer-Option '%(option)s' in '%(directive)s' auf '%(value)s'. (Datei »%(file)s«, Zeile %(lnr)s)"
 
 #: LogRotateConfig.py:994 LogRotateConfig.py:1026
 #, python-format
-msgid "Senseless option value »%(value)s« after »%(option)s«."
-msgstr ""
+msgid "Senseless option value '%(value)s' after '%(option)s'."
+msgstr "Sinnloser Optionswert »%(value)s« nach »%(option)s«."
 
 #: LogRotateConfig.py:1001
 #, python-format
-msgid "Invalid Mail address »%s«."
-msgstr ""
+msgid "Invalid Mail address '%s'."
+msgstr "Ungültige E-Mail-Adresse »%s«."
 
 #: LogRotateConfig.py:1006
 #, python-format
 msgid ""
-"Setting mail address in »%(directive)s« to »%(addr)s«. (file »%(file)s«, "
+"Setting mail address in '%(directive)s' to '%(addr)s'. (file '%(file)s', "
 "line %(lnr)s)"
-msgstr ""
+msgstr "Setze Mailadresse in »%(directive)s« auf »%(addr)s«. (Datei »%(file)s«, Zeile %(lnr)s)"
 
 #: LogRotateConfig.py:1021
 #, python-format
 msgid ""
-"Setting mailfirst in »%(directive)s« to »%(value)s«. (file »%(file)s«, line "
+"Setting mailfirst in '%(directive)s' to '%(value)s'. (file '%(file)s', line "
 "%(lnr)s)"
-msgstr ""
+msgstr "Setze mailfirst in »%(directive)s« auf »%(value)s«. (Datei »%(file)s«, Zeile %(lnr)s)"
 
 #: LogRotateConfig.py:1039 LogRotateConfig.py:1064
 #, python-format
-msgid "Option »%s« must have a value."
-msgstr ""
+msgid "Option '%s' must have a value."
+msgstr "Die Option »%s« muss einen Wert haben."
 
 #: LogRotateConfig.py:1041 LogRotateConfig.py:1066
 #, python-format
-msgid "Option »%s« without a value"
-msgstr ""
+msgid "Option '%s' without a value"
+msgstr "Die Option »%s« hat keinen Optionswert."
 
 #: LogRotateConfig.py:1046
 #, python-format
-msgid "Compress command »%s« not found."
-msgstr ""
+msgid "Compress command '%s' not found."
+msgstr "Das Komprimierungskommando »%s« wurde nicht gefunden."
 
 #: LogRotateConfig.py:1060
 #, python-format
-msgid "Option »%s« not allowed inside a logfile directive."
-msgstr ""
+msgid "Option '%s' not allowed inside a logfile directive."
+msgstr "Die Option »%s« ist innerhalb einer Logdateidefinition nicht erlaubt."
 
 #: LogRotateConfig.py:1071
 #, python-format
-msgid "Value »%(value)s« for option »%(option)s« is not an absolute path."
-msgstr ""
+msgid "Value '%(value)s' for option '%(option)s' is not an absolute path."
+msgstr "Der Wert »%(value)s« für die Option »%(option)s« ist keine absolute Pfadangabe."
 
 #: LogRotateConfig.py:1077
 #, python-format
 msgid ""
-"Setting %(option)s in »%(directive)s« to »%(value)s«. (file »%(file)s«, line "
+"Setting '%(option)s' in '%(directive)s' to '%(value)s'. (file '%(file)s', line "
 "%(lnr)s)"
-msgstr ""
+msgstr "Setze »%(option)s« in »%(directive)s« auf »%(value)s«. (Datei »%(file)s«, Zeile %(lnr)s)"
 
 #: LogRotateConfig.py:1090
 #, python-format
 msgid ""
-"Checking »period«: key »%(key)s«, value »%(value)s«. (file »%(file)s«, line "
+"Checking 'period': key '%(key)s', value '%(value)s'. (file '%(file)s', line "
 "%(lnr)s)"
-msgstr ""
+msgstr "Überprüfe »period«: Schlüssel »%(key)s«, Wert »%(value)s«. (Datei »%(file)s«, Zeile %(lnr)s)"
 
 #: LogRotateConfig.py:1097
 #, python-format
 msgid ""
-"Option »%(option)s« may not have a value (»%(value)s«). (file »%(file)s«, "
+"Option '%(option)s' may not have a value ('%(value)s'). (file '%(file)s', "
 "line %(lnr)s)"
-msgstr ""
+msgstr "Die Option »%(option)s« darf keinen Wert aufweisen (»%(value)s«). (Datei »%(file)s«, Zeile %(lnr)s)"
 
 #: LogRotateConfig.py:1105
 #, python-format
-msgid "Invalid period definition: »%s«"
-msgstr ""
+msgid "Invalid period definition: '%s'"
+msgstr "Ungültige Angabe einer Rotationsperiode: »%s«"
 
 #: LogRotateConfig.py:1109
 #, python-format
 msgid ""
-"Setting »period« in »%(directive)s« to %(days)f days. (file »%(file)s«, line "
+"Setting 'period' in '%(directive)s' to %(days)f days. (file '%(file)s', line "
 "%(lnr)s)"
-msgstr ""
+msgstr "Setze Rotationsperiode in »%(directive)s« auf %(days)f Tage. (Datei »%(file)s«, Zeile %(lnr)s)"
 
 #: LogRotateConfig.py:1128
 #, python-format

@@ -977,7 +977,7 @@ class LogrotateConfigurationReader(object):
                 return False
             if self.verbose > 4:
                 self.logger.debug(
-                    ( _("Setting integer option »%(option)s« in »%(directive)s« to »%(value)s«. (file »%(file)s«, line %(lnr)s)")
+                    ( _("Setting integer option '%(option)s' in '%(directive)s' to '%(value)s'. (file '%(file)s', line %(lnr)s)")
                         % {'option': key, 'directive': directive_str, 'value': str(option_value), 'file': filename, 'lnr': linenr})
                 )
             directive[key] = option_value
@@ -991,19 +991,19 @@ class LogrotateConfigurationReader(object):
                 directive['mailaddress'] = None
                 if val is not None and val != '':
                     self.logger.warning(
-                        ( _("Senseless option value »%(value)s« after »%(option)s«.")
+                        ( _("Senseless option value '%(value)s' after '%(option)s'.")
                             % {'value': val, 'option': option.lower()})
                     )
                     return False
                 return True
             if not email_valid(val):
                 directive['mailaddress'] = None
-                self.logger.warning( ( _("Invalid Mail address »%s«.") % (val)))
+                self.logger.warning( ( _("Invalid Mail address '%s'.") % (val)))
                 return False
             directive['mailaddress'] = val
             if self.verbose > 4:
                 self.logger.debug(
-                    ( _("Setting mail address in »%(directive)s« to »%(addr)s«. (file »%(file)s«, line %(lnr)s)")
+                    ( _("Setting mail address in '%(directive)s' to '%(addr)s'. (file '%(file)s', line %(lnr)s)")
                         % {'directive': directive_str, 'addr': val, 'file': filename, 'lnr': linenr})
                 )
             return True
@@ -1018,12 +1018,12 @@ class LogrotateConfigurationReader(object):
             directive['mailfirst'] = option_value
             if self.verbose > 4:
                 self.logger.debug(
-                    ( _("Setting mailfirst in »%(directive)s« to »%(value)s«. (file »%(file)s«, line %(lnr)s)")
+                    ( _("Setting mailfirst in '%(directive)s' to '%(value)s'. (file '%(file)s', line %(lnr)s)")
                         % {'directive': directive_str, 'value': str(option_value), 'file': filename, 'lnr': linenr})
                 )
             if val is not None and val != '':
                 self.logger.warning(
-                    ( _("Senseless option value »%(value)s« after »%(option)s«.")
+                    ( _("Senseless option value »%(value)s« after '%(option)s'.")
                         % {'value': val, 'option': option.lower()})
                 )
                 return False
@@ -1036,14 +1036,14 @@ class LogrotateConfigurationReader(object):
             key = match.group(1).lower()
             if key in options_with_values:
                 if self.verbose > 5:
-                    self.logger.debug( ( _("Option »%s« must have a value.") %(key)))
+                    self.logger.debug( ( _("Option '%s' must have a value.") %(key)))
                 if (val is None) or (re.search(r'^\s*$', val) is None):
-                    self.logger.warning( ( _("Option »%s« without a value") %(key)))
+                    self.logger.warning( ( _("Option '%s' without a value") %(key)))
                     return False
             if key == 'compresscmd':
                 prog = self.check_compress_command(val)
                 if prog is None:
-                    self.logger.warning( ( _("Compress command »%s« not found.") %(val)))
+                    self.logger.warning( ( _("Compress command '%s' not found.") %(val)))
                     return False
                 val = prog
             if key == 'compressoptions' and val is None:
@@ -1057,24 +1057,24 @@ class LogrotateConfigurationReader(object):
         if match:
             key = match.group(1).lower()
             if in_fd:
-                self.logger.warning( ( _("Option »%s« not allowed inside a logfile directive.") %(key)))
+                self.logger.warning( ( _("Option '%s' not allowed inside a logfile directive.") %(key)))
                 return False
             if key in options_with_values:
                 if self.verbose > 5:
-                    self.logger.debug( ( _("Option »%s« must have a value.") %(key)))
+                    self.logger.debug( ( _("Option '%s' must have a value.") %(key)))
                 if (val is None) or (re.search(r'^\s*$', val) is not None):
-                    self.logger.warning( ( _("Option »%s« without a value") %(key)))
+                    self.logger.warning( ( _("Option '%s' without a value") %(key)))
                     return False
             if key in path_options:
                 if not os.path.abspath(val):
                     self.logger.warning(
-                        ( _("Value »%(value)s« for option »%(option)s« is not an absolute path.")
+                        ( _("Value '%(value)s' for option '%(option)s' is not an absolute path.")
                             % {'value': val, 'option': key} )
                     )
                     return False
             if self.verbose > 4:
                 self.logger.debug(
-                    ( _("Setting %(option)s in »%(directive)s« to »%(value)s«. (file »%(file)s«, line %(lnr)s)")
+                    ( _("Setting '%(option)s' in '%(directive)s' to '%(value)s'. (file '%(file)s', line %(lnr)s)")
                         % {'option': key, 'directive': directive_str, 'value': str(val), 'file': filename, 'lnr': linenr})
                 )
             directive[key] = val
@@ -1087,14 +1087,14 @@ class LogrotateConfigurationReader(object):
             key = match.group(1).lower()
             if self.verbose > 4:
                 self.logger.debug(
-                    ( _("Checking »period«: key »%(key)s«, value »%(value)s«. (file »%(file)s«, line %(lnr)s)")
+                    ( _("Checking 'period': key '%(key)s', value '%(value)s'. (file '%(file)s', line %(lnr)s)")
                         % {'key': key, 'value': str(val), 'file': filename, 'lnr': linenr})
                 )
             option_value = 1
             if key in valid_periods:
                 if (val is not None) and (re.search(r'^\s*$', val) is None):
                     self.logger.warning(
-                        ( _("Option »%(option)s« may not have a value (»%(value)s«). (file »%(file)s«, line %(lnr)s)")
+                        ( _("Option '%(option)s' may not have a value ('%(value)s'). (file '%(file)s', line %(lnr)s)")
                             % {'option': key, 'value': val, 'file': filename, 'lnr': linenr})
                     )
                 option_value = valid_periods[key]
@@ -1102,11 +1102,11 @@ class LogrotateConfigurationReader(object):
                 try:
                     option_value = period2days(val, verbose = self.verbose)
                 except ValueError, e:
-                    self.logger.warning( ( _("Invalid period definition: »%s«") %(val) ))
+                    self.logger.warning( ( _("Invalid period definition: '%s'") %(val) ))
                     return False
             if self.verbose > 4:
                 self.logger.debug(
-                    ( _("Setting »period« in »%(directive)s« to %(days)f days. (file »%(file)s«, line %(lnr)s)")
+                    ( _("Setting 'period' in '%(directive)s' to %(days)f days. (file '%(file)s', line %(lnr)s)")
                         % {'directive': directive_str, 'days': option_value, 'file': filename, 'lnr': linenr})
                 )
             directive['period'] = option_value
