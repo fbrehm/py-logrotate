@@ -1023,7 +1023,7 @@ class LogrotateConfigurationReader(object):
                 )
             if val is not None and val != '':
                 self.logger.warning(
-                    ( _("Senseless option value »%(value)s« after '%(option)s'.")
+                    ( _("Senseless option value '%(value)s' after '%(option)s'.")
                         % {'value': val, 'option': option.lower()})
                 )
                 return False
@@ -1291,14 +1291,14 @@ class LogrotateConfigurationReader(object):
 
             if self.verbose > 5:
                 self.logger.debug(
-                    ( _("Checking for »olddir« ... (file »%(file)s«, line %(lnr)s)")
+                    ( _("Checking for 'olddir' ... (file '%(file)s', line %(lnr)s)")
                         % {'file': filename, 'lnr': linenr})
                 )
 
             if negated:
                 if self.verbose > 4:
                     self.logger.debug(
-                        ( _("Removing »olddir«. (file »%(file)s«, line %(lnr)s)")
+                        ( _("Removing 'olddir'. (file '%(file)s', line %(lnr)s)")
                             % {'file': filename, 'lnr': linenr})
                     )
                 directive['olddir']['enabled'] = False
@@ -1310,7 +1310,7 @@ class LogrotateConfigurationReader(object):
 
             # Check for dirname of olddir
             if len(values) < 1 or values[0] is None or re.search(r'^\s*$', values[0]) is not None:
-                self.logger.warning( ( _("Option »olddir« without a value given.")))
+                self.logger.warning( ( _("Option 'olddir' without a value given.")))
                 return False
             directive['olddir']['dirname'] = values[0]
             directive['olddir']['enabled'] = True
@@ -1323,7 +1323,7 @@ class LogrotateConfigurationReader(object):
             if len(values) > 1:
                 if self.verbose > 5:
                     self.logger.debug(
-                        ( _("Trying to determine olddir create mode »%(mode)s... (file »%(file)s«, line %(lnr)s)")
+                        ( _("Trying to determine olddir create mode '%(mode)s' ... (file '%(file)s', line %(lnr)s)")
                             % {'mode': values[1], 'file': filename, 'lnr': linenr})
                     )
                 mode_octal = values[1]
@@ -1332,7 +1332,7 @@ class LogrotateConfigurationReader(object):
                 try:
                     mode = int(mode_octal, 8)
                 except ValueError:
-                    self.logger.warning( ( _("Invalid create mode »%s« in »olddir«.") %(values[1])))
+                    self.logger.warning( ( _("Invalid create mode '%s' in 'olddir'.") %(values[1])))
                     return False
 
             # Check for Owner (user, uid)
@@ -1340,7 +1340,7 @@ class LogrotateConfigurationReader(object):
                 owner_raw = values[2]
                 if self.verbose > 5:
                     self.logger.debug(
-                        ( _("Trying to determine olddir owner »%(owner)s... (file »%(file)s«, line %(lnr)s)")
+                        ( _("Trying to determine olddir owner '%(owner)s' ... (file '%(file)s', line %(lnr)s)")
                             % {'owner': owner_raw, 'file': filename, 'lnr': linenr})
                     )
                 if re.search(r'^[1-9]\d*$', owner_raw) is not None:
@@ -1349,7 +1349,7 @@ class LogrotateConfigurationReader(object):
                     try:
                         owner = pwd.getpwnam(owner_raw)[2]
                     except KeyError:
-                        self.logger.warning( ( _("Invalid owner »%s« in »olddir«.") %(owner_raw)))
+                        self.logger.warning( ( _("Invalid owner '%s' in 'olddir'.") %(owner_raw)))
                         return False
 
             # Check for Group (gid)
@@ -1357,7 +1357,7 @@ class LogrotateConfigurationReader(object):
                 group_raw = values[3]
                 if self.verbose > 5:
                     self.logger.debug(
-                        ( _("Trying to determine olddir group »%(group)s... (file »%(file)s«, line %(lnr)s)")
+                        ( _("Trying to determine olddir group '%(group)s' ... (file '%(file)s', line %(lnr)s)")
                             % {'group': group_raw, 'file': filename, 'lnr': linenr})
                     )
                 if re.search(r'^[1-9]\d*$', group_raw) is not None:
@@ -1366,7 +1366,7 @@ class LogrotateConfigurationReader(object):
                     try:
                         group = grp.getgrnam(group_raw)[2]
                     except KeyError:
-                        self.logger.warning( ( _("Invalid group »%s« in »olddir«.") %(group_raw)))
+                        self.logger.warning( ( _("Invalid group '%s' in 'olddir'.") %(group_raw)))
                         return False
 
             # Give values back ...
@@ -1381,7 +1381,7 @@ class LogrotateConfigurationReader(object):
             size_str = re.sub(r'^size(?:\s*=\s*|\s+)', '', line)
             if self.verbose > 5:
                 self.logger.debug(
-                    ( _("Checking for option »size«, value: »%(value)s« ... (file »%(file)s«, line %(lnr)s)")
+                    ( _("Checking for option 'size', value: '%(value)s' ... (file '%(file)s', line %(lnr)s)")
                         % {'value': size_str, 'file': filename, 'lnr': linenr})
                 )
             if size_str is None:
@@ -1391,11 +1391,11 @@ class LogrotateConfigurationReader(object):
             try:
                 size_bytes = human2bytes(size_str, verbose = self.verbose)
             except ValueError, e:
-                self.logger.warning( ( _("Invalid definition for »size«: »%s«.") %(size_str)))
+                self.logger.warning( ( _("Invalid definition for 'size': '%s'.") %(size_str)))
                 return False
             if self.verbose > 4:
                 self.logger.debug(
-                    ( _("Got a rotation size in »%(directive)s« of %(bytes)d bytes. (file »%(file)s«, line %(lnr)s)")
+                    ( _("Got a rotation size in '%(directive)s' of %(bytes)d bytes. (file '%(file)s', line %(lnr)s)")
                         % {'directive': directive_str, 'bytes': size_bytes, 'file': filename, 'lnr': linenr})
                 )
             directive['size'] = size_bytes
@@ -1408,12 +1408,12 @@ class LogrotateConfigurationReader(object):
             key = match.group(1).lower()
             if self.verbose > 5:
                 self.logger.debug(
-                    ( _("Checking for option »taboo%(type)s«, value: »%(value)s« ... (file »%(file)s«, line %(lnr)s)")
+                    ( _("Checking for option 'taboo%(type)s', value: '%(value)s' ... (file '%(file)s', line %(lnr)s)")
                         % {'type': key, 'value': val, 'file': filename, 'lnr': linenr})
                 )
 
             if in_fd:
-                self.logger.warning( ( _("Option »taboo%s« not allowed inside a logfile directive.") %(key)))
+                self.logger.warning( ( _("Option 'taboo%s' not allowed inside a logfile directive.") %(key)))
                 return False
 
             values = []
@@ -1426,7 +1426,7 @@ class LogrotateConfigurationReader(object):
                 values.pop(0)
 
             if len(values) < 1:
-                self.logger.warning( ( _("Option »taboo%s« needs a value.") %(key)))
+                self.logger.warning( ( _("Option 'taboo%s' needs a value.") %(key)))
                 return False
 
             if not extend:
@@ -1437,7 +1437,7 @@ class LogrotateConfigurationReader(object):
             return True
 
         # Option not found, I'm angry
-        self.logger.warning( ( _("Unknown option »%s«.") %(option)))
+        self.logger.warning( ( _("Unknown option '%s'.") %(option)))
         return False
 
     #------------------------------------------------------------

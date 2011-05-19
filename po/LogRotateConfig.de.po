@@ -93,7 +93,9 @@ msgstr "Beginne eine Logdateidefinition (Datei »%(file)s«, Zeil %(line)s)"
 msgid ""
 "Logfile pattern definition not allowed inside a logfile definition (file "
 "'%(file)s', line %(line)s)"
-msgstr "Die Definition eines Logdateimusters ist innerhalb einer Logdateidefinition nicht erlaubt. Datei »%(file)s«, Zeil %(line)s)"
+msgstr ""
+"Die Definition eines Logdateimusters ist innerhalb einer Logdateidefinition nicht erlaubt. "
+"(Datei »%(file)s«, Zeil %(line)s)"
 
 #: LogRotateConfig.py:748
 #, python-format
@@ -105,14 +107,18 @@ msgstr "Zerteile: »%s«"
 msgid ""
 "Syntax error: open curly bracket inside a logfile pattern definition (file "
 "'%(file)s', line %(line)s)"
-msgstr "Syntaxfehler: öffnende geschweifte Klammer innerhalb einer Logdateidefinition (Datei »%(file)s«, Zeile %(line)s)"
+msgstr ""
+"Syntaxfehler: öffnende geschweifte Klammer innerhalb einer Logdateidefinition "
+"(Datei »%(file)s«, Zeile %(line)s)"
 
 #: LogRotateConfig.py:779
 #, python-format
 msgid ""
 "Syntax error: unbalanced closing curly bracket found (file '%(file)s', line "
 "%(line)s)"
-msgstr "Syntaxfehler: unausgeglichene Zahl von öffnenden und schließenden Klammern (Datei »%(file)s«, Zeile %(line)s)"
+msgstr ""
+"Syntaxfehler: unausgeglichene Zahl von öffnenden und schließenden Klammern "
+"(Datei »%(file)s«, Zeile %(line)s)"
 
 #: LogRotateConfig.py:784
 #, python-format
@@ -124,7 +130,9 @@ msgstr "Ende einer Logdateidefinition (Datei »%(file)s«, Zeile %(line)s)"
 msgid ""
 "Needless content found at the end of a logfile definition found: "
 "'%(rest)s' (file '%(file)s', line %(line)s)"
-msgstr "Nutzloser Inhalt am Ende einer Logdateidefinition gefunden: »%(rest)s« (Datei »%(file)s«, Zeile %(line)s)"
+msgstr ""
+"Nutzloser Inhalt am Ende einer Logdateidefinition gefunden: »%(rest)s« "
+"(Datei »%(file)s«, Zeile %(line)s)"
 
 #: LogRotateConfig.py:791
 msgid "New logfile definition:"
@@ -135,14 +143,18 @@ msgstr "Neue Logdateidefinition:"
 msgid ""
 "Syntax error: include may not appear inside of log file definition (file "
 "'%(file)s', line %(line)s)"
-msgstr "Syntaxfehler: Eine include-Anweisung darf nicht einer Logdateidefinition auftreten Datei »%(file)s«, Zeile %(line)s)"
+msgstr ""
+"Syntaxfehler: Eine include-Anweisung darf nicht einer Logdateidefinition auftreten "
+"(Datei »%(file)s«, Zeile %(line)s)"
 
 #: LogRotateConfig.py:823
 #, python-format
 msgid ""
 "Found start of a regular script definition: type: '%(type)s', name: "
 "'%(name)s' (file '%(file)s', line %(line)s)"
-msgstr "Beginn einer regulären Scriptdefinition gefunden: »%(type)s«, Name: »%(name)s« (Datei »%(file)s«, Zeile %(line)s)"
+msgstr ""
+"Beginn einer regulären Scriptdefinition gefunden: »%(type)s«, Name: »%(name)s« "
+"(Datei »%(file)s«, Zeile %(line)s)"
 
 #: LogRotateConfig.py:837
 #, python-format
@@ -160,7 +172,9 @@ msgstr "Beginn einer externen Scriptdefinition gefunden. (Datei »%(file)s«, Ze
 msgid ""
 "Syntax error: external script definition may not appear inside of a log file "
 "definition (file '%(file)s', line %(line)s)"
-msgstr "Syntaxfehler: eine externe Scriptdefinition darf nicht innerhalb einer Logdateidefinition auftreten (Datei »%(file)s«, Zeile %(line)s)"
+msgstr ""
+"Syntaxfehler: eine externe Scriptdefinition darf nicht innerhalb einer Logdateidefinition "
+"auftreten (Datei »%(file)s«, Zeile %(line)s)"
 
 #: LogRotateConfig.py:860
 #, python-format
@@ -177,7 +191,9 @@ msgstr "Syntaxfehler in Datei Datei »%(file)s«, Zeile %(line)s"
 msgid ""
 "Checking line '%(line)s' for a logrotate option. (file '%(file)s', line "
 "%(lnr)s)"
-msgstr "Überprüfe Zeile »%(line)s« nach einer Logrotate-Option. (Datei »%(file)s«, Zeile %(lnr)s)"
+msgstr ""
+"Überprüfe Zeile »%(line)s« nach einer Logrotate-Option. "
+"(Datei »%(file)s«, Zeile %(lnr)s)"
 
 #: LogRotateConfig.py:913
 #, python-format
@@ -194,14 +210,18 @@ msgstr "Nicht unterstützte Option »%(option)s«. (Datei »%(file)s«, Zeile %(
 msgid ""
 "Found value '%(value)s' behind the boolean option '%(option)s', ignoring. "
 "(file '%(file)s', line %(lnr)s)"
-msgstr "Wert »%(value)s« nach boolscher Option »%(option)s« gefunden, wird ignoriert. (Datei »%(file)s«, Zeile %(lnr)s)"
+msgstr ""
+"Wert »%(value)s« nach boolscher Option »%(option)s« gefunden, wird ignoriert. "
+"(Datei »%(file)s«, Zeile %(lnr)s)"
 
 #: LogRotateConfig.py:943
 #, python-format
 msgid ""
 "Setting boolean option '%(option)s' in '%(directive)s' to '%(value)s'. (file "
 "'%(file)s', line %(lnr)s)"
-msgstr "Setze boolsche Option »%(option)s« in »%(directive)s« auf »%(value)s«. (Datei »%(file)s«, Zeile %(lnr)s)"
+msgstr ""
+"Setze boolsche Option »%(option)s« in »%(directive)s« auf »%(value)s«. "
+"(Datei »%(file)s«, Zeile %(lnr)s)"
 
 #: LogRotateConfig.py:959
 #, python-format
@@ -223,7 +243,9 @@ msgstr "Der negative Wert %(value)s für die Option »%(option)s« ist nicht erl
 msgid ""
 "Setting integer option '%(option)s' in '%(directive)s' to '%(value)s'. (file "
 "'%(file)s', line %(lnr)s)"
-msgstr "Setze die Integer-Option '%(option)s' in '%(directive)s' auf '%(value)s'. (Datei »%(file)s«, Zeile %(lnr)s)"
+msgstr ""
+"Setze die Integer-Option '%(option)s' in '%(directive)s' auf '%(value)s'. "
+"(Datei »%(file)s«, Zeile %(lnr)s)"
 
 #: LogRotateConfig.py:994 LogRotateConfig.py:1026
 #, python-format
@@ -238,15 +260,13 @@ msgstr "Ungültige E-Mail-Adresse »%s«."
 #: LogRotateConfig.py:1006
 #, python-format
 msgid ""
-"Setting mail address in '%(directive)s' to '%(addr)s'. (file '%(file)s', "
-"line %(lnr)s)"
+"Setting mail address in '%(directive)s' to '%(addr)s'. (file '%(file)s', line %(lnr)s)"
 msgstr "Setze Mailadresse in »%(directive)s« auf »%(addr)s«. (Datei »%(file)s«, Zeile %(lnr)s)"
 
 #: LogRotateConfig.py:1021
 #, python-format
 msgid ""
-"Setting mailfirst in '%(directive)s' to '%(value)s'. (file '%(file)s', line "
-"%(lnr)s)"
+"Setting mailfirst in '%(directive)s' to '%(value)s'. (file '%(file)s', line %(lnr)s)"
 msgstr "Setze mailfirst in »%(directive)s« auf »%(value)s«. (Datei »%(file)s«, Zeile %(lnr)s)"
 
 #: LogRotateConfig.py:1039 LogRotateConfig.py:1064
@@ -277,23 +297,24 @@ msgstr "Der Wert »%(value)s« für die Option »%(option)s« ist keine absolute
 #: LogRotateConfig.py:1077
 #, python-format
 msgid ""
-"Setting '%(option)s' in '%(directive)s' to '%(value)s'. (file '%(file)s', line "
-"%(lnr)s)"
-msgstr "Setze »%(option)s« in »%(directive)s« auf »%(value)s«. (Datei »%(file)s«, Zeile %(lnr)s)"
+"Setting '%(option)s' in '%(directive)s' to '%(value)s'. (file '%(file)s', line %(lnr)s)"
+msgstr ""
+"Setze »%(option)s« in »%(directive)s« auf »%(value)s«. (Datei »%(file)s«, Zeile %(lnr)s)"
 
 #: LogRotateConfig.py:1090
 #, python-format
 msgid ""
-"Checking 'period': key '%(key)s', value '%(value)s'. (file '%(file)s', line "
-"%(lnr)s)"
-msgstr "Überprüfe »period«: Schlüssel »%(key)s«, Wert »%(value)s«. (Datei »%(file)s«, Zeile %(lnr)s)"
+"Checking 'period': key '%(key)s', value '%(value)s'. (file '%(file)s', line %(lnr)s)"
+msgstr ""
+"Überprüfe »period«: Schlüssel »%(key)s«, Wert »%(value)s«. (Datei »%(file)s«, Zeile %(lnr)s)"
 
 #: LogRotateConfig.py:1097
 #, python-format
 msgid ""
-"Option '%(option)s' may not have a value ('%(value)s'). (file '%(file)s', "
-"line %(lnr)s)"
-msgstr "Die Option »%(option)s« darf keinen Wert aufweisen (»%(value)s«). (Datei »%(file)s«, Zeile %(lnr)s)"
+"Option '%(option)s' may not have a value ('%(value)s'). (file '%(file)s', line %(lnr)s)"
+msgstr ""
+"Die Option »%(option)s« darf keinen Wert aufweisen (»%(value)s«). "
+"(Datei »%(file)s«, Zeile %(lnr)s)"
 
 #: LogRotateConfig.py:1105
 #, python-format
@@ -303,9 +324,9 @@ msgstr "Ungültige Angabe einer Rotationsperiode: »%s«"
 #: LogRotateConfig.py:1109
 #, python-format
 msgid ""
-"Setting 'period' in '%(directive)s' to %(days)f days. (file '%(file)s', line "
-"%(lnr)s)"
-msgstr "Setze Rotationsperiode in »%(directive)s« auf %(days)f Tage. (Datei »%(file)s«, Zeile %(lnr)s)"
+"Setting 'period' in '%(directive)s' to %(days)f days. (file '%(file)s', line %(lnr)s)"
+msgstr ""
+"Setze Rotationsperiode in »%(directive)s« auf %(days)f Tage. (Datei »%(file)s«, Zeile %(lnr)s)"
 
 #: LogRotateConfig.py:1128
 #, python-format
@@ -328,7 +349,9 @@ msgstr "Überprüfe »dateext«, negiert: »%(negated)s«. (Datei »%(file)s«, 
 #, python-format
 msgid ""
 "'dateext': first_val: '%(first_val)s', option_value: '%(value)s'. (file '%(file)s', line %(lnr)s)"
-msgstr "»dateext«: first_val: »%(first_val)s«, option_value: »%(value)s«. (Datei »%(file)s«, Zeile %(lnr)s)"
+msgstr ""
+"»dateext«: first_val: »%(first_val)s«, option_value: »%(value)s«. "
+"(Datei »%(file)s«, Zeile %(lnr)s)"
 
 #: LogRotateConfig.py:1180
 #, python-format
@@ -340,7 +363,8 @@ msgstr "Setze »dateext« in »%(directive)s« auf %(ext)s. (Datei »%(file)s«,
 #, python-format
 msgid ""
 "Setting 'datepattern' in '%(directive)s' to '%(pattern)s'. (file '%(file)s', line %(lnr)s)"
-msgstr "Setze »datepattern« in »%(directive)s« auf »%(pattern)s«. (Datei »%(file)s«, Zeile %(lnr)s)"
+msgstr ""
+"Setze »datepattern« in »%(directive)s« auf »%(pattern)s«. (Datei »%(file)s«, Zeile %(lnr)s)"
 
 #: LogRotateConfig.py:1205
 #, python-format
@@ -356,7 +380,8 @@ msgstr "Entferne »create«. (Datei »%(file)s«, Zeile %(lnr)s)"
 #, python-format
 msgid ""
 "Trying to determine create mode '%(mode)s'... (file '%(file)s', line %(lnr)s)"
-msgstr "Versuche Erstellungsmodus »%(mode)s« festzustellen ... (Datei »%(file)s«, Zeile %(lnr)s)"
+msgstr ""
+"Versuche Erstellungsmodus »%(mode)s« festzustellen ... (Datei »%(file)s«, Zeile %(lnr)s)"
 
 #: LogRotateConfig.py:1241
 #, python-format
@@ -367,7 +392,8 @@ msgstr "Ungültiger Erstellungsmodus »%s«."
 #, python-format
 msgid ""
 "Trying to determine create owner '%(owner)s'... (file '%(file)s', line %(lnr)s)"
-msgstr "Versuche Erstellungsnutzer »%(owner)s« festzustellen ... (Datei »%(file)s«, Zeile %(lnr)s)"
+msgstr ""
+"Versuche Erstellungsnutzer »%(owner)s« festzustellen ... (Datei »%(file)s«, Zeile %(lnr)s)"
 
 #: LogRotateConfig.py:1258
 #, python-format
@@ -378,7 +404,8 @@ msgstr "Ungültiger Nutzer »%s« in »create«."
 #, python-format
 msgid ""
 "Trying to determine create group '%(group)s'... (file '%(file)s', line %(lnr)s)"
-msgstr "Versuche Erstellungsgruppe »%(group)s« festzustellen ... (Datei »%(file)s«, Zeile %(lnr)s)"
+msgstr ""
+"Versuche Erstellungsgruppe »%(group)s« festzustellen ... (Datei »%(file)s«, Zeile %(lnr)s)"
 
 #: LogRotateConfig.py:1275
 #, python-format
@@ -387,99 +414,106 @@ msgstr "Ugültige Gruppe »%s« in »create«."
 
 #: LogRotateConfig.py:1294
 #, python-format
-msgid "Checking for »olddir« ... (file »%(file)s«, line %(lnr)s)"
-msgstr ""
+msgid "Checking for 'olddir' ... (file '%(file)s', line %(lnr)s)"
+msgstr "Schaue nach »olddir« ... (Datei »%(file)s«, Zeile %(lnr)s)"
 
 #: LogRotateConfig.py:1301
 #, python-format
-msgid "Removing »olddir«. (file »%(file)s«, line %(lnr)s)"
-msgstr ""
+msgid "Removing 'olddir'. (file '%(file)s', line %(lnr)s)"
+msgstr "Entferne »olddir«. (Datei »%(file)s«, Zeile %(lnr)s)"
 
 #: LogRotateConfig.py:1313
-msgid "Option »olddir« without a value given."
-msgstr ""
+msgid "Option 'olddir' without a value given."
+msgstr "Die Option »olddir« wurde ohne Wert angegeben."
 
 #: LogRotateConfig.py:1326
 #, python-format
 msgid ""
-"Trying to determine olddir create mode »%(mode)s... (file »%(file)s«, line "
-"%(lnr)s)"
+"Trying to determine olddir create mode '%(mode)s' ... (file '%(file)s', line %(lnr)s)"
 msgstr ""
+"Versuche »olddir«-Erstellungsmodus »%(mode)s« festzustellen ... "
+"(Datei »%(file)s«, Zeile %(lnr)s)"
 
 #: LogRotateConfig.py:1335
 #, python-format
-msgid "Invalid create mode »%s« in »olddir«."
-msgstr ""
+msgid "Invalid create mode '%s' in 'olddir'."
+msgstr "Ungültiger »olddir«-Erstellungsmodus: »%s«."
 
 #: LogRotateConfig.py:1343
 #, python-format
 msgid ""
-"Trying to determine olddir owner »%(owner)s... (file »%(file)s«, line "
-"%(lnr)s)"
+"Trying to determine olddir owner '%(owner)s' ... (file '%(file)s', line %(lnr)s)"
 msgstr ""
+"Versuche »olddir«-Erstellungsnutzer »%(owner)s« festzustellen ... "
+"(Datei »%(file)s«, Zeile %(lnr)s)"
 
 #: LogRotateConfig.py:1352
 #, python-format
-msgid "Invalid owner »%s« in »olddir«."
-msgstr ""
+msgid "Invalid owner '%s' in 'olddir'."
+msgstr "Ungültiger Nutzer »%s« in »olddir«."
 
 #: LogRotateConfig.py:1360
 #, python-format
 msgid ""
-"Trying to determine olddir group »%(group)s... (file »%(file)s«, line "
-"%(lnr)s)"
-msgstr ""
+"Trying to determine olddir group '%(group)s' ... (file '%(file)s', line %(lnr)s)"
+msgstr "Versuche »olddir«-Erstellungsgruppe »%(group)s« festzustellen ... "
+"(Datei »%(file)s«, Zeile %(lnr)s)"
 
 #: LogRotateConfig.py:1369
 #, python-format
-msgid "Invalid group »%s« in »olddir«."
-msgstr ""
+msgid "Invalid group '%s' in »olddir«."
+msgstr "Ugültige Gruppe »%s« in »olddir«."
 
 #: LogRotateConfig.py:1384
 #, python-format
 msgid ""
-"Checking for option »size«, value: »%(value)s« ... (file »%(file)s«, line "
-"%(lnr)s)"
+"Checking for option 'size', value: '%(value)s' ... (file '%(file)s', line %(lnr)s)"
 msgstr ""
+"Schaue nach Option »size«, Wert »%(value)s« ... "
+"(Datei »%(file)s«, Zeile %(lnr)s)"
 
 #: LogRotateConfig.py:1388
 msgid "Failing size definition."
-msgstr ""
+msgstr "Fehlende Größenangabe."
 
 #: LogRotateConfig.py:1394
 #, python-format
-msgid "Invalid definition for »size«: »%s«."
-msgstr ""
+msgid "Invalid definition for 'size': '%s'."
+msgstr "Ungültige Größenangabe: »%s«."
 
 #: LogRotateConfig.py:1398
 #, python-format
 msgid ""
-"Got a rotation size in »%(directive)s« of %(bytes)d bytes. (file »%(file)s«, "
+"Got a rotation size in '%(directive)s' of %(bytes)d bytes. (file '%(file)s', "
 "line %(lnr)s)"
 msgstr ""
+"Erhaltene Rotationsgröße in »%(directive)s«: %(bytes)d Bytes. "
+"(Datei »%(file)s«, Zeile %(lnr)s)"
 
 #: LogRotateConfig.py:1411
 #, python-format
 msgid ""
-"Checking for option »taboo%(type)s«, value: »%(value)s« ... (file "
-"»%(file)s«, line %(lnr)s)"
+"Checking for option 'taboo%(type)s', value: '%(value)s' ... (file "
+"'%(file)s', line %(lnr)s)"
 msgstr ""
+"Schaue nach Option »taboo%(type)s«, Wert »%(value)s« ... "
+"(Datei »%(file)s«, Zeile %(lnr)s)"
 
 #: LogRotateConfig.py:1416
 #, python-format
-msgid "Option »taboo%s« not allowed inside a logfile directive."
-msgstr ""
+msgid "Option 'taboo%s' not allowed inside a logfile directive."
+msgstr "Die Option »taboo%s« ist innerhalb einer Logfiledefinition nicht erlaubt."
 
 #: LogRotateConfig.py:1429
 #, python-format
-msgid "Option »taboo%s« needs a value."
-msgstr ""
+msgid "Option 'taboo%s' needs a value."
+msgstr "Die Option »taboo%s« benötigt einen Wert."
 
 #. Option not found, I'm angry
 #: LogRotateConfig.py:1440
 #, python-format
-msgid "Unknown option »%s«."
-msgstr ""
+msgid "Unknown option '%s'."
+msgstr "Unbekannte Option »%s«."
 
 #: LogRotateConfig.py:1470
 #, python-format
