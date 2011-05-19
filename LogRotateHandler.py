@@ -59,6 +59,7 @@ class LogrotateHandler(object):
                         verbose    = 0,
                         force      = False,
                         state_file = None,
+                        pid_file   = None,
                         mail_cmd   = None,
                         local_dir  = None,
     ):
@@ -75,6 +76,8 @@ class LogrotateHandler(object):
         @type force:        bool
         @param state_file:  Path of state file (different to configuration)
         @type state_file:   str or None
+        @param pid_file:    Path of PID file (different to configuration)
+        @type pid_file:     str or None
         @param mail_cmd:    command to send mail (instead of using
                             the Phyton email package)
         @type mail_cmd:     str or None
@@ -125,6 +128,12 @@ class LogrotateHandler(object):
         self.state_file = state_file
         '''
         @ivar: Path of state file (from commandline or from configuration)
+        @type: str
+        '''
+
+        self.pid_file = pid_file
+        '''
+        @ivar: Path of PID file (from commandline or from configuration)
         @type: str
         '''
 
@@ -208,6 +217,7 @@ class LogrotateHandler(object):
             'mail_cmd':    self.mail_cmd,
             'scripts':     self.scripts,
             'state_file':  self.state_file,
+            'pid_file':    self.pid_file,
             'test':        self.test,
             'verbose':     self.verbose,
         }

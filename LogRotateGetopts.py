@@ -226,6 +226,14 @@ class LogrotateOptParser(object):
         )
 
         self.parser.add_option(
+            '--pid-file',
+            '-P',
+            dest    = "pidfile",
+            metavar = 'FILE',
+            help    = _('Path of PID file (different to configuration)'),
+        )
+
+        self.parser.add_option(
             '--mail',
             '-m',
             dest    = "mailcmd",

@@ -54,6 +54,10 @@ msgstr "Überprüft nur die gegebene Konfigurationsdatei und führt nichts aus. 
 msgid "Path of state file (different to configuration)"
 msgstr "Pfad zur Statusdatei (im Unterschied zur Konfiguration)"
 
+#: LogRotateGetopts.py:228
+msgid "Path of PID file (different to configuration)"
+msgstr "Pfad zur PID-Datei (im Unterschied zur Konfiguration)"
+
 #: LogRotateGetopts.py:233
 msgid "Command to send mail (instead of using the Phyton email package)"
 msgstr "Befehl zum Mailversand (anstelle der Verwendung des Python email-Paketes"

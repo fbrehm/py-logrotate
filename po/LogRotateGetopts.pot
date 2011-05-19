@@ -53,6 +53,10 @@ msgstr ""
 msgid "Path of state file (different to configuration)"
 msgstr ""
 
+#: LogRotateGetopts.py:228
+msgid "Path of PID file (different to configuration)"
+msgstr ""
+
 #: LogRotateGetopts.py:233
 msgid "Command to send mail (instead of using the Phyton email package)"
 msgstr ""
