@@ -309,87 +309,81 @@ msgstr "Setze Rotationsperiode in »%(directive)s« auf %(days)f Tage. (Datei »
 
 #: LogRotateConfig.py:1128
 #, python-format
-msgid "Invalid maxage definition: »%s«"
-msgstr ""
+msgid "Invalid maxage definition: '%s'"
+msgstr "Ungültige Definition von »maxage«: »%s«"
 
 #: LogRotateConfig.py:1132
 #, python-format
 msgid ""
-"Setting »maxage« in »%(directive)s« to %(days)f days. (file »%(file)s«, line "
-"%(lnr)s)"
-msgstr ""
+"Setting 'maxage' in '%(directive)s' to %(days)f days. (file '%(file)s', line %(lnr)s)"
+msgstr "Setze »maxage« in »%(directive)s« auf %(days)f Tage. (Datei »%(file)s«, Zeile %(lnr)s)"
 
 #: LogRotateConfig.py:1150
 #, python-format
 msgid ""
-"Checking »dateext«, negated: »%(negated)s«. (file »%(file)s«, line %(lnr)s)"
-msgstr ""
+"Checking 'dateext', negated: '%(negated)s'. (file '%(file)s', line %(lnr)s)"
+msgstr "Überprüfe »dateext«, negiert: »%(negated)s«. (Datei »%(file)s«, Zeile %(lnr)s)"
 
 #: LogRotateConfig.py:1167
 #, python-format
 msgid ""
-"»dateext«: first_val: »%(first_val)s«, option_value: »%(value)s«. (file "
-"»%(file)s«, line %(lnr)s)"
-msgstr ""
+"'dateext': first_val: '%(first_val)s', option_value: '%(value)s'. (file '%(file)s', line %(lnr)s)"
+msgstr "»dateext«: first_val: »%(first_val)s«, option_value: »%(value)s«. (Datei »%(file)s«, Zeile %(lnr)s)"
 
 #: LogRotateConfig.py:1180
 #, python-format
 msgid ""
-"Setting »dateext« in »%(directive)s« to %(ext)s. (file »%(file)s«, line "
-"%(lnr)s)"
-msgstr ""
+"Setting 'dateext' in '%(directive)s' to %(ext)s. (file '%(file)s', line %(lnr)s)"
+msgstr "Setze »dateext« in »%(directive)s« auf %(ext)s. (Datei »%(file)s«, Zeile %(lnr)s)"
 
 #: LogRotateConfig.py:1188
 #, python-format
 msgid ""
-"Setting »datepattern« in »%(directive)s« to %(pattern)s. (file »%(file)s«, "
-"line %(lnr)s)"
-msgstr ""
+"Setting 'datepattern' in '%(directive)s' to '%(pattern)s'. (file '%(file)s', line %(lnr)s)"
+msgstr "Setze »datepattern« in »%(directive)s« auf »%(pattern)s«. (Datei »%(file)s«, Zeile %(lnr)s)"
 
 #: LogRotateConfig.py:1205
 #, python-format
-msgid "Checking for »create« ... (file »%(file)s«, line %(lnr)s)"
-msgstr ""
+msgid "Checking for 'create' ... (file '%(file)s', line %(lnr)s)"
+msgstr "Schaue nach »create« ... (Datei »%(file)s«, Zeile %(lnr)s)"
 
 #: LogRotateConfig.py:1212
 #, python-format
-msgid "Removing »create«. (file »%(file)s«, line %(lnr)s)"
-msgstr ""
+msgid "Removing 'create'. (file '%(file)s', line %(lnr)s)"
+msgstr "Entferne »create«. (Datei »%(file)s«, Zeile %(lnr)s)"
 
 #: LogRotateConfig.py:1232
 #, python-format
 msgid ""
-"Trying to determine create mode »%(mode)s... (file »%(file)s«, line %(lnr)s)"
-msgstr ""
+"Trying to determine create mode '%(mode)s'... (file '%(file)s', line %(lnr)s)"
+msgstr "Versuche Erstellungsmodus »%(mode)s« festzustellen ... (Datei »%(file)s«, Zeile %(lnr)s)"
 
 #: LogRotateConfig.py:1241
 #, python-format
-msgid "Invalid create mode »%s«."
-msgstr ""
+msgid "Invalid create mode '%s'."
+msgstr "Ungültiger Erstellungsmodus »%s«."
 
 #: LogRotateConfig.py:1249
 #, python-format
 msgid ""
-"Trying to determine create owner »%(owner)s... (file »%(file)s«, line "
-"%(lnr)s)"
-msgstr ""
+"Trying to determine create owner '%(owner)s'... (file '%(file)s', line %(lnr)s)"
+msgstr "Versuche Erstellungsnutzer »%(owner)s« festzustellen ... (Datei »%(file)s«, Zeile %(lnr)s)"
 
 #: LogRotateConfig.py:1258
 #, python-format
-msgid "Invalid owner »%s« in »create«."
-msgstr ""
+msgid "Invalid owner '%s' in 'create'."
+msgstr "Ungültiger Nutzer »%s« in »create«."
 
 #: LogRotateConfig.py:1266
 #, python-format
 msgid ""
-"Trying to determine create group »%(group)s... (file »%(file)s«, line "
-"%(lnr)s)"
-msgstr ""
+"Trying to determine create group '%(group)s'... (file '%(file)s', line %(lnr)s)"
+msgstr "Versuche Erstellungsgruppe »%(group)s« festzustellen ... (Datei »%(file)s«, Zeile %(lnr)s)"
 
 #: LogRotateConfig.py:1275
 #, python-format
-msgid "Invalid group »%s« in »create«."
-msgstr ""
+msgid "Invalid group '%s' in 'create'."
+msgstr "Ugültige Gruppe »%s« in »create«."
 
 #: LogRotateConfig.py:1294
 #, python-format

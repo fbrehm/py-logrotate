@@ -1125,11 +1125,11 @@ class LogrotateConfigurationReader(object):
                 try:
                     option_value = period2days(val, verbose = self.verbose)
                 except ValueError, e:
-                    self.logger.warning( ( _("Invalid maxage definition: »%s«") %(val) ))
+                    self.logger.warning( ( _("Invalid maxage definition: '%s'") %(val) ))
                     return False
             if self.verbose > 4:
                 self.logger.debug(
-                    ( _("Setting »maxage« in »%(directive)s« to %(days)f days. (file »%(file)s«, line %(lnr)s)")
+                    ( _("Setting 'maxage' in '%(directive)s' to %(days)f days. (file '%(file)s', line %(lnr)s)")
                         % {'directive': directive_str, 'days': option_value, 'file': filename, 'lnr': linenr})
                 )
             directive['maxage'] = option_value
@@ -1147,7 +1147,7 @@ class LogrotateConfigurationReader(object):
 
             if self.verbose > 4:
                 self.logger.debug(
-                    ( _("Checking »dateext«, negated: »%(negated)s«. (file »%(file)s«, line %(lnr)s)")
+                    ( _("Checking 'dateext', negated: '%(negated)s'. (file '%(file)s', line %(lnr)s)")
                         % {'negated': str(negated), 'file': filename, 'lnr': linenr})
                 )
             values = []
@@ -1164,7 +1164,7 @@ class LogrotateConfigurationReader(object):
                     option_value = 'true'
                 if self.verbose > 5:
                     self.logger.debug(
-                        ( _("»dateext«: first_val: »%(first_val)s«, option_value: »%(value)s«. (file »%(file)s«, line %(lnr)s)")
+                        ( _("'dateext': first_val: '%(first_val)s', option_value: '%(value)s'. (file '%(file)s', line %(lnr)s)")
                             % {'first_val': first_val, 'value': option_value, 'file': filename, 'lnr': linenr})
                     )
                 if option_value in yes_values:
@@ -1177,7 +1177,7 @@ class LogrotateConfigurationReader(object):
 
             if self.verbose > 4:
                 self.logger.debug(
-                    ( _("Setting »dateext« in »%(directive)s« to %(ext)s. (file »%(file)s«, line %(lnr)s)")
+                    ( _("Setting 'dateext' in '%(directive)s' to %(ext)s. (file '%(file)s', line %(lnr)s)")
                         % {'directive': directive_str, 'ext': str(use_dateext), 'file': filename, 'lnr': linenr})
                 )
             directive['dateext'] = use_dateext
@@ -1185,7 +1185,7 @@ class LogrotateConfigurationReader(object):
             if dateext is not None:
                 if self.verbose > 4:
                     self.logger.debug(
-                        ( _("Setting »datepattern« in »%(directive)s« to %(pattern)s. (file »%(file)s«, line %(lnr)s)")
+                        ( _("Setting 'datepattern' in '%(directive)s' to '%(pattern)s'. (file '%(file)s', line %(lnr)s)")
                             % {'directive': directive_str, 'pattern': dateext, 'file': filename, 'lnr': linenr})
                     )
                 directive['datepattern'] = dateext
@@ -1202,14 +1202,14 @@ class LogrotateConfigurationReader(object):
 
             if self.verbose > 5:
                 self.logger.debug(
-                    ( _("Checking for »create« ... (file »%(file)s«, line %(lnr)s)")
+                    ( _("Checking for 'create' ... (file '%(file)s', line %(lnr)s)")
                         % {'file': filename, 'lnr': linenr})
                 )
 
             if negated:
                 if self.verbose > 4:
                     self.logger.debug(
-                        ( _("Removing »create«. (file »%(file)s«, line %(lnr)s)")
+                        ( _("Removing 'create'. (file '%(file)s', line %(lnr)s)")
                             % {'file': filename, 'lnr': linenr})
                     )
                 directive['create']['enabled'] = False
@@ -1229,7 +1229,7 @@ class LogrotateConfigurationReader(object):
             if len(values) > 0:
                 if self.verbose > 5:
                     self.logger.debug(
-                        ( _("Trying to determine create mode »%(mode)s... (file »%(file)s«, line %(lnr)s)")
+                        ( _("Trying to determine create mode '%(mode)s'... (file '%(file)s', line %(lnr)s)")
                             % {'mode': values[0], 'file': filename, 'lnr': linenr})
                     )
                 mode_octal = values[0]
@@ -1238,7 +1238,7 @@ class LogrotateConfigurationReader(object):
                 try:
                     mode = int(mode_octal, 8)
                 except ValueError:
-                    self.logger.warning( ( _("Invalid create mode »%s«.") %(values[1])))
+                    self.logger.warning( ( _("Invalid create mode '%s'.") %(values[1])))
                     return False
 
             # Check for Owner (user, uid)
@@ -1246,7 +1246,7 @@ class LogrotateConfigurationReader(object):
                 owner_raw = values[1]
                 if self.verbose > 5:
                     self.logger.debug(
-                        ( _("Trying to determine create owner »%(owner)s... (file »%(file)s«, line %(lnr)s)")
+                        ( _("Trying to determine create owner '%(owner)s'... (file '%(file)s', line %(lnr)s)")
                             % {'owner': owner_raw, 'file': filename, 'lnr': linenr})
                     )
                 if re.search(r'^[1-9]\d*$', owner_raw) is not None:
@@ -1255,7 +1255,7 @@ class LogrotateConfigurationReader(object):
                     try:
                         owner = pwd.getpwnam(owner_raw)[2]
                     except KeyError:
-                        self.logger.warning( ( _("Invalid owner »%s« in »create«.") %(owner_raw)))
+                        self.logger.warning( ( _("Invalid owner '%s' in 'create'.") %(owner_raw)))
                         return False
 
             # Check for Group (gid)
@@ -1263,7 +1263,7 @@ class LogrotateConfigurationReader(object):
                 group_raw = values[2]
                 if self.verbose > 5:
                     self.logger.debug(
-                        ( _("Trying to determine create group »%(group)s... (file »%(file)s«, line %(lnr)s)")
+                        ( _("Trying to determine create group '%(group)s'... (file '%(file)s', line %(lnr)s)")
                             % {'group': group_raw, 'file': filename, 'lnr': linenr})
                     )
                 if re.search(r'^[1-9]\d*$', group_raw) is not None:
@@ -1272,7 +1272,7 @@ class LogrotateConfigurationReader(object):
                     try:
                         group = grp.getgrnam(group_raw)[2]
                     except KeyError:
-                        self.logger.warning( ( _("Invalid group »%s« in »create«.") %(group_raw)))
+                        self.logger.warning( ( _("Invalid group '%s' in 'create'.") %(group_raw)))
                         return False
 
             # Give values back ...
