@@ -84,6 +84,7 @@ def main():
         verbose    = verbose_level,
         force      = opt_parser.options.force,
         state_file = opt_parser.options.statefile,
+        pid_file   = opt_parser.options.pidfile,
         mail_cmd   = opt_parser.options.mailcmd,
         local_dir  = local_dir,
     )

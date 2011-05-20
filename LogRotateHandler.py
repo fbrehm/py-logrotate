@@ -20,6 +20,8 @@ import sys
 import gettext
 import logging
 import pprint
+import os
+import os.path
 
 from LogRotateConfig import LogrotateConfigurationError
 from LogRotateConfig import LogrotateConfigurationReader
@@ -252,7 +254,24 @@ class LogrotateHandler(object):
             self.logger.error( str(e) )
             sys.exit(10)
 
+        if self.state_file is None:
+            if 'statusfile' in config_reader.global_option and \
+                    config_reader.global_option['statusfile'] is not None:
+                self.state_file = config_reader.global_option['statusfile']
+            else:
+                self.state_file = os.sep + os.path.join('var', 'lib', 'py-logrotate.status')
+
+        if self.pid_file is None:
+            if 'pidfile' in config_reader.global_option and \
+                    config_reader.global_option['pidfile'] is not None:
+                self.pid_file = config_reader.global_option['pidfile']
+            else:
+                self.pid_file = os.sep + os.path.join('var', 'run', 'py-logrotate.pid')
+
         return True
+
+    #------------------------------------------------------------
+
 
 #========================================================================
 

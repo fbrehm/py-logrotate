@@ -298,6 +298,12 @@ msgstr "Die Option »%s« ist innerhalb einer Logdateidefinition nicht erlaubt."
 msgid "Value '%(value)s' for option '%(option)s' is not an absolute path."
 msgstr "Der Wert »%(value)s« für die Option »%(option)s« ist keine absolute Pfadangabe."
 
+#: LogRotateConfig.py:1083
+msgid "Setting global option '%(option)s' to '%(value)s'. (file '%(file)s', line %(lnr)s)"
+msgstr ""
+"Setze globale Option »%(option)s auf »%(value)s«. "
+"(Datei »%(file)s«, Zeile %(lnr)s)"
+
 #: LogRotateConfig.py:1077
 #, python-format
 msgid ""

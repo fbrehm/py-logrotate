@@ -208,6 +208,12 @@ class LogrotateConfigurationReader(object):
         @type: logging.getLogger
         '''
 
+        self.global_option = {}
+        '''
+        @ivar: all global options
+        @type: dict
+        '''
+
         if not logger:
 
             #################################################
@@ -1074,10 +1080,10 @@ class LogrotateConfigurationReader(object):
                     return False
             if self.verbose > 4:
                 self.logger.debug(
-                    ( _("Setting '%(option)s' in '%(directive)s' to '%(value)s'. (file '%(file)s', line %(lnr)s)")
+                    ( _("Setting global option '%(option)s' to '%(value)s'. (file '%(file)s', line %(lnr)s)")
                         % {'option': key, 'directive': directive_str, 'value': str(val), 'file': filename, 'lnr': linenr})
                 )
-            directive[key] = val
+            self.global_option[key] = val
             return True
 
         # Check for rotation period
