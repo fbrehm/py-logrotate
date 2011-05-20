@@ -22,6 +22,7 @@ import logging
 import pprint
 import os
 import os.path
+import errno
 
 from LogRotateConfig import LogrotateConfigurationError
 from LogRotateConfig import LogrotateConfigurationReader
@@ -139,6 +140,13 @@ class LogrotateHandler(object):
         @type: str
         '''
 
+        self.pidfile_created = False
+        '''
+        @ivar: Is a PID file created by this instance and should removed
+               on destroying this object.
+        @type: bool
+        '''
+
         self.mail_cmd = mail_cmd
         '''
         @ivar: command to send mail (instead of using the Phyton email package)
@@ -198,6 +206,9 @@ class LogrotateHandler(object):
             self.logger.error( _('Could not read configuration') )
             sys.exit(1)
 
+        if not self._check_pidfile():
+            sys.exit(3)
+
         self.logger.debug( _("Logrotating ready for work") )
 
     #------------------------------------------------------------
@@ -212,18 +223,35 @@ class LogrotateHandler(object):
 
         pp = pprint.PrettyPrinter(indent=4)
         structure = {
-            'config':      self.config,
-            'config_file': self.config_file,
-            'force':       self.force,
-            'local_dir':   self.local_dir,
-            'mail_cmd':    self.mail_cmd,
-            'scripts':     self.scripts,
-            'state_file':  self.state_file,
-            'pid_file':    self.pid_file,
-            'test':        self.test,
-            'verbose':     self.verbose,
+            'config':          self.config,
+            'config_file':     self.config_file,
+            'force':           self.force,
+            'local_dir':       self.local_dir,
+            'mail_cmd':        self.mail_cmd,
+            'scripts':         self.scripts,
+            'state_file':      self.state_file,
+            'pid_file':        self.pid_file,
+            'pidfile_created': self.pidfile_created,
+            'test':            self.test,
+            'verbose':         self.verbose,
         }
         return pp.pformat(structure)
+
+    #------------------------------------------------------------
+    def __del__(self):
+        '''
+        Destructor.
+        No parameters, no return value.
+        '''
+
+        if self.pidfile_created:
+            if os.path.exists(self.pid_file):
+                try:
+                    os.remove(self.pid_file)
+                except OSError, e:
+                    self.logger.error( _("Error removing PID file '%(file)s': %(msg)")
+                        % { 'file': self.pid_file, 'msg': str(e) }
+                    )
 
     #------------------------------------------------------------
     def read_configuration(self):
@@ -260,6 +288,7 @@ class LogrotateHandler(object):
                 self.state_file = config_reader.global_option['statusfile']
             else:
                 self.state_file = os.sep + os.path.join('var', 'lib', 'py-logrotate.status')
+        self.logger.debug( _("Statefile: '%s'") % (self.state_file) )
 
         if self.pid_file is None:
             if 'pidfile' in config_reader.global_option and \
@@ -267,11 +296,65 @@ class LogrotateHandler(object):
                 self.pid_file = config_reader.global_option['pidfile']
             else:
                 self.pid_file = os.sep + os.path.join('var', 'run', 'py-logrotate.pid')
+        self.logger.debug( _("PID file: '%s'") % (self.pid_file) )
 
         return True
 
     #------------------------------------------------------------
+    def _check_pidfile(self):
+        '''
+        Checks the existence and consistence of self.pid_file.
 
+        Exit, if there is a running process with a PID from this file.
+        Doesn't exit in test mode.
+
+        Writes on success (no other process) this PID file.
+
+        @return: Success
+        @rtype:  bool
+        '''
+
+        if not os.path.exists(self.pid_file):
+            return True
+
+        if self.test:
+            self.logger.info( _("Testmode, skip test of PID file '%s'.") % (self.pid_file) )
+            return True
+
+        f = open(self.pid_file, 'r')
+        line = f.readline()
+        f.close()
+
+        pid = None
+        line = line.strip()
+        match = re.search(r'^\s*(\d+)\s*$', line)
+        if match:
+            pid = int(match.group(1))
+        else:
+            self.logger.warn( _("No useful information found in PID file '%(file)s': '%(line)s'")
+                % { 'file': self.pid_file, 'line': line }
+            )
+            return False
+
+        if self.verbose > 1:
+            self.logger.debug( _("Trying check for process with PID %d ...") % (pid) )
+        try:
+            os.kill(pid, 0)
+        except OSError, err:
+            if err.errno == errno.ESRCH:
+                self.logger.info( _("Process with PID %d anonymous died.") % (pid) )
+                return True
+            elif err.errno == errno.EPERM:
+                self.logger.warn( _("No permission to signal the process %d ...") % (pid) )
+                return True
+            else:
+                self.logger.warn( _("Unknown error: '%s'") % (str(err)) )
+                return False
+        else:
+            self.logger.error( _("Process with PID %d is allready running.") % (pid) )
+            return False
+
+        return False
 
 #========================================================================
 
