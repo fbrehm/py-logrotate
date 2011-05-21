@@ -128,7 +128,13 @@ class LogrotateHandler(object):
         @type: bool
         '''
 
-        self.state_file = state_file
+        self.state_file = None
+        '''
+        @ivar: the state file object after his initialisation
+        @type: LogRotateStateFile or None
+        '''
+
+        self.state_file_name = state_file
         '''
         @ivar: Path of state file (from commandline or from configuration)
         @type: str
@@ -229,12 +235,16 @@ class LogrotateHandler(object):
             'local_dir':       self.local_dir,
             'mail_cmd':        self.mail_cmd,
             'scripts':         self.scripts,
-            'state_file':      self.state_file,
+            'state_file':      None,
+            'state_file_name': self.state_file_name,
             'pid_file':        self.pid_file,
             'pidfile_created': self.pidfile_created,
             'test':            self.test,
             'verbose':         self.verbose,
         }
+        if self.state_file:
+            structure['state_file'] = str(self.state_file)
+
         return pp.pformat(structure)
 
     #------------------------------------------------------------
@@ -282,13 +292,13 @@ class LogrotateHandler(object):
             self.logger.error( str(e) )
             sys.exit(10)
 
-        if self.state_file is None:
+        if self.state_file_name is None:
             if 'statusfile' in config_reader.global_option and \
                     config_reader.global_option['statusfile'] is not None:
-                self.state_file = config_reader.global_option['statusfile']
+                self.state_file_name = config_reader.global_option['statusfile']
             else:
-                self.state_file = os.sep + os.path.join('var', 'lib', 'py-logrotate.status')
-        self.logger.debug( _("Statefile: '%s'") % (self.state_file) )
+                self.state_file_name = os.sep + os.path.join('var', 'lib', 'py-logrotate.status')
+        self.logger.debug( _("Name of state file: '%s'") % (self.state_file_name) )
 
         if self.pid_file is None:
             if 'pidfile' in config_reader.global_option and \
