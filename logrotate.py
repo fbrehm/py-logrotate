@@ -78,16 +78,21 @@ def main():
         if verbose_level < 1:
             verbose_level = 1
 
-    lr_handler = LogrotateHandler(
-        opt_parser.args[0],
-        test       = testmode,
-        verbose    = verbose_level,
-        force      = opt_parser.options.force,
-        state_file = opt_parser.options.statefile,
-        pid_file   = opt_parser.options.pidfile,
-        mail_cmd   = opt_parser.options.mailcmd,
-        local_dir  = local_dir,
-    )
+    lr_handler = None
+    try:
+        lr_handler = LogrotateHandler(
+            opt_parser.args[0],
+            test       = testmode,
+            verbose    = verbose_level,
+            force      = opt_parser.options.force,
+            state_file = opt_parser.options.statefile,
+            pid_file   = opt_parser.options.pidfile,
+            mail_cmd   = opt_parser.options.mailcmd,
+            local_dir  = local_dir,
+        )
+    except LogrotateHandlerError, e:
+        sys.stderr.write(str(e) + "\n")
+        sys.exit(9)
 
     if opt_parser.options.verbose > 2:
         print _("Handler object structure") + ':\n' + str(lr_handler)

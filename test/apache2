@@ -2,6 +2,7 @@
 # Contributes by Chuck Short
 #
 
+pidfile /home/frank/Development/Python/PyLogrotate/logrotate.pid
 
 /var/log/apache2/access_log
 /var/log/apache2/*.log

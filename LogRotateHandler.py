@@ -215,6 +215,9 @@ class LogrotateHandler(object):
         if not self._check_pidfile():
             sys.exit(3)
 
+        if not self._write_pidfile():
+            sys.exit(3)
+
         self.logger.debug( _("Logrotating ready for work") )
 
     #------------------------------------------------------------
@@ -254,8 +257,11 @@ class LogrotateHandler(object):
         No parameters, no return value.
         '''
 
+        _ = self.t.lgettext
+
         if self.pidfile_created:
             if os.path.exists(self.pid_file):
+                self.logger.debug( _("Removing PID file '%s' ...") % (self.pid_file) )
                 try:
                     os.remove(self.pid_file)
                 except OSError, e:
@@ -324,14 +330,27 @@ class LogrotateHandler(object):
         @rtype:  bool
         '''
 
+        _ = self.t.lgettext
+
         if not os.path.exists(self.pid_file):
+            if self.verbose > 1:
+                self.logger.debug( _("PID file '%s' doesn't exists.") % (self.pid_file) )
             return True
 
         if self.test:
             self.logger.info( _("Testmode, skip test of PID file '%s'.") % (self.pid_file) )
             return True
 
-        f = open(self.pid_file, 'r')
+        self.logger.debug( _("Reading PID file '%s' ...") % (self.pid_file) )
+        f = None
+        try:
+            f = open(self.pid_file, 'r')
+        except IOError, e:
+            raise LogrotateHandlerError(
+                _("Couldn't open PID file '%(file)s' for reading: %(msg)s")
+                % { 'file': self.pid_file, 'msg': str(e) }
+            )
+
         line = f.readline()
         f.close()
 
@@ -365,6 +384,43 @@ class LogrotateHandler(object):
             return False
 
         return False
+
+    #------------------------------------------------------------
+    def _write_pidfile(self):
+        '''
+        Writes the PID of the current process in self.pid_file.
+
+        Exit with an error, if it's not possible to write.
+        Doesn't exit in test mode.
+
+        Writes on success (no other process) this PID file.
+
+        @return: Success
+        @rtype:  bool
+        '''
+
+        _ = self.t.lgettext
+
+        if self.test:
+            self.logger.info( _("Testmode, skip writing of PID file '%s'.") % (self.pid_file) )
+            return True
+
+        self.logger.info( _("Writing PID file '%s' ...") % (self.pid_file) )
+
+        f = None
+        try:
+            f = open(self.pid_file, 'w')
+            f.write(str(os.getppid()) + "\n")
+            f.close()
+        except IOError, e:
+            raise LogrotateHandlerError(
+                _("Couldn't open PID file '%(file)s' for writing: %(msg)s")
+                % { 'file': self.pid_file, 'msg': str(e) }
+            )
+
+        self.pidfile_created = True
+
+        return True
 
 #========================================================================
 
