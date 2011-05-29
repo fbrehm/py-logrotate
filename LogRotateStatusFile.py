@@ -45,6 +45,7 @@ class LogrotateStatusFile(object):
     def __init__( self, file_name,
                         local_dir  = None,
                         verbose    = 0,
+                        test_mode  = False,
                         logger     = None,
     ):
         '''
@@ -54,6 +55,8 @@ class LogrotateStatusFile(object):
         @type config_file:  str
         @param verbose:     verbosity (debug) level
         @type verbose:      int
+        @param test_mode:   test mode - no write actions are made
+        @type test_mode:    bool
         @param logger:      logger object to use for logging a.s.o.
         @type logger:       logging.getLogger or None
         @param local_dir:   The directory, where the i18n-files (*.mo)
@@ -94,10 +97,38 @@ class LogrotateStatusFile(object):
         @type: str
         '''
 
+        self.fd = None
+        '''
+        @ivar: the file object of the opened status file, or None, if not opened
+        @type: file or None
+        '''
+
+        self.status_version = None
+        '''
+        @ivar: the version of the status file (2 or 3)
+        @type: int or None
+        '''
+
+        self.test_mode = test_mode
+        '''
+        @ivar: test mode - no write actions are made
+        @type: bool
+        '''
+
         self.logger = logger
         '''
         @ivar: logger object
         @type: logging.getLogger
+        '''
+
+        self.file_state = {}
+        '''
+        @ivar: the last rotation date of every particular log file
+               keys are the asolute filenames (without globbing)
+               and the values are datetime objects of the last rotation
+               referencing to UTC
+               If no rotation was made, value is datetime.min().
+        @type: dict
         '''
 
         if not logger:
@@ -128,6 +159,11 @@ class LogrotateStatusFile(object):
             # add ch to logger
             self.logger.addHandler(ch)
 
+    #-------------------------------------------------------
+    def _read(self, must_exists = True):
+
+        pass
+        return True
 
 #========================================================================
 
