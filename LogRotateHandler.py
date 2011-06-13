@@ -27,6 +27,9 @@ import errno
 from LogRotateConfig import LogrotateConfigurationError
 from LogRotateConfig import LogrotateConfigurationReader
 
+from LogRotateStatusFile import LogrotateStatusFileError
+from LogRotateStatusFile import LogrotateStatusFile
+
 revision = '$Revision$'
 revision = re.sub( r'\$', '', revision )
 revision = re.sub( r'Revision: ', r'r', revision )

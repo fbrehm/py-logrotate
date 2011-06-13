@@ -33,6 +33,13 @@ __license__    = 'GPL3'
 
 #========================================================================
 
+class LogrotateStatusFileError(Exception):
+    '''
+    Base class for exceptions in this module.
+    '''
+
+#========================================================================
+
 class LogrotateStatusFile(object):
     '''
     Class for operations with the logrotate state file
@@ -95,6 +102,12 @@ class LogrotateStatusFile(object):
         '''
         @ivar: the initial file name of the status file to use
         @type: str
+        '''
+
+        self.file_name_is_absolute = False
+        '''
+        @ivar: flag, that shows, that the file name is now an absolute path
+        @type: bool
         '''
 
         self.fd = None
@@ -161,8 +174,59 @@ class LogrotateStatusFile(object):
 
     #-------------------------------------------------------
     def _read(self, must_exists = True):
+        '''
+        Reads the status file and put the results in the dict self.file_state.
+        Puts back the absolute path of the status file in self.file_name on success.
 
-        pass
+        Throws a LogrotateStatusFileError on a error.
+
+        @param must_exists: throws an exception, if true and the status file
+                            doesn't exists
+        @type must_exists:  bool
+
+        @return:    success of reading
+        @rtype:     bool
+        '''
+
+        self.file_state = {}
+        _ = self.t.lgettext
+
+        # Check for existence of status file
+        if not os.path.exists(self.file_name):
+            msg = _("Status file '%s' doesn't exists.") % (self.file_name)
+            if must_exists:
+                raise LogrotateStatusFileError(msg)
+            else:
+                self.logger.info(msg)
+            return False
+
+        # makes the name of the status file an absolute path
+        if not self.file_name_is_absolute:
+            self.file_name = os.path.abspath(self.file_name)
+            self.file_name_is_absolute = True
+            if self.verbose > 2:
+                msg = _("Absolute path of status file is now '%s'.") % (self.file_name)
+                self.logger.debug(msg)
+
+        # Checks, that the status file is a regular file
+        if not os.path.isfile(self.file_name):
+            msg = _("Status file '%s' is not a regular file.") % (self.file_name)
+            raise LogrotateStatusFileError(msg)
+            return False
+
+        msg = _("Reading status file '%s' ...") % (self.file_name)
+        self.logger.debug(msg)
+
+        fd = None
+        try:
+            fd = open(self.file_name, 'Ur')
+        except IOError, e:
+            msg = _("Could not read status file '%s': ") % (configfile) + str(e)
+            raise LogrotateStatusFileError(msg)
+        self.fd = fd
+
+        
+
         return True
 
 #========================================================================
