@@ -223,6 +223,15 @@ class LogrotateHandler(object):
 
         self.logger.debug( _("Logrotating ready for work") )
 
+        # Create status file object
+        self.state_file = LogrotateStatusFile(
+            file_name = self.state_file_name,
+            local_dir = self.local_dir,
+            verbose   = self.verbose,
+            test_mode = self.test,
+            logger    = self.logger,
+        )
+
     #------------------------------------------------------------
     def __str__(self):
         '''
@@ -249,7 +258,7 @@ class LogrotateHandler(object):
             'verbose':         self.verbose,
         }
         if self.state_file:
-            structure['state_file'] = str(self.state_file)
+            structure['state_file'] = self.state_file.as_dict()
 
         return pp.pformat(structure)
 

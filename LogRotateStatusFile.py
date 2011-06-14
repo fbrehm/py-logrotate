@@ -19,6 +19,11 @@ import os
 import os.path
 import gettext
 import logging
+import pprint
+
+from datetime import tzinfo, timedelta, datetime, date, time
+
+from LogRotateCommon import split_parts 
 
 revision = '$Revision$'
 revision = re.sub( r'\$', '', revision )
@@ -40,6 +45,25 @@ class LogrotateStatusFileError(Exception):
 
 #========================================================================
 
+ZERO = timedelta(0)
+
+class UTC(tzinfo):
+    """UTC"""
+
+    def utcoffset(self, dt):
+        return ZERO
+
+    def tzname(self, dt):
+        return "UTC"
+
+    def dst(self, dt):
+        return ZERO
+
+utc = UTC()
+
+
+#========================================================================
+
 class LogrotateStatusFile(object):
     '''
     Class for operations with the logrotate state file
@@ -56,7 +80,7 @@ class LogrotateStatusFile(object):
                         logger     = None,
     ):
         '''
-        Costructor.
+        Constructor.
 
         @param config_file: the file name of the status file
         @type config_file:  str
@@ -72,7 +96,7 @@ class LogrotateStatusFile(object):
         @type local_dir:    str or None
 
         @return: None
-	'''
+        '''
 
         self.local_dir = local_dir
         '''
@@ -172,6 +196,45 @@ class LogrotateStatusFile(object):
             # add ch to logger
             self.logger.addHandler(ch)
 
+        # Initial read
+        self._read(must_exists = False)
+
+    #-------------------------------------------------------
+    def as_dict(self):
+        '''
+        Transforms the elements of the object into a dict
+
+        @return: structure as dict
+        @rtype:  dict
+        '''
+
+        res = {}
+        res['local_dir']             = self.local_dir
+        res['t']                     = self.t
+        res['verbose']               = self.verbose
+        res['file_name']             = self.file_name
+        res['file_name_is_absolute'] = self.file_name_is_absolute
+        res['fd']                    = self.fd
+        res['status_version']        = self.status_version
+        res['test_mode']             = self.test_mode
+        res['logger']                = self.logger
+        res['file_state']            = self.file_state
+
+        return res
+
+    #------------------------------------------------------------
+    def __str__(self):
+        '''
+        Typecasting function for translating object structure
+        into a string
+
+        @return: structure as string
+        @rtype:  str
+        '''
+
+        pp = pprint.PrettyPrinter(indent=4)
+        return pp.pformat(self.as_dict())
+
     #-------------------------------------------------------
     def _read(self, must_exists = True):
         '''
@@ -225,7 +288,88 @@ class LogrotateStatusFile(object):
             raise LogrotateStatusFileError(msg)
         self.fd = fd
 
-        
+        try:
+            # Reading the lines of the status file
+            i = 0
+            for line in fd:
+                i += 1
+                line = line.strip()
+                if self.verbose > 4:
+                    msg = _("Performing status file line '%(line)s' (file: '%(file)s', row: %(row)d)") \
+                            % {'line': line, 'file': self.file_name, 'row': i, }
+                    self.logger.debug(msg)
+
+                # check for file heading
+                if i == 1:
+                    match = re.search(r'^logrotate\s+state\s+-+\s+version\s+([23])$', line, re.IGNORECASE)
+                    if match:
+                        # Correct file header
+                        self.status_version = int(match.group(1))
+                        if self.verbose > 1:
+                            msg = _("Idendified version of status file: %d") % (self.status_version)
+                            self.logger.debug(msg)
+                        continue
+                    else:
+                        # Wrong header
+                        msg = _("Incompatible version of status file '%(file)s': %(header)s") \
+                                % { 'file': self.file_name, 'header': line }
+                        fd.close()
+                        raise LogrotateStatusFileError(msg)
+
+                if line == '':
+                    continue
+
+                parts = split_parts(line)
+                logfile = parts[0]
+                rdate   = parts[1]
+                if self.verbose > 2:
+                    msg = _("Found logfile '%(file)s' with rotation date '%(date)s'.") \
+                            % { 'file': logfile, 'date': rdate }
+                    self.logger.debug(msg)
+
+                if logfile and rdate:
+                    match = re.search(r'\s*(\d+)[_\-](\d+)[_\-](\d+)(?:[\s\-_]+(\d+)[_\-:](\d+)[_\-:](\d+))?', rdate)
+                    if not match:
+                        msg = _("Could not determine date format: '%(date)s' (file: '%(file)s', row: %(row)d)") \
+                                % {'date': rdate, 'file': logfile, 'row': i, }
+                        self.logger.warning(msg)
+                        continue
+                    d = {
+                        'Y': int(match.group(1)),
+                        'm': int(match.group(2)),
+                        'd': int(match.group(3)),
+                        'H': 0,
+                        'M': 0,
+                        'S': 0,
+                    }
+                    if match.group(4) is not None:
+                        d['H'] = int(match.group(4))
+                    if match.group(5) is not None:
+                        d['M'] = int(match.group(5))
+                    if match.group(6) is not None:
+                        d['S'] = int(match.group(6))
+
+                    dt = None
+                    try:
+                        dt = datetime(d['Y'], d['m'], d['d'], d['H'], d['M'], d['S'], tzinfo = utc)
+                    except ValueError, e:
+                        msg = _("Invalid date: '%(date)s' (file: '%(file)s', row: %(row)d)") \
+                                % {'date': rdate, 'file': logfile, 'row': i, }
+                        self.logger.warning(msg)
+                        continue
+
+                    self.file_state[logfile] = dt
+
+                else:
+
+                    msg = _("Neither a logfile nor a date found in line '%(line)s' (file: '%(file)s', row: %(row)d)") \
+                            % {'line': line, 'file': logfile, 'row': i, }
+                    self.logger.warning(msg)
+
+        finally:
+            fd.close
+
+        self.fd = None
 
         return True
 
