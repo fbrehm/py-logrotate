@@ -279,8 +279,81 @@ class LogrotateStatusFile(object):
         self._read(must_exists = False)
         self.file_state[logfile] = date_utc
 
+        self._write()
 
         return date_utc
+
+    #------------------------------------------------------------
+    def _write(self):
+        '''
+        Writes the content of self.file_state in the state file.
+
+        @return:    success of writing
+        @rtype:     bool
+        '''
+
+        _ = self.t.lgettext
+
+        # setting a failing version of the status file
+        if not self.status_version:
+            self.status_version = 3
+
+        max_length = 1
+
+        # Retrieving the maximum length of the logfiles for version 3
+        if self.status_version == 3:
+            for logfile in self.file_state:
+                if len(logfile) > max_length:
+                    max_length = len(logfile)
+            max_length += 2
+
+        fd = None
+        # Big try block for ensure closing open status file
+        try:
+
+            msg = _("Open status file '%s' for writing ...") % (self.file_name)
+            self.logger.debug(msg)
+
+            # open status file for writing
+            if not self.test_mode:
+                try:
+                    fd = open(self.file_name, 'w')
+                except IOError, e:
+                    msg = _("Could not open status file '%s' for write: ") % (self.file_name) + str(e)
+                    raise LogrotateStatusFileError(msg)
+
+            # write logrotate version line
+            line = 'Logrotate State -- Version 3'
+            if self.status_version == 2:
+                line = 'logrotate state -- version 2'
+            if self.verbose > 2:
+                msg = _("Writing version line '%s'.") % (line)
+                self.logger.debug(msg)
+            line += '\n'
+            if fd:
+                fd.write(line)
+
+            # iterate over logfiles in self.file_state
+            for logfile in sorted(self.file_state.keys(), lambda x,y: cmp(x.lower(), y.lower())):
+                rotate_date = self.file_state[logfile]
+                date_str = "%d-%d-%d" % (rotate_date.year, rotate_date.month, rotate_date.day)
+                if self.status_version == 3:
+                    date_str = ( "%d-%02d-%02d_%02d:%02d:%02d" %
+                                (rotate_date.year, rotate_date.month, rotate_date.day,
+                                 rotate_date.hour, rotate_date.minute, rotate_date.second))
+                line = '%-*s %s' % (max_length, ('"' + logfile + '"'), date_str)
+                if self.verbose > 2:
+                    msg = _("Writing line '%s'.") % (line)
+                    self.logger.debug(msg)
+                if fd:
+                    fd.write(line + "\n")
+
+        finally:
+            if fd:
+                fd.close()
+                fd = None
+
+        return True
 
     #------------------------------------------------------------
     def __str__(self):
@@ -409,7 +482,7 @@ class LogrotateStatusFile(object):
         try:
             fd = open(self.file_name, 'Ur')
         except IOError, e:
-            msg = _("Could not read status file '%s': ") % (configfile) + str(e)
+            msg = _("Could not read status file '%s': ") % (self.file_name) + str(e)
             raise LogrotateStatusFileError(msg)
         self.fd = fd
 
