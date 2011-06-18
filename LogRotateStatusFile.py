@@ -158,6 +158,12 @@ class LogrotateStatusFile(object):
         @type: bool
         '''
 
+        self.has_changed = False
+        '''
+        @ivar: flag, whether something has changed and needs to be written
+        @type: bool
+        '''
+
         self.logger = logger
         '''
         @ivar: logger object
@@ -207,6 +213,20 @@ class LogrotateStatusFile(object):
         self._check_permissions()
 
     #-------------------------------------------------------
+    def __del__(self):
+        '''
+        Destructor.
+        Enforce saving of status file, if something has changed.
+        '''
+
+        _ = self.t.lgettext
+        msg = _("Status file object will destroyed.")
+        self.logger.debug(msg)
+
+        if self.has_changed:
+            self.write()
+
+    #-------------------------------------------------------
     def as_dict(self):
         '''
         Transforms the elements of the object into a dict
@@ -227,6 +247,7 @@ class LogrotateStatusFile(object):
         res['logger']                = self.logger
         res['file_state']            = self.file_state
         res['was_read']              = self.was_read
+        res['has_changed']           = self.has_changed
 
         return res
 
@@ -276,15 +297,16 @@ class LogrotateStatusFile(object):
                 % {'file': logfile, 'date': date_utc.isoformat(' ') }
         self.logger.debug(msg)
 
-        self._read(must_exists = False)
+        #self._read(must_exists = False)
         self.file_state[logfile] = date_utc
+        self.has_changed = True
 
-        self._write()
+        #self.write()
 
         return date_utc
 
     #------------------------------------------------------------
-    def _write(self):
+    def write(self):
         '''
         Writes the content of self.file_state in the state file.
 
@@ -353,6 +375,7 @@ class LogrotateStatusFile(object):
                 fd.close()
                 fd = None
 
+        self.has_changed = False
         return True
 
     #------------------------------------------------------------

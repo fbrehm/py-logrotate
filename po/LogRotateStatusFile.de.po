@@ -20,6 +20,10 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
+#:LogRotateStatusFile.py:223
+msgid "Status file object will destroyed."
+msgstr "Statusdatei-Objekt wird zerstört."
+
 #: LogRotateStatusFile.py:275
 #, python-format
 msgid "Setting rotation date of '%(file)s' to '%(date)s' ..."

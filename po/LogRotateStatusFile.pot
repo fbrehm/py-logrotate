@@ -20,6 +20,10 @@ msgstr ""
 "Content-Type: text/plain; charset=CHARSET\n"
 "Content-Transfer-Encoding: 8bit\n"
 
+#:LogRotateStatusFile.py:223
+msgid "Status file object will destroyed."
+msgstr ""
+
 #: LogRotateStatusFile.py:275
 #, python-format
 msgid "Setting rotation date of '%(file)s' to '%(date)s' ..."
