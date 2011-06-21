@@ -23,6 +23,7 @@ import pprint
 import os
 import os.path
 import errno
+import socket
 
 from LogRotateConfig import LogrotateConfigurationError
 from LogRotateConfig import LogrotateConfigurationReader
@@ -180,6 +181,25 @@ class LogrotateHandler(object):
         @type: list
         '''
 
+        self.template = {}
+        '''
+        @ivar: things to do in olddir stuff
+        @type: dict
+        '''
+        self._prepare_templates()
+
+        self.files_delete = {}
+        '''
+        @ivar: dictionary with all files, they have to delete
+        @type: dict
+        '''
+
+        self.files_compress = {}
+        '''
+        @ivar: dictionary with all files, they have to compress
+        @type: dict
+        '''
+
         #################################################
         # Create a logger object
         self.logger = logging.getLogger('pylogrotate')
@@ -243,24 +263,41 @@ class LogrotateHandler(object):
         '''
 
         pp = pprint.PrettyPrinter(indent=4)
-        structure = {
+        structure = self.as_dict()
+        return pp.pformat(structure)
+
+    #-------------------------------------------------------
+    def as_dict(self):
+        '''
+        Transforms the elements of the object into a dict
+
+        @return: structure as dict
+        @rtype:  dict
+        '''
+
+        res = {
             'config':          self.config,
             'config_file':     self.config_file,
+            'files_delete':    self.files_delete,
+            'files_compress':  self.files_compress,
             'force':           self.force,
             'local_dir':       self.local_dir,
+            'logger':          self.logger,
             'mail_cmd':        self.mail_cmd,
             'scripts':         self.scripts,
             'state_file':      None,
             'state_file_name': self.state_file_name,
             'pid_file':        self.pid_file,
             'pidfile_created': self.pidfile_created,
+            't':               self.t,
             'test':            self.test,
+            'template':        self.template,
             'verbose':         self.verbose,
         }
         if self.state_file:
-            structure['state_file'] = self.state_file.as_dict()
+            res['state_file'] = self.state_file.as_dict()
 
-        return pp.pformat(structure)
+        return res
 
     #------------------------------------------------------------
     def __del__(self):
@@ -280,6 +317,30 @@ class LogrotateHandler(object):
                     self.logger.error( _("Error removing PID file '%(file)s': %(msg)")
                         % { 'file': self.pid_file, 'msg': str(e) }
                     )
+
+    #------------------------------------------------------------
+    def _prepare_templates(self):
+        '''
+        Preparing self.template with values for placeholders
+        in olddir stuff.
+        '''
+
+        self.template = {}
+
+        hostname = socket.getfqdn()
+        self.template['nodename'] = hostname
+        self.template['domain'] = ''
+
+        match = re.search(r'^([^\.]+)\.(.*)', hostname)
+        if match:
+            self.template['nodename'] = match.group(1)
+            self.template['domain'] = match.group(2)
+
+        uname = os.uname()
+        self.template['sysname'] = uname[0]
+        self.template['release'] = uname[2]
+        self.template['version'] = uname[3]
+        self.template['machine'] = uname[4]
 
     #------------------------------------------------------------
     def read_configuration(self):
