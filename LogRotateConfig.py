@@ -157,7 +157,7 @@ class LogrotateConfigurationReader(object):
                         local_dir  = None,
     ):
         '''
-        Costructor.
+        Constructor.
 
         @param config_file: the configuration file to use
         @type config_file:  str

@@ -59,7 +59,7 @@ class LogrotateOptParser(object):
                         local_dir = None,
     ):
         '''
-        Costructor.
+        Constructor.
 
         @param prog:      The name of the calling process (e.g. sys.argv[0])
         @type prog:       str

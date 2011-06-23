@@ -82,18 +82,18 @@ class LogrotateStatusFile(object):
         '''
         Constructor.
 
-        @param config_file: the file name of the status file
-        @type config_file:  str
-        @param verbose:     verbosity (debug) level
-        @type verbose:      int
-        @param test_mode:   test mode - no write actions are made
-        @type test_mode:    bool
-        @param logger:      logger object to use for logging a.s.o.
-        @type logger:       logging.getLogger or None
-        @param local_dir:   The directory, where the i18n-files (*.mo)
-                            are located. If None, then system default
-                            (/usr/share/locale) is used.
-        @type local_dir:    str or None
+        @param file_name: the file name of the status file
+        @type file_name:  str
+        @param verbose:   verbosity (debug) level
+        @type verbose:    int
+        @param test_mode: test mode - no write actions are made
+        @type test_mode:  bool
+        @param logger:    logger object to use for logging a.s.o.
+        @type logger:     logging.getLogger or None
+        @param local_dir: The directory, where the i18n-files (*.mo)
+                          are located. If None, then system default
+                          (/usr/share/locale) is used.
+        @type local_dir:  str or None
 
         @return: None
         '''

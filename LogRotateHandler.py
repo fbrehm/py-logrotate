@@ -72,12 +72,12 @@ class LogrotateHandler(object):
                         local_dir    = None,
     ):
         '''
-        Costructor.
+        Constructor.
 
         @param config_file:  the configuration file to use
         @type config_file:   str
-        @param prog:         testmode, no real actions are made
-        @type prog:          bool
+        @param test:         testmode, no real actions are made
+        @type test:          bool
         @param verbose:      verbosity (debug) level
         @type verbose:       int
         @param force:        Force file rotation
