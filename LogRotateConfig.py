@@ -21,6 +21,7 @@ import os
 import os.path
 import pwd
 import grp
+import glob
 
 from LogRotateCommon import split_parts, email_valid, period2days, human2bytes
 
@@ -325,6 +326,12 @@ class LogrotateConfigurationReader(object):
         @type: list
         '''
 
+        self.defined_logfiles = {}
+        '''
+        @ivar: all even defined logfiles after globing of file patterns
+        @type: dict
+        '''
+
         self.logger.debug( _("Logrotate config reader initialised") )
 
     #------------------------------------------------------------
@@ -338,21 +345,38 @@ class LogrotateConfigurationReader(object):
         '''
 
         pp = pprint.PrettyPrinter(indent=4)
-        structure = {
-            'config':          self.config,
-            'config_file':     self.config_file,
-            'config_files':    self.config_files,
-            'config_was_read': self.config_was_read,
-            'default':         self.default,
-            'new_log':         self.new_log,
-            'local_dir':       self.local_dir,
-            'search_path':     self.search_path,
-            'scripts':         self.scripts,
-            'shred_command':   self.shred_command,
-            'taboo':           self.taboo,
-            'verbose':         self.verbose,
-        }
+        structure = self.as_dict()
         return pp.pformat(structure)
+
+    #-------------------------------------------------------
+    def as_dict(self):
+        '''
+        Transforms the elements of the object into a dict
+
+        @return: structure as dict
+        @rtype:  dict
+        '''
+
+        res = {
+            'config':           self.config,
+            'config_file':      self.config_file,
+            'config_files':     self.config_files,
+            'config_was_read':  self.config_was_read,
+            'default':          self.default,
+            'defined_logfiles': self.defined_logfiles,
+            'global_option':    self.global_option,
+            'logger':           self.logger,
+            'local_dir':        self.local_dir,
+            'new_log':          self.new_log,
+            'search_path':      self.search_path,
+            'scripts':          self.scripts,
+            'shred_command':    self.shred_command,
+            't':                self.t,
+            'taboo':            self.taboo,
+            'verbose':          self.verbose,
+        }
+
+        return res
 
     #------------------------------------------------------------
     def _reset_defaults(self):
@@ -795,7 +819,9 @@ class LogrotateConfigurationReader(object):
                     )
                 if self.verbose > 3:
                     self.logger.debug( ( _("New logfile definition:") + "\n" + pp.pformat(self.new_log)))
-                self.config.append(self.new_log)
+                found_files = self._assign_logfiles()
+                if found_files > 0:
+                    self.config.append(self.new_log)
                 in_fd = False
                 in_logfile_list = False
 
@@ -1806,6 +1832,56 @@ class LogrotateConfigurationReader(object):
 
         for script_type in script_directives:
             self.new_log[script_type] = None
+
+    #------------------------------------------------------------
+    def _assign_logfiles(self):
+        '''
+        Finds all existing logfiles of self.new_log according to the
+        shell matching patterns in self.new_log['file_patterns'].
+        If a logfile was even defined, a warning is omitted and the
+        new definition will thrown away.
+
+        @return: number of found logfiles according to self.new_log['file_patterns']
+        @rtype:  int
+        '''
+
+        _ = self.t.lgettext
+
+        if len(self.new_log['file_patterns']) <= 0:
+            msg = _("No logfile pattern defined.")
+            self.logger.warning(msg)
+            return 0
+
+        for pattern in self.new_log['file_patterns']:
+            if self.verbose > 1:
+                msg = _("Find all logfiles for shell matching pattern '%s' ...") \
+                       % (pattern)
+                self.logger.debug(msg)
+            logfiles = glob.glob(pattern)
+            if len(logfiles) <= 0:
+                msg = _("No logfile found for pattern '%s'.") % (pattern)
+                if self.new_log['missingok']:
+                    self.logger.debug(msg)
+                else:
+                    self.logger.warning(msg)
+                continue
+            for logfile in logfiles:
+                if self.verbose > 1:
+                    msg = _("Found logfile '%(file)s for pattern '%(pattern)s'.") \
+                           % {'file': logfile, 'pattern': pattern }
+                    self.logger.debug(msg)
+                if logfile in self.defined_logfiles:
+                    msg = _("Logfile '%s' is even defined and so not taken a second time.") \
+                           % (logfile)
+                    self.logger.warning(msg)
+                    continue
+                if self.verbose > 1:
+                    msg = _("Logfile '%s' will taken.") \
+                            % (logfile)
+                self.defined_logfiles[logfile] = True
+                self.new_log['files'].append(logfile)
+
+        return len(self.new_log['files'])
 
 #========================================================================
 

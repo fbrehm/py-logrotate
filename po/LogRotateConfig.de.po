@@ -666,3 +666,33 @@ msgstr "Die Direktive »%(directive)s« ist nicht außerhalb einer Logdateidefin
 #: LogRotateConfig.py:1757
 msgid "Starting a new log directive with default values."
 msgstr "Beginn einer neuen Logdateidefinition mit Vorgabewerten."
+
+#: LogRotateConfig.py:1848
+msgid "No logfile pattern defined."
+msgstr "Keine Logdatei bzw. Dateisuchmuster definiert."
+
+#: LogRotateConfig.py:1854
+#, python-format
+msgid "Find all logfiles for shell matching pattern '%s' ..."
+msgstr "Finde alle Logdateien für das Shell-Suchmuster »%s« ..."
+
+#: LogRotateConfig.py:1862
+#, python-format
+msgid "No logfile found for pattern '%s'."
+msgstr "Keine Logdateien zum Suchmuster »%s« gefunden."
+
+#: LogRotateConfig.py:1870
+#, python-format
+msgid "Found logfile '%(file)s for pattern '%(pattern)s'."
+msgstr "Logdatei »%(file)s« zum Suchmuster »%(pattern)s« gefunden."
+
+#: LogRotateConfig.py:1874
+#, python-format
+msgid "Logfile '%s' is even defined and so not taken a second time."
+msgstr "Die Logdatei »%s« wurde bereits definiert und damit nicht noch einmal berücksichtigt."
+
+#: LogRotateConfig.py:1879
+#, python-format
+msgid "Logfile '%s' will taken."
+msgstr "Die Logdatei »%s« wird berücksichtigt."
+
