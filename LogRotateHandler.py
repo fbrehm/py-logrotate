@@ -62,36 +62,39 @@ class LogrotateHandler(object):
 
     #-------------------------------------------------------
     def __init__( self, config_file,
-                        test       = False,
-                        verbose    = 0,
-                        force      = False,
-                        state_file = None,
-                        pid_file   = None,
-                        mail_cmd   = None,
-                        local_dir  = None,
+                        test         = False,
+                        verbose      = 0,
+                        force        = False,
+                        config_check = False,
+                        state_file   = None,
+                        pid_file     = None,
+                        mail_cmd     = None,
+                        local_dir    = None,
     ):
         '''
         Costructor.
 
-        @param config_file: the configuration file to use
-        @type config_file:  str
-        @param prog:        testmode, no real actions are made
-        @type prog:         bool
-        @param verbose:     verbosity (debug) level
-        @type verbose:      int
-        @param force:       Force file rotation
-        @type force:        bool
-        @param state_file:  Path of state file (different to configuration)
-        @type state_file:   str or None
-        @param pid_file:    Path of PID file (different to configuration)
-        @type pid_file:     str or None
-        @param mail_cmd:    command to send mail (instead of using
-                            the Phyton email package)
-        @type mail_cmd:     str or None
-        @param local_dir:   The directory, where the i18n-files (*.mo)
-                            are located. If None, then system default
-                            (/usr/share/locale) is used.
-        @type local_dir:    str or None
+        @param config_file:  the configuration file to use
+        @type config_file:   str
+        @param prog:         testmode, no real actions are made
+        @type prog:          bool
+        @param verbose:      verbosity (debug) level
+        @type verbose:       int
+        @param force:        Force file rotation
+        @type force:         bool
+        @param config_check: Checks only the configuration and does nothing
+        @type config_check:  bool
+        @param state_file:   Path of state file (different to configuration)
+        @type state_file:    str or None
+        @param pid_file:     Path of PID file (different to configuration)
+        @type pid_file:      str or None
+        @param mail_cmd:     command to send mail (instead of using
+                             the Phyton email package)
+        @type mail_cmd:      str or None
+        @param local_dir:    The directory, where the i18n-files (*.mo)
+                             are located. If None, then system default
+                             (/usr/share/locale) is used.
+        @type local_dir:     str or None
 
         @return: None
         '''
@@ -234,6 +237,9 @@ class LogrotateHandler(object):
         if not self.read_configuration():
             self.logger.error( _('Could not read configuration') )
             sys.exit(1)
+
+        if config_check:
+            return
 
         if not self._check_pidfile():
             sys.exit(3)
@@ -494,6 +500,18 @@ class LogrotateHandler(object):
         self.pidfile_created = True
 
         return True
+
+    #------------------------------------------------------------
+    def rotate(self):
+        pass
+
+    #------------------------------------------------------------
+    def delete_oldfiles(self):
+        pass
+
+    #------------------------------------------------------------
+    def compress(self):
+        pass
 
 #========================================================================
 

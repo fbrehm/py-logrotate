@@ -20,14 +20,58 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-#: logrotate.py:67
+#: logrotate.py:70
 msgid "Options"
 msgstr "Optionen"
 
-#: logrotate.py:68
+#: logrotate.py:71
 msgid "Arguments"
 msgstr "Argumente"
 
-#: logrotate.py:92
+#: logrotate.py:86
+#, python-format
+msgid "[%(date)s]: %(prog)s is starting logrotation."
+msgstr "[%(date)s]: %(prog)s beginnt mit Logratation."
+
+#: logrotate.py:93
+msgid "Test mode is ON."
+msgstr "Testmodus ist AN."
+
+#: logrotate.py:95
+#, python-format
+msgid "Verbose mode is ON on level: %d"
+msgstr "Ausführlichkeitmodus is AN auf Level: %d"
+
+#: logrotate.py:97
+msgid "Force mode is ON."
+msgstr "Zwangsmodus ist AN."
+
+#: logrotate.py:99
+msgid "Configuration check only."
+msgstr "Nur Überprüfung der Konfiguration."
+
+#: logrotate.py:105
+msgid "Stage 1: reading configuration"
+msgstr "Phase 1: Einlesen der Konfiguration"
+
+#: logrotate.py:125
 msgid "Handler object structure"
 msgstr "Struktur des Handlerobjektes"
+
+#: logrotate.py:133
+msgid "Stage 2: underlying log rotation"
+msgstr "Phase 2: Eigentliches Rotieren"
+
+#: logrotate.py:139
+msgid "Stage 3: deleting of old logfiles"
+msgstr "Phase 3: Löschen der alten Logdateien"
+
+#: logrotate.py:145
+msgid "Stage 4: compression of old log files"
+msgstr "Phase 4: Komprimieren der alten Logdateien"
+
+#: logrotate.py:152
+#, python-format
+msgid "[%(date)s]: %(prog)s ended logrotation."
+msgstr "[%(date)s]: %(prog)s hat Logrotation beendet."
+

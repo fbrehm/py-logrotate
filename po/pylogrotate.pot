@@ -20,14 +20,58 @@ msgstr ""
 "Content-Type: text/plain; charset=CHARSET\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: logrotate.py:67
+#: logrotate.py:70
 msgid "Options"
 msgstr ""
 
-#: logrotate.py:68
+#: logrotate.py:71
 msgid "Arguments"
 msgstr ""
 
-#: logrotate.py:92
+#: logrotate.py:86
+#, python-format
+msgid "[%(date)s]: %(prog)s is starting logrotation."
+msgstr ""
+
+#: logrotate.py:93
+msgid "Test mode is ON."
+msgstr ""
+
+#: logrotate.py:95
+#, python-format
+msgid "Verbose mode is ON on level: %d"
+msgstr ""
+
+#: logrotate.py:97
+msgid "Force mode is ON."
+msgstr ""
+
+#: logrotate.py:99
+msgid "Configuration check only."
+msgstr ""
+
+#: logrotate.py:105
+msgid "Stage 1: reading configuration"
+msgstr ""
+
+#: logrotate.py:125
 msgid "Handler object structure"
 msgstr ""
+
+#: logrotate.py:133
+msgid "Stage 2: underlying log rotation"
+msgstr ""
+
+#: logrotate.py:139
+msgid "Stage 3: deleting of old logfiles"
+msgstr ""
+
+#: logrotate.py:145
+msgid "Stage 4: compression of old log files"
+msgstr ""
+
+#: logrotate.py:152
+#, python-format
+msgid "[%(date)s]: %(prog)s ended logrotation."
+msgstr ""
+

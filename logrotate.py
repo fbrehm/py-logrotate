@@ -18,6 +18,7 @@ import sys
 import pprint
 import gettext
 import os.path
+from datetime import datetime
 
 from LogRotateGetopts import LogrotateOptParser
 from LogRotateGetopts import LogrotateOptParserError
@@ -50,6 +51,8 @@ def main():
     _ = t.lgettext
     __ = t.lngettext
 
+    cur_proc = sys.argv[0]
+
     opt_parser = LogrotateOptParser(
         prog      = "logrotate",
         version   = __version__,
@@ -63,7 +66,7 @@ def main():
         opt_parser.parser.print_help(sys.stderr)
         sys.exit(1)
 
-    if opt_parser.options.verbose > 2:
+    if opt_parser.options.verbose > 6:
         print _("Options") + ": " + pp.pformat(opt_parser.options)
         print _("Arguments") + ": " + pp.pformat(opt_parser.args)
 
@@ -78,17 +81,41 @@ def main():
         if verbose_level < 1:
             verbose_level = 1
 
+    if not testmode:
+        print "\n" + ('#' * 79)
+        print ( _("[%(date)s]: %(prog)s is starting logrotation.") 
+              % {'prog': cur_proc, 'date': datetime.now().isoformat(' '), }
+              ) + "\n"
+
+    sep_line = '-' * 79
+
+    if testmode:
+        print _("Test mode is ON.")
+    if verbose_level > 0:
+        print (_("Verbose mode is ON on level: %d") % (verbose_level))
+    if opt_parser.options.force:
+        print _("Force mode is ON.")
+    if opt_parser.options.configcheck:
+        print _("Configuration check only.")
+
+    if not opt_parser.options.configcheck:
+        print ""
+        if verbose_level > 0:
+            print sep_line + "\n"
+        print _("Stage 1: reading configuration") + "\n"
+
     lr_handler = None
     try:
         lr_handler = LogrotateHandler(
             opt_parser.args[0],
-            test       = testmode,
-            verbose    = verbose_level,
-            force      = opt_parser.options.force,
-            state_file = opt_parser.options.statefile,
-            pid_file   = opt_parser.options.pidfile,
-            mail_cmd   = opt_parser.options.mailcmd,
-            local_dir  = local_dir,
+            test         = testmode,
+            verbose      = verbose_level,
+            force        = opt_parser.options.force,
+            config_check = opt_parser.options.configcheck,
+            state_file   = opt_parser.options.statefile,
+            pid_file     = opt_parser.options.pidfile,
+            mail_cmd     = opt_parser.options.mailcmd,
+            local_dir    = local_dir,
         )
     except LogrotateHandlerError, e:
         sys.stderr.write(str(e) + "\n")
@@ -96,6 +123,37 @@ def main():
 
     if opt_parser.options.verbose > 2:
         print _("Handler object structure") + ':\n' + str(lr_handler)
+
+    if opt_parser.options.configcheck:
+        sys.exit(0)
+
+    print ""
+    if verbose_level > 0:
+        print sep_line + "\n"
+    print _("Stage 2: underlying log rotation") + "\n"
+    lr_handler.rotate()
+
+    print ""
+    if verbose_level > 0:
+        print sep_line + "\n"
+    print _("Stage 3: deleting of old logfiles") + "\n"
+    lr_handler.delete_oldfiles()
+
+    print ""
+    if verbose_level > 0:
+        print sep_line + "\n"
+    print _("Stage 4: compression of old log files") + "\n"
+    lr_handler.compress()
+
+    lr_handler = None
+
+    if not testmode:
+        print ""
+        print ( _("[%(date)s]: %(prog)s ended logrotation.") 
+              % {'prog': cur_proc, 'date': datetime.now().isoformat(' '), }
+              ) + "\n"
+
+    sys.exit(0)
 
 #========================================================================
 
