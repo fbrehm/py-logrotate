@@ -686,10 +686,14 @@ msgstr "Keine Logdateien zum Suchmuster »%s« gefunden."
 msgid "Found logfile '%(file)s for pattern '%(pattern)s'."
 msgstr "Logdatei »%(file)s« zum Suchmuster »%(pattern)s« gefunden."
 
-#: LogRotateConfig.py:1874
+#: LogRotateConfig.py:1884
 #, python-format
-msgid "Logfile '%s' is even defined and so not taken a second time."
-msgstr "Die Logdatei »%s« wurde bereits definiert und damit nicht noch einmal berücksichtigt."
+msgid ""
+"Logfile '%(logfile)s' is even defined (file '%(cfgfile)s', "
+"row %(rownum)d) and so not taken a second time."
+msgstr ""
+"Die Logdatei »%(logfile)s« wurde bereits definiert (Datei "
+"»%(cfgfile)s«, Zeile %(rownum)d) und wird damit nicht noch einmal berücksichtigt."
 
 #: LogRotateConfig.py:1879
 #, python-format

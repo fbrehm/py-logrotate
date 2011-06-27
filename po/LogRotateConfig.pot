@@ -576,9 +576,11 @@ msgstr ""
 msgid "Found logfile '%(file)s for pattern '%(pattern)s'."
 msgstr ""
 
-#: LogRotateConfig.py:1874
+#: LogRotateConfig.py:1884
 #, python-format
-msgid "Logfile '%s' is even defined and so not taken a second time."
+msgid ""
+"Logfile '%(logfile)s' is even defined (file '%(cfgfile)s', "
+"row %(rownum)d) and so not taken a second time."
 msgstr ""
 
 #: LogRotateConfig.py:1879

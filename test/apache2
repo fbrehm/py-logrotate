@@ -4,6 +4,22 @@
 
 pidfile /home/frank/Development/Python/PyLogrotate/logrotate.pid
 
+/var/log/apache2/access_log {
+  missingok
+  notifempty
+  sharedscripts
+  rotate 10
+  dateext
+  daily
+  size 5M
+  maxage 0.5y
+  mail	test@uhu-banane.de
+  olddir /var/log/apache2/%Y-%m 0755 apache users
+  postrotate
+      /etc/init.d/apache2 reload > /dev/null 2>&1 || true
+  endscript
+}
+
 /var/log/apache2/access_log
 /var/log/apache2/*.log
 {

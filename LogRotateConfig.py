@@ -769,7 +769,7 @@ class LogrotateConfigurationReader(object):
                     line = re.sub(r'\s*{\s*$', '', line)
                     do_start_logfile_definition = True
                 if not in_logfile_list:
-                    self._start_new_log()
+                    self._start_new_log(configfile, linenr)
                 in_logfile_list = True
 
                 parts = split_parts(line)
@@ -1779,10 +1779,17 @@ class LogrotateConfigurationReader(object):
         return name
 
     #------------------------------------------------------------
-    def _start_new_log(self):
+    def _start_new_log(self, config_file, rownum):
         '''
         Starting a new log definition in self.new_log and filling it
         with the current default values.
+
+        @param config_file: the configuration file with the start
+                            of the logfile definition
+        @type config_file:  str
+        @param rownum:      the row number of the configuration file
+                            with the start of the logfile definition
+        @type rownum:       int
         '''
 
         _ = self.t.lgettext
@@ -1799,6 +1806,8 @@ class LogrotateConfigurationReader(object):
         self.new_log['compress_cmd']  = self.default['compress_cmd']
         self.new_log['compress_ext']  = self.default['compress_ext']
         self.new_log['compress_opts'] = self.default['compress_opts']
+        self.new_log['configfile']    = config_file
+        self.new_log['configrow']     = rownum
         self.new_log['copy']          = self.default['copy']
         self.new_log['copytruncate']  = self.default['copytruncate']
         self.new_log['create']        = {
@@ -1871,14 +1880,22 @@ class LogrotateConfigurationReader(object):
                            % {'file': logfile, 'pattern': pattern }
                     self.logger.debug(msg)
                 if logfile in self.defined_logfiles:
-                    msg = _("Logfile '%s' is even defined and so not taken a second time.") \
-                           % (logfile)
+                    f = self.defined_logfiles[logfile]
+                    msg = ( _("Logfile '%(logfile)s' is even defined (file '%(cfgfile)s', " +
+                              "row %(rownum)d) and so not taken a second time.") 
+                             % {'logfile': logfile,
+                                'cfgfile': f['file'],
+                                'rownum': f['rownum']}
+                    )
                     self.logger.warning(msg)
                     continue
                 if self.verbose > 1:
                     msg = _("Logfile '%s' will taken.") \
                             % (logfile)
-                self.defined_logfiles[logfile] = True
+                self.defined_logfiles[logfile] = {
+                        'file': self.new_log['configfile'],
+                        'rownum': self.new_log['configrow'],
+                }
                 self.new_log['files'].append(logfile)
 
         return len(self.new_log['files'])

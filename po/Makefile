@@ -5,33 +5,18 @@
 # $URL$
 #
 
-all: pylogrotate.de.mo LogRotateGetopts.de.mo LogRotateConfig.de.mo LogRotateStatusFile.de.mo
+.SUFFIXES: .mo .po
 
-pylogrotate.de.mo: pylogrotate.de.po
-	@echo
-	@echo "Compiling $@ ..."
-	msgfmt -o pylogrotate.de.mo --check -v pylogrotate.de.po
-	@if [ ! -d de_DE/LC_MESSAGES ] ; then mkdir -vp de_DE/LC_MESSAGES; fi
-	@cp -pv pylogrotate.de.mo de_DE/LC_MESSAGES/pylogrotate.mo
+MODULE = pylogrotate LogRotateGetopts LogRotateConfig LogRotateStatusFile
 
-LogRotateGetopts.de.mo: LogRotateGetopts.de.po
-	@echo
-	@echo "Compiling $@ ..."
-	msgfmt -o LogRotateGetopts.de.mo --check -v LogRotateGetopts.de.po
-	@if [ ! -d de_DE/LC_MESSAGES ] ; then mkdir -vp de_DE/LC_MESSAGES; fi
-	@cp -pv LogRotateGetopts.de.mo de_DE/LC_MESSAGES/LogRotateGetopts.mo
+all: $(MODULE:=.de.mo)
 
-LogRotateConfig.de.mo: LogRotateConfig.de.po
+.po.mo:
 	@echo
-	@echo "Compiling $@ ..."
-	msgfmt -o LogRotateConfig.de.mo --check -v LogRotateConfig.de.po
+	@echo "Compiling $*.mo from $*.po ..."
+	msgfmt -o $*.mo --check -v $*.po
 	@if [ ! -d de_DE/LC_MESSAGES ] ; then mkdir -vp de_DE/LC_MESSAGES; fi
-	@cp -pv LogRotateConfig.de.mo de_DE/LC_MESSAGES/LogRotateConfig.mo
+	@TARGET=de_DE/LC_MESSAGES/`echo $* | sed s'/\.de$$//'`.mo; \
+		cp -pv $*.mo $$TARGET
 
-LogRotateStatusFile.de.mo: LogRotateStatusFile.de.po
-	@echo
-	@echo "Compiling $@ ..."
-	msgfmt -o LogRotateStatusFile.de.mo --check -v LogRotateStatusFile.de.po
-	@if [ ! -d de_DE/LC_MESSAGES ] ; then mkdir -vp de_DE/LC_MESSAGES; fi
-	@cp -pv LogRotateStatusFile.de.mo de_DE/LC_MESSAGES/LogRotateStatusFile.mo
 
