@@ -631,7 +631,86 @@ class LogrotateHandler(object):
                         return
                 self.scripts[firstscript]['first'] = True
 
-        # 
+        # Executing prerotate scripts ...
+        # bla bla bla 
+
+        if not self._create_olddir(logfile, definition):
+            return
+
+    #------------------------------------------------------------
+    def _create_olddir(self, logfile, definition):
+        '''
+        Creating the olddir, if necessary.
+
+        @param logfile: the logfile to rotate
+        @type logfile:  str
+        @param definition: definitions from configuration file (for olddir)
+        @type definition:  dict
+
+        @return: successful or not
+        @rtype:  bool
+        '''
+
+        _ = self.t.lgettext
+
+        uid = os.geteuid()
+        gid = os.getegid()
+
+        o = definition['olddir']
+        if not o['dirname']:
+            if self.verbose > 1:
+                msg = _("No dirname directive for olddir given.")
+                self.logger.debug(msg)
+            return True
+        olddir = o['dirname']
+
+        mode = o['mode']
+        if mode is None:
+            mode = int(0755, 8)
+        owner = o['owner']
+        if not owner:
+            owner = uid
+        group = o['group']
+        if not group:
+            group = gid
+
+        basename = os.path.basename(logfile)
+        dirname  = os.path.dirname(logfile)
+
+        match = re.search(r'%', olddir)
+        if match:
+            o['dateformat'] = True
+            olddir = datetime.utcnow().strftime(olddir)
+
+        # Substitution of $dirname
+        olddir = re.sub(r'(?:\${dirname}|\$dirname(?![a-zA-Z0-9_]))', dirname, olddir)
+
+        # Substitution of $basename
+        olddir = re.sub(r'(?:\${basename}|\$basename(?![a-zA-Z0-9_]))', basename, olddir)
+
+        # Substitution of $nodename
+        olddir = re.sub(r'(?:\${nodename}|\$nodename(?![a-zA-Z0-9_]))', self.template['nodename'], olddir)
+
+        # Substitution of $domain
+        olddir = re.sub(r'(?:\${domain}|\$domain(?![a-zA-Z0-9_]))', self.template['domain'], olddir)
+
+        # Substitution of $machine
+        olddir = re.sub(r'(?:\${machine}|\$machine(?![a-zA-Z0-9_]))', self.template['machine'], olddir)
+
+        # Substitution of $release
+        olddir = re.sub(r'(?:\${release}|\$release(?![a-zA-Z0-9_]))', self.template['release'], olddir)
+
+        # Substitution of $sysname
+        olddir = re.sub(r'(?:\${sysname}|\$sysname(?![a-zA-Z0-9_]))', self.template['sysname'], olddir)
+
+        if not os.path.isabs(olddir):
+            olddir = os.path.join(dirname, olddir)
+
+        if self.verbose > 1:
+            msg = _("Olddir name is now '%s'") % (olddir)
+            self.logger.debug(msg)
+
+        return True
 
     #------------------------------------------------------------
     def _execute_command(self, command):
