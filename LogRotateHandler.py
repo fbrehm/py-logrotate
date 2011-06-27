@@ -24,12 +24,15 @@ import os
 import os.path
 import errno
 import socket
+import subprocess
+from datetime import datetime, timedelta
 
 from LogRotateConfig import LogrotateConfigurationError
 from LogRotateConfig import LogrotateConfigurationReader
 
 from LogRotateStatusFile import LogrotateStatusFileError
 from LogRotateStatusFile import LogrotateStatusFile
+from LogRotateStatusFile import utc
 
 revision = '$Revision$'
 revision = re.sub( r'\$', '', revision )
@@ -573,9 +576,182 @@ class LogrotateHandler(object):
                     "\n" + pp.pformat(definition)
             self.logger.debug(msg)
 
-
+        for logfile in definition['files']:
+            if self.verbose > 1:
+                msg = ( _("Performing logfile '%s' ...") % (logfile)) + "\n"
+                self.logger.debug(msg)
+            should_rotate = self._should_rotate(logfile, definition)
+            if self.verbose > 1:
+                if should_rotate:
+                    msg = _("logfile '%s' WILL rotated.")
+                else:
+                    msg = _("logfile '%s' will NOT rotated.")
+                self.logger.debug(msg % (logfile))
+            if not should_rotate:
+                continue
+            self._rotate_file(logfile, definition)
 
         return
+
+    #------------------------------------------------------------
+    def _rotate_file(self, logfile, definition):
+        '''
+        Rotates a logfile with all with all necessary actions before
+        and after rotation.
+
+        Throughs an LogrotateHandlerError on error.
+
+        @param logfile: the logfile to rotate
+        @type logfile:  str
+        @param definition: definitions from configuration file
+        @type definition:  dict
+
+        @return: None
+        '''
+
+        _ = self.t.lgettext
+
+        sharedscripts = definition['sharedscripts']
+        firstscript   = definition['firstaction']
+        prescript     = definition['prerotate']
+        postscript    = definition['postrotate']
+        lastscript    = definition['lastaction']
+
+        # Executing of the firstaction script, if it wasn't executed
+        if firstscript:
+            if self.verbose > 2:
+                msg = _("Looking, whether the firstaction script should be executed.")
+                self.logger.debug(msg)
+            if not self.scripts[firstscript]['first']:
+                msg = _("Executing firstaction script '%s' ...") % (firstscript)
+                self.logger.info(msg)
+                if not self.test:
+                    cmd = '\n'.join(self.scripts[firstscript]['cmd'])
+                    if not self._execute_command(cmd):
+                        return
+                self.scripts[firstscript]['first'] = True
+
+        # 
+
+    #------------------------------------------------------------
+    def _execute_command(self, command):
+        '''
+        Executes the given command as an OS command in a shell.
+
+        @param command: the command to execute
+        @type command:  str
+
+        @return: Success of the comand (shell returncode == 0)
+        @rtype:  bool
+        '''
+
+        _ = self.t.lgettext
+        if self.verbose > 3:
+            msg = _("Executing command: '%s'") % (command)
+            self.logger.debug(msg)
+        try:
+            retcode = subprocess.call(command, shell=True)
+            if self.verbose > 3:
+                msg = _("Got returncode: '%s'") % (retcode)
+                self.logger.debug(msg)
+            if retcode < 0:
+                msg = _("Child was terminated by signal %d") % (-retcode)
+                self.logger.error(msg)
+                return False
+            if retcode > 0:
+                return False
+            return True
+        except OSError, e:
+            msg = _("Execution failed: %s") % (str(e))
+            self.logger.error(msg)
+            return False
+
+        return False
+
+    #------------------------------------------------------------
+    def _should_rotate(self, logfile, definition):
+        '''
+        Determines, whether a logfile should rotated dependend on
+        the informations in the definition.
+
+        Throughs an LogrotateHandlerError on harder errors.
+
+        @param logfile: the logfile to inspect
+        @type logfile:  str
+        @param definition: definitions from configuration file
+        @type definition:  dict
+
+        @return: to rotate or not
+        @rtype:  bool
+        '''
+
+        _ = self.t.lgettext
+
+        if self.verbose > 2:
+            msg = _("Check, whether logfile '%s' should rotated.") % (logfile)
+            self.logger.debug(msg)
+
+        if not os.path.exists(logfile):
+            msg = _("logfile '%s' doesn't exists, not rotated") % (logfile)
+            if not definition['missingok']:
+                self.logger.error(msg)
+            else:
+                if self.verbose > 1:
+                    self.logger.debug(msg)
+            return False
+
+        if not os.path.isfile(logfile):
+            msg = _("logfile '%s' is not a regular file, not rotated") % (logfile)
+            self.logger.warning(msg)
+            return False
+
+        filesize = os.path.getsize(logfile)
+        if self.verbose > 2:
+            msg = _("Filesize of '%(file)s': %(size)d") % {'file': logfile, 'size': filesize}
+            self.logger.debug(msg)
+
+        if not filesize:
+            if not definition['ifempty']:
+                if self.verbose > 1:
+                    msg = _("Logfile '%s' has a filesize of Zero, not rotated") % (logfile)
+                    self.logger.debug(msg)
+                return False
+
+        if self.force:
+            if self.verbose > 1:
+                msg = _("Rotating of '%s' because of force mode.") % (logfile)
+                self.logger.debug(msg)
+            return True
+
+        maxsize = definition['size']
+        if maxsize is None:
+            maxsize = 0
+
+        last_rotated = self.state_file.get_rotation_date(logfile)
+        if self.verbose > 2:
+            msg = _("Date of last rotation: %s") %(last_rotated.isoformat(' '))
+            self.logger.debug(msg)
+        next_rotation = last_rotated + timedelta(days = definition['period'])
+        if self.verbose > 2:
+            msg = _("Date of next rotation: %s") %(next_rotation.isoformat(' '))
+            self.logger.debug(msg)
+
+        if filesize < maxsize:
+            if self.verbose > 1:
+                msg = _("Filesize %(filesize)d is less than %(maxsize)d, rotation not necessary.") \
+                        % {'filesize': filesize, 'maxsize': maxsize}
+                self.logger.debug(msg)
+            return False
+
+        curdate = datetime.utcnow().replace(tzinfo = utc)
+        if next_rotation > curdate:
+            if self.verbose > 1:
+                msg = _("Date of next rotation '%(next)s' is in future, rotation not necessary.") \
+                        % {'next': next_rotation.isoformat(' ')}
+                self.logger.debug(msg)
+            return False
+
+        return True
 
     #------------------------------------------------------------
     def delete_oldfiles(self):

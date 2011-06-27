@@ -267,7 +267,7 @@ class LogrotateStatusFile(object):
         if not self.was_read:
             self._read(must_exists = False)
 
-        rotate_date = datetime.min()
+        rotate_date = datetime.min.replace(tzinfo=utc)
         if logfile in self.file_state:
             rotate_date = self.file_state[logfile]
 

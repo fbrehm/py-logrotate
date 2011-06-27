@@ -17,6 +17,7 @@ import re
 import sys
 import pprint
 import gettext
+import os
 import os.path
 from datetime import datetime
 
@@ -39,6 +40,9 @@ __license__    = 'GPL3'
 
 #-----------------------------------------------------------------
 def main():
+
+    # unbuffered output to stdout
+    sys.stdout = os.fdopen(sys.stdout.fileno(), 'w', 0)
 
     basedir = os.path.realpath(os.path.dirname(sys.argv[0]))
     #print "Basedir: %s" % ( basedir )

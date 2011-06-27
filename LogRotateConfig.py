@@ -817,9 +817,11 @@ class LogrotateConfigurationReader(object):
                         ( _("Needless content found at the end of a logfile definition found: '%(rest)s' (file '%(file)s', line %(line)s)")
                             % { 'rest': str(rest), 'file': configfile, 'line': linenr})
                     )
+                if self.new_log['size']:
+                    self.new_log['ifempty'] = False
+                found_files = self._assign_logfiles()
                 if self.verbose > 3:
                     self.logger.debug( ( _("New logfile definition:") + "\n" + pp.pformat(self.new_log)))
-                found_files = self._assign_logfiles()
                 if found_files > 0:
                     self.config.append(self.new_log)
                 in_fd = False

@@ -3,42 +3,42 @@
 #
 
 pidfile /home/frank/Development/Python/PyLogrotate/logrotate.pid
+statusfile /home/frank/Development/Python/PyLogrotate/logrotate.status
 
-/var/log/apache2/access_log {
-  missingok
-  notifempty
-  sharedscripts
-  rotate 10
-  dateext
-  daily
-  size 5M
-  maxage 0.5y
-  mail	test@uhu-banane.de
-  olddir /var/log/apache2/%Y-%m 0755 apache users
-  postrotate
-      /etc/init.d/apache2 reload > /dev/null 2>&1 || true
-  endscript
+/home/frank/devel/Python/PyLogrotate/test/log/access_log {
+    missingok
+    notifempty
+    sharedscripts
+    rotate 10
+    dateext
+    daily
+    size 5K
+    maxage 0.5y
+    mail	test@uhu-banane.de
+    olddir /var/log/apache2/%Y-%m 0755 apache users
+    postrotate
+        echo "/etc/init.d/apache2 reload > /dev/null 2>&1 || true"
+    endscript
 }
 
-/var/log/apache2/access_log
-/var/log/apache2/*.log
-{
-  missingok
-  notifempty
-  sharedscripts
-  rotate 10
-  #dateext '%Y%m%d'
-  dateext
-  #error bla
-  weekly
-  #period 4.5days 2 hours 3.4y
-  size 1M
-  maxage 0.5y
-  mail	test@uhu-banane.de
-  #olddir /var/log/apache2/%Y-%m
-  olddir /var/log/apache2/%Y-%m 0755 apache users
-  postrotate
-  /etc/init.d/apache2 reload > /dev/null 2>&1 || true
-  endscript
+/home/frank/devel/Python/PyLogrotate/test/log/*.log {
+    missingok
+    notifempty
+    sharedscripts
+    rotate 10
+    #dateext '%Y%m%d'
+    dateext
+    #error bla
+    weekly
+    #period 4.5days 2 hours 3.4y
+    size 1K
+    maxage 0.5y
+    mail	test@uhu-banane.de
+    #olddir /var/log/apache2/%Y-%m
+    olddir /var/log/apache2/%Y-%m 0755 apache users
+    postrotate
+        echo "/etc/init.d/apache2 reload > /dev/null 2>&1 || true"
+    endscript
 }
 
+# vim: ts=4 expandtab
