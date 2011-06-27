@@ -203,7 +203,7 @@ class LogrotateConfigurationReader(object):
         @type: str
         '''
 
-        self.logger = logger
+        self.logger = logger.getChild('config')
         '''
         @ivar: logger object
         @type: logging.getLogger

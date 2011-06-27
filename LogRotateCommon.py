@@ -16,6 +16,7 @@
 import re
 import sys
 import locale
+import logging
 
 revision = '$Revision$'
 revision = re.sub( r'\$', '', revision )
@@ -28,6 +29,8 @@ __contact__    = 'frank@brehm-online.com'
 __version__    = '0.1.0 ' + revision
 __license__    = 'GPL3'
 
+
+logger = logging.getLogger('pylogrotate.common')
 
 #========================================================================
 
@@ -186,7 +189,7 @@ def human2bytes(value, si_conform = True, use_locale_radix = False, verbose = 0)
         radix = locale.RADIXCHAR
     radix = re.escape(radix)
     if verbose > 5:
-        sys.stderr.write("human2bytes(): using radix »%s«\n" % (radix))
+        logger.debug("using radix »%s«" % (radix))
 
     value_raw = ''
     prefix = None
@@ -237,7 +240,7 @@ def human2bytes(value, si_conform = True, use_locale_radix = False, verbose = 0)
         raise ValueError("human2bytes(): Couldn't detect prefix »%s«." %(prefix))
 
     if verbose > 5:
-        sys.stderr.write("human2bytes(): found factor %d\n" % (factor))
+        logger.debug("found factor %d" % (factor))
 
     return long(factor * value_float)
 
@@ -279,7 +282,7 @@ def period2days(period, use_locale_radix = False, verbose = 0):
         raise ValueError("Given period was empty")
 
     if verbose > 4:
-        sys.stderr.write("period2days() called with: »%s«\n" % (period))
+        logger.debug("called with: »%s«" % (period))
 
     if period == 'now':
         return float(0)
@@ -294,12 +297,12 @@ def period2days(period, use_locale_radix = False, verbose = 0):
         radix = locale.RADIXCHAR
     radix = re.escape(radix)
     if verbose > 5:
-        sys.stderr.write("period2days(): using radix »%s«\n" % (radix))
+        logger.debug("using radix »%s«" % (radix))
 
     # Search for hours in value
     pattern = r'(\d+(?:' + radix + r'\d*)?)\s*h(?:ours?)?'
     if verbose > 5:
-        sys.stderr.write("period2days(): pattern »%s«\n" % (pattern))
+        logger.debug("pattern »%s«" % (pattern))
     match = re.search(pattern, value, re.IGNORECASE)
     if match:
         hours_str = match.group(1)
@@ -308,15 +311,15 @@ def period2days(period, use_locale_radix = False, verbose = 0):
         hours = float(hours_str)
         days += (hours/24)
         if verbose > 4:
-            sys.stderr.write("period2days(): found %f hours.\n" %(hours))
+            logger.debug("found %f hours." % (hours))
         value = re.sub(pattern, '', value, re.IGNORECASE)
     if verbose > 5:
-        sys.stderr.write("period2days(): rest after hours: »%s«\n" %(value))
+        logger.debug("rest after hours: »%s«" %(value))
 
     # Search for weeks in value
     pattern = r'(\d+(?:' + radix + r'\d*)?)\s*w(?:eeks?)?'
     if verbose > 5:
-        sys.stderr.write("period2days(): pattern »%s«\n" % (pattern))
+        logger.debug("pattern »%s«" % (pattern))
     match = re.search(pattern, value, re.IGNORECASE)
     if match:
         weeks_str = match.group(1)
@@ -325,15 +328,15 @@ def period2days(period, use_locale_radix = False, verbose = 0):
         weeks = float(weeks_str)
         days += (weeks*7)
         if verbose > 4:
-            sys.stderr.write("period2days(): found %f weeks.\n" %(weeks))
+            logger.debug("found %f weeks." %(weeks))
         value = re.sub(pattern, '', value, re.IGNORECASE)
     if verbose > 5:
-        sys.stderr.write("period2days(): rest after weeks: »%s«\n" %(value))
+        logger.debug("rest after weeks: »%s«" %(value))
 
     # Search for months in value
     pattern = r'(\d+(?:' + radix + r'\d*)?)\s*m(?:onths?)?'
     if verbose > 5:
-        sys.stderr.write("period2days(): pattern »%s«\n" % (pattern))
+        logger.debug("pattern »%s«" % (pattern))
     match = re.search(pattern, value, re.IGNORECASE)
     if match:
         months_str = match.group(1)
@@ -342,15 +345,15 @@ def period2days(period, use_locale_radix = False, verbose = 0):
         months = float(months_str)
         days += (months*30)
         if verbose > 4:
-            sys.stderr.write("period2days(): found %f months.\n" %(months))
+            logger.debug("found %f months." %(months))
         value = re.sub(pattern, '', value, re.IGNORECASE)
     if verbose > 5:
-        sys.stderr.write("period2days(): rest after months: »%s«\n" %(value))
+        logger.debug("rest after months: »%s«" %(value))
 
     # Search for years in value
     pattern = r'(\d+(?:' + radix + r'\d*)?)\s*y(?:ears?)?'
     if verbose > 5:
-        sys.stderr.write("period2days(): pattern »%s«\n" % (pattern))
+        logger.debug("pattern »%s«" % (pattern))
     match = re.search(pattern, value, re.IGNORECASE)
     if match:
         years_str = match.group(1)
@@ -359,15 +362,15 @@ def period2days(period, use_locale_radix = False, verbose = 0):
         years = float(years_str)
         days += (years*365)
         if verbose > 4:
-            sys.stderr.write("period2days(): found %f years.\n" %(years))
+            logger.debug("found %f years." %(years))
         value = re.sub(pattern, '', value, re.IGNORECASE)
     if verbose > 5:
-        sys.stderr.write("period2days(): rest after years: »%s«\n" %(value))
+        logger.debug("rest after years: »%s«" %(value))
 
     # At last search for days in value
     pattern = r'(\d+(?:' + radix + r'\d*)?)\s*(?:d(?:ays?)?)?'
     if verbose > 5:
-        sys.stderr.write("period2days(): pattern »%s«\n" % (pattern))
+        logger.debug("pattern »%s«" % (pattern))
     match = re.search(pattern, value, re.IGNORECASE)
     if match:
         days_str = match.group(1)
@@ -376,19 +379,17 @@ def period2days(period, use_locale_radix = False, verbose = 0):
         days_float = float(days_str)
         days += days_float
         if verbose > 4:
-            sys.stderr.write("period2days(): found %f days.\n" %(days_float))
+            logger.debug("found %f days." %(days_float))
         value = re.sub(pattern, '', value, re.IGNORECASE)
     if verbose > 5:
-        sys.stderr.write("period2days(): rest after days: »%s«\n" %(value))
+        logger.debug("rest after days: »%s«" %(value))
 
     # warn, if there is a rest
     if re.search(r'^\s*$', value) is None:
-        sys.stderr.write(
-            "period2days(): invalid content for a period: »%s«\n" %(value)
-        )
+        logger.warning('invalid content for a period: »%s«'%(value))
 
     if verbose > 4:
-        sys.stderr.write("period2days(): total %f days found.\n" %(days))
+        logger.debug("total %f days found." %(days))
 
     return days
 

@@ -52,6 +52,31 @@ class LogrotateHandlerError(Exception):
 
 #========================================================================
 
+class StdoutFilter(logging.Filter):
+    '''
+    Class, that filters all logrecords
+    '''
+
+    def filter(self, record):
+        '''
+        Filtering log records and let through messages
+        except them with the level names 'WARNING', 'ERROR' or 'CRITICAL'.
+
+        @param record: the record to filter
+        @type record:  logging.LogRecord
+
+        @return: pass the record or not
+        '''
+        if record.levelname == 'WARNING':
+            return False
+        if record.levelname == 'ERROR':
+            return False
+        if record.levelname == 'CRITICAL':
+            return False
+        return True
+
+#========================================================================
+
 class LogrotateHandler(object):
     '''
     Class for application handler for Python logrotating
@@ -172,7 +197,7 @@ class LogrotateHandler(object):
         @type: str
         '''
 
-        self.config = {}
+        self.config = []
         '''
         @ivar: the configuration, how it was read from cofiguration file(s)
         @type: dict
@@ -213,24 +238,29 @@ class LogrotateHandler(object):
 
         self.logger.setLevel(logging.DEBUG)
 
-        pp = pprint.PrettyPrinter(indent=4)
-        # create console handler and set level to debug
-        ch = logging.StreamHandler()
-        #ch.setLevel(logging.DEBUG)
-        if verbose:
-            ch.setLevel(logging.DEBUG)
-        else:
-            ch.setLevel(logging.INFO)
-
         # create formatter
         formatter = logging.Formatter('[%(asctime)s]: %(name)s %(levelname)-8s'
                                         + ' - %(message)s')
+        if verbose > 1:
+            formatter = logging.Formatter('[%(asctime)s]: %(name)s %(levelname)-8s'
+                                           + '%(funcName)s() - %(message)s')
 
-        # add formatter to ch
-        ch.setFormatter(formatter)
+        # create console handler for error messages
+        console_stderr = logging.StreamHandler(sys.stderr)
+        console_stderr.setLevel(logging.WARNING)
+        console_stderr.setFormatter(formatter)
+        self.logger.addHandler(console_stderr)
 
-        # add ch to logger
-        self.logger.addHandler(ch)
+        # create console handler for other messages
+        console_stdout = logging.StreamHandler(sys.stdout)
+        if verbose:
+            console_stdout.setLevel(logging.DEBUG)
+        else:
+            console_stdout.setLevel(logging.INFO)
+        fltr = StdoutFilter()
+        console_stdout.addFilter(fltr)
+        console_stdout.setFormatter(formatter)
+        self.logger.addHandler(console_stdout)
 
         self.logger.debug( _("Logrotating initialised") )
 
@@ -484,7 +514,7 @@ class LogrotateHandler(object):
             self.logger.info( _("Testmode, skip writing of PID file '%s'.") % (self.pid_file) )
             return True
 
-        self.logger.info( _("Writing PID file '%s' ...") % (self.pid_file) )
+        self.logger.debug( _("Writing PID file '%s' ...") % (self.pid_file) )
 
         f = None
         try:
@@ -503,7 +533,49 @@ class LogrotateHandler(object):
 
     #------------------------------------------------------------
     def rotate(self):
-        pass
+        '''
+        Starting the underlying rotating.
+
+        @return: None
+        '''
+
+        _ = self.t.lgettext
+
+        if len(self.config) < 1:
+            msg = _("No logfile definitions found.")
+            self.logger.info(msg)
+            return
+
+        msg = _("Starting underlying rotation ...")
+        self.logger.info(msg)
+
+        for definition in self.config:
+            self._rotate_definition(definition)
+
+        return
+
+    #------------------------------------------------------------
+    def _rotate_definition(self, definition):
+        '''
+        Rotation of a logfile definition from a configuration file.
+
+        @param definition: definitions from configuration file
+        @type definition:  dict
+
+        @return: None
+        '''
+
+        _ = self.t.lgettext
+
+        if self.verbose >= 4:
+            pp = pprint.PrettyPrinter(indent=4)
+            msg = _("Rotating of logfile definition:") + \
+                    "\n" + pp.pformat(definition)
+            self.logger.debug(msg)
+
+
+
+        return
 
     #------------------------------------------------------------
     def delete_oldfiles(self):

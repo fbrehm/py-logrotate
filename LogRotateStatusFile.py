@@ -164,7 +164,7 @@ class LogrotateStatusFile(object):
         @type: bool
         '''
 
-        self.logger = logger
+        self.logger = logger.getChild('status_file')
         '''
         @ivar: logger object
         @type: logging.getLogger
