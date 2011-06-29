@@ -219,6 +219,16 @@ class LogrotateHandler(object):
         '''
         self._prepare_templates()
 
+        self.logfiles = []
+        '''
+        @ivar: list of all rotated logfiles. Each entry is a dict with
+               three keys:
+                -  'original': str with the name of the unrotated file
+                -  'rotated':  str with the name of the rotated file
+                -  'oldfiles:  list with all old rotated files of this file
+        @type: list
+        '''
+
         self.files_delete = {}
         '''
         @ivar: dictionary with all files, they have to delete
@@ -321,6 +331,7 @@ class LogrotateHandler(object):
             'files_compress':  self.files_compress,
             'force':           self.force,
             'local_dir':       self.local_dir,
+            'logfiles':        self.logfiles,
             'logger':          self.logger,
             'mail_cmd':        self.mail_cmd,
             'scripts':         self.scripts,
@@ -634,8 +645,135 @@ class LogrotateHandler(object):
         # Executing prerotate scripts ...
         # bla bla bla 
 
-        if not self._create_olddir(logfile, definition):
+        olddir = self._create_olddir(logfile, definition)
+        if olddir is None:
             return
+
+        if not self._do_rotate_file(logfile, definition, olddir):
+            return
+
+    #------------------------------------------------------------
+    def _do_rotate_file(self, logfile, definition, olddir = None):
+        '''
+        The underlaying unconditionally rotation of a logfile.
+
+        After the successful rotation 
+
+        @param logfile: the logfile to rotate
+        @type logfile:  str
+        @param definition: definitions from configuration file
+        @type definition:  dict
+        @param olddir: the directory of the rotated logfile
+                       if "." or None, store the rotated logfile
+                       in their original directory
+        @type olddir: str or None
+
+        @return: successful or not
+        @rtype:  bool
+        '''
+
+        if (olddir is not None) and (olddir == "."):
+            olddir = None
+
+        _ = self.t.lgettext
+
+        uid = os.geteuid()
+        gid = os.getegid()
+
+        msg = _("Do rotate logfile '%s' ...") % (logfile)
+        self.logger.debug(msg)
+
+        target = self._get_rotation_target(logfile, definition, olddir)
+        rotations = self._get_rotations(logfile, target, definition)
+
+        return True
+
+    #------------------------------------------------------------
+    def _get_rotations(self, logfile, target, definition):
+        '''
+        Retrieves all files to move and to rotate and gives them back
+        as a dict.
+
+        @param logfile: the logfile to rotate
+        @type logfile:  str
+        @param target:  name of the rotated logfile
+        @type target:   str
+        @param definition: definitions from configuration file
+        @type definition:  dict
+
+        @return: dict in the form::
+                    {
+                        'rotate': {
+                            'from': <file>,
+                            'to': <target>
+                        },
+                        'move': [
+                            ...
+                            { 'from': <file2>, 'to': <file3>},
+                            { 'from': <file1>, 'to': <file2>},
+                            { 'from': <file0>, 'to': <file1>},
+                        ],
+                    }
+                the order in the list 'move' is the order, how the
+                files have to rename.
+        @rtype: dict
+        '''
+
+        _ = self.t.lgettext
+
+        result = { 'rotate': {}, 'move': [] }
+
+        if self.verbose > 3:
+            pp = pprint.PrettyPrinter(indent=4)
+            msg = _("Found rotations:") + "\n" + pp.pformat(result)
+            self.logger.debug(msg)
+        return result
+
+    #------------------------------------------------------------
+    def _get_rotation_target(self, logfile, definition, olddir = None):
+        '''
+        Retrieves the name of the rotated logfile and gives it back.
+
+        @param logfile: the logfile to rotate
+        @type logfile:  str
+        @param definition: definitions from configuration file
+        @type definition:  dict
+        @param olddir: the directory of the rotated logfile
+                       if None, store the rotated logfile
+                       in their original directory
+        @type olddir: str or None
+
+        @return: name of the rotated logfile
+        @rtype:  str
+        '''
+
+        _ = self.t.lgettext
+
+        if self.verbose > 2:
+            msg = _("Retrieving the name of the rotated file of '%s' ...") % (logfile)
+            self.logger.debug(msg)
+
+        target = logfile
+        if olddir is not None:
+            basename = os.path.basename(logfile)
+            target = os.path.join(olddir, basename)
+
+        if definition['dateext']:
+            pattern = definition['datepattern']
+            if pattern is None:
+                pattern = '%Y-%m-%d'
+            dateext = datetime.utcnow().strftime(pattern)
+            if self.verbose > 3:
+                msg = _("Using date extension '.%(ext)s' from pattern '%(pattern)s'.") \
+                        % {'ext': dateext, 'pattern': pattern}
+                self.logger.debug(msg)
+            target += "." + dateext
+
+        if self.verbose > 1:
+            msg = _("Using '%(target)s' as target for rotation of logfile '%(logfile)s'.") \
+                    % {'target': target, 'logfile': logfile}
+            self.logger.debug(msg)
+        return target
 
     #------------------------------------------------------------
     def _create_olddir(self, logfile, definition):
@@ -647,8 +785,11 @@ class LogrotateHandler(object):
         @param definition: definitions from configuration file (for olddir)
         @type definition:  dict
 
-        @return: successful or not
-        @rtype:  bool
+        @return: Name of the retrieved olddir, ".", if storing
+                 the rotated logfiles in their original directory or
+                 None in case of some minor errors (olddir couldn't
+                 created a.s.o.)
+        @rtype:  str or None
         '''
 
         _ = self.t.lgettext
@@ -661,7 +802,7 @@ class LogrotateHandler(object):
             if self.verbose > 1:
                 msg = _("No dirname directive for olddir given.")
                 self.logger.debug(msg)
-            return True
+            return "."
         olddir = o['dirname']
 
         mode = o['mode']
@@ -718,15 +859,16 @@ class LogrotateHandler(object):
                     if self.verbose > 2:
                         msg = _("Olddir '%s' allready exists, not created.") % (olddir)
                         self.logger.debug(msg)
-                    return True
+                    olddir = os.path.realpath(olddir)
+                    return olddir
                 else:
                     msg = _("No write and execute access to olddir '%s'.") % (olddir)
                     raise LogrotateHandlerError(msg)
-                    return False
+                    return None
             else:
                 msg = _("Olddir '%s' exists, but is not a valid directory.") % (olddir)
                 raise LogrotateHandlerError(msg)
-                return False
+                return None
 
         dirs = []
         dir_head = olddir
@@ -767,7 +909,7 @@ class LogrotateHandler(object):
                 else:
                     msg = _("Directory '%s' exists, but is not a valid directory.") % (create_dir)
                     self.logger.error(msg)
-                    return False
+                    return None
             msg = _("Creating directory '%s' ...") % (create_dir)
             self.logger.debug(msg)
             create_mode = parent_mode
@@ -793,7 +935,7 @@ class LogrotateHandler(object):
                     msg = _("Error on creating directory '%(dir)s': %(err)s") \
                             % {'dir': create_dir, 'err': e.strerror}
                     self.logger.error(msg)
-                    return False
+                    return None
                 if (create_uid != uid) or (create_gid != gid):
                     if self.verbose > 2:
                         msg = "os.chown('%s', %d, %d)" % (create_dir, create_uid, create_gid)
@@ -804,9 +946,10 @@ class LogrotateHandler(object):
                         msg = _("Error on chowning directory '%(dir)s': %(err)s") \
                                 % {'dir': create_dir, 'err': e.strerror}
                         self.logger.error(msg)
-                        return False
+                        return None
 
-        return True
+        olddir = os.path.realpath(olddir)
+        return olddir
 
     #------------------------------------------------------------
     def _execute_command(self, command):

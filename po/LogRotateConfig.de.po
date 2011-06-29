@@ -135,6 +135,15 @@ msgstr ""
 "Nutzloser Inhalt am Ende einer Logdateidefinition gefunden: »%(rest)s« "
 "(Datei »%(file)s«, Zeile %(line)s)"
 
+#: LogRotateConfig.py:828
+#, python-format
+msgid ""
+"No extension for compressed logfiles given "
+"(File of definition: '%(file)s', start definition: %(rownum)d)."
+msgstr ""
+"Keine Dateierweiterung für die komprimierten Logdateien gegeben "
+"(Beginn der Definition: Datei »%(file)s«, Zeile %(rownum)d)."
+
 #: LogRotateConfig.py:791
 msgid "New logfile definition:"
 msgstr "Neue Logdateidefinition:"

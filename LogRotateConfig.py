@@ -817,6 +817,19 @@ class LogrotateConfigurationReader(object):
                         ( _("Needless content found at the end of a logfile definition found: '%(rest)s' (file '%(file)s', line %(line)s)")
                             % { 'rest': str(rest), 'file': configfile, 'line': linenr})
                     )
+                # set a compress ext, if Compress is True
+                if self.new_log['compress']:
+                    if not self.new_log['compress_ext']:
+                        if self.new_log['compress_cmd'] == 'internal_gzip':
+                            self.new_log['compress_ext'] = '.gz'
+                        elif self.new_log['compress_cmd'] == 'internal_bzip2':
+                            self.new_log['compress_ext'] = '.bz2'
+                        else:
+                            msg = _("No extension for compressed logfiles given " +
+                                    "(File of definition: '%(file)s', start definition: %(rownum)d).") \
+                                  % { 'file': self.new_log['configfile'], 'rownum': self.new_log['configrow']}
+                            raise LogrotateConfigurationError(msg)
+                # set ifempty => True, if a minsize was given
                 if self.new_log['size']:
                     self.new_log['ifempty'] = False
                 found_files = self._assign_logfiles()

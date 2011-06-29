@@ -6,6 +6,7 @@ pidfile /home/frank/Development/Python/PyLogrotate/logrotate.pid
 statusfile /home/frank/Development/Python/PyLogrotate/logrotate.status
 
 /home/frank/devel/Python/PyLogrotate/test/log/access_log {
+    compress
     missingok
     notifempty
     sharedscripts
@@ -23,6 +24,7 @@ statusfile /home/frank/Development/Python/PyLogrotate/logrotate.status
 }
 
 /home/frank/devel/Python/PyLogrotate/test/log/*.log {
+    compress
     missingok
     notifempty
     sharedscripts
