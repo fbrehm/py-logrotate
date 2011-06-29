@@ -666,7 +666,7 @@ class LogrotateHandler(object):
 
         mode = o['mode']
         if mode is None:
-            mode = int(0755, 8)
+            mode = int('0755', 8)
         owner = o['owner']
         if not owner:
             owner = uid
@@ -705,10 +705,106 @@ class LogrotateHandler(object):
 
         if not os.path.isabs(olddir):
             olddir = os.path.join(dirname, olddir)
+        olddir = os.path.normpath(olddir)
 
         if self.verbose > 1:
             msg = _("Olddir name is now '%s'") % (olddir)
             self.logger.debug(msg)
+
+        # Check for Existence and Consistence
+        if os.path.exists(olddir):
+            if os.path.isdir(olddir):
+                if os.access(olddir, (os.W_OK | os.X_OK)):
+                    if self.verbose > 2:
+                        msg = _("Olddir '%s' allready exists, not created.") % (olddir)
+                        self.logger.debug(msg)
+                    return True
+                else:
+                    msg = _("No write and execute access to olddir '%s'.") % (olddir)
+                    raise LogrotateHandlerError(msg)
+                    return False
+            else:
+                msg = _("Olddir '%s' exists, but is not a valid directory.") % (olddir)
+                raise LogrotateHandlerError(msg)
+                return False
+
+        dirs = []
+        dir_head = olddir
+        while dir_head != os.sep:
+            (dir_head, dir_tail) = os.path.split(dir_head)
+            dirs.insert(0, dir_tail)
+        if self.verbose > 2:
+            msg = _("Directory chain to create: '%s'") % (str(dirs))
+            self.logger.debug(msg)
+
+        # Create olddir recursive, if necessary
+        msg = _("Creating olddir '%s' recursive ...") % (olddir)
+        self.logger.info(msg)
+        create_dir = None
+        parent_statinfo = os.stat(os.sep)
+        parent_mode = parent_statinfo.st_mode
+        parent_uid  = parent_statinfo.st_uid
+        parent_gid  = parent_statinfo.st_gid
+        while len(dirs):
+            dir_head = dirs.pop(0)
+            if create_dir:
+                create_dir = os.path.join(create_dir, dir_head)
+            else:
+                create_dir = os.sep + dir_head
+            if self.verbose > 3:
+                msg = _("Try to create directory '%s' ...") % (create_dir)
+                self.logger.debug(msg)
+            if os.path.exists(create_dir):
+                if os.path.isdir(create_dir):
+                    if self.verbose > 3:
+                        msg = _("Directory '%s' allready exists, not created.") % (create_dir)
+                        self.logger.debug(msg)
+                    parent_statinfo = os.stat(create_dir)
+                    parent_mode = parent_statinfo.st_mode
+                    parent_uid  = parent_statinfo.st_uid
+                    parent_gid  = parent_statinfo.st_gid
+                    continue
+                else:
+                    msg = _("Directory '%s' exists, but is not a valid directory.") % (create_dir)
+                    self.logger.error(msg)
+                    return False
+            msg = _("Creating directory '%s' ...") % (create_dir)
+            self.logger.debug(msg)
+            create_mode = parent_mode
+            if o['mode'] is not None:
+                create_mode = o['mode']
+            create_uid = parent_uid
+            if o['owner'] is not None:
+                create_uid = o['owner']
+            create_gid = parent_gid
+            if o['group'] is not None:
+                create_gid = o['group']
+            if self.verbose > 1:
+                msg = _("Create permissions: %(mode)4o, Owner-UID: %(uid)d, Group-GID: %(gid)d") \
+                        % {'mode': create_mode, 'uid': create_uid, 'gid': create_gid}
+                self.logger.debug(msg)
+            if not self.test:
+                if self.verbose > 2:
+                    msg = "os.mkdir('%s', %4o)" % (create_dir, create_mode)
+                    self.logger.debug(msg)
+                try:
+                    os.mkdir(create_dir, create_mode)
+                except OSError, e:
+                    msg = _("Error on creating directory '%(dir)s': %(err)s") \
+                            % {'dir': create_dir, 'err': e.strerror}
+                    self.logger.error(msg)
+                    return False
+                if (create_uid != uid) or (create_gid != gid):
+                    if self.verbose > 2:
+                        msg = "os.chown('%s', %d, %d)" % (create_dir, create_uid, create_gid)
+                        self.logger.debug(msg)
+                    try:
+                        os.chown(create_dir, create_uid, create_gid)
+                    except OSError, e:
+                        msg = _("Error on chowning directory '%(dir)s': %(err)s") \
+                                % {'dir': create_dir, 'err': e.strerror}
+                        self.logger.error(msg)
+                        return False
 
         return True
 

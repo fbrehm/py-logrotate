@@ -15,7 +15,8 @@ statusfile /home/frank/Development/Python/PyLogrotate/logrotate.status
     size 5K
     maxage 0.5y
     mail	test@uhu-banane.de
-    olddir /var/log/apache2/%Y-%m 0755 apache users
+    #olddir %Y-%m 0755 apache users
+    olddir %Y-%m
     postrotate
         echo "/etc/init.d/apache2 reload > /dev/null 2>&1 || true"
     endscript
@@ -35,7 +36,8 @@ statusfile /home/frank/Development/Python/PyLogrotate/logrotate.status
     maxage 0.5y
     mail	test@uhu-banane.de
     #olddir /var/log/apache2/%Y-%m
-    olddir /var/log/apache2/%Y-%m 0755 apache users
+    #olddir %Y-%m 0755 apache users
+    olddir %Y-%m
     postrotate
         echo "/etc/init.d/apache2 reload > /dev/null 2>&1 || true"
     endscript
