@@ -754,7 +754,7 @@ class LogrotateHandler(object):
         else:
 
             # Moving logfile to target
-            msg = _("Moving file '%(from)s' => '%(to)'.") \
+            msg = _("Moving file '%(from)s' => '%(to)s'.") \
                     % {'from': file_from, 'to': file_to }
             self.logger.info(msg)
 
@@ -1087,6 +1087,9 @@ class LogrotateHandler(object):
                     return olddir
                 else:
                     msg = _("No write and execute access to olddir '%s'.") % (olddir)
+                    if self.test:
+                        self.logger.warning(msg)
+                        return olddir
                     raise LogrotateHandlerError(msg)
                     return None
             else:
