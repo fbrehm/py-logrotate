@@ -1657,7 +1657,33 @@ class LogrotateHandler(object):
 
     #------------------------------------------------------------
     def delete_oldfiles(self):
-        pass
+        '''
+        Deleting of all logfiles in self.files_delete
+
+        @return: None
+        '''
+
+        _ = self.t.lgettext
+
+        msg = _("Deletion of all superfluid logfiles ...")
+        self.logger.debug(msg)
+
+        if not len(self.files_delete.keys()):
+            msg = _("No logfiles to delete found.")
+            self.logger.info(msg)
+
+        for logfile in sorted(self.files_delete.keys(), key=str.lower):
+            msg = _("Deleting file '%s' ...") % (logfile)
+            self.logger.info(msg)
+            if not self.test:
+                try:
+                    os.remove(logfile)
+                except OSError, e:
+                    msg = _("Error on removing file '%(file)s': %(err)s") \
+                            % {'file': logfile, 'err': e.strerror}
+                    self.logger.error(msg)
+
+        return
 
     #------------------------------------------------------------
     def compress(self):
