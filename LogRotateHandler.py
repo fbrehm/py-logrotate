@@ -26,7 +26,9 @@ import errno
 import socket
 import subprocess
 import shutil
+import glob
 from datetime import datetime, timedelta
+import time
 
 from LogRotateConfig import LogrotateConfigurationError
 from LogRotateConfig import LogrotateConfigurationReader
@@ -255,11 +257,19 @@ class LogrotateHandler(object):
         self.logger.setLevel(logging.DEBUG)
 
         # create formatter
-        formatter = logging.Formatter('[%(asctime)s]: %(name)s %(levelname)-8s'
-                                        + ' - %(message)s')
-        if verbose > 1:
-            formatter = logging.Formatter('[%(asctime)s]: %(name)s %(levelname)-8s'
-                                           + '%(funcName)s() - %(message)s')
+        format_str = '[%(asctime)s]: %(levelname)-8s - %(message)s'
+        if test:
+            format_str = '%(levelname)-8s - %(message)s'
+        if verbose:
+            if verbose > 1:
+                format_str = '[%(asctime)s]: %(name)s %(funcName)s() %(levelname)-8s - %(message)s'
+                if test:
+                    format_str = '%(name)s %(funcName)s() %(levelname)-8s - %(message)s'
+            else:
+                format_str = '[%(asctime)s]: %(name)s %(levelname)-8s - %(message)s'
+                if test:
+                    format_str = '%(name)s %(levelname)-8s - %(message)s'
+        formatter = logging.Formatter(format_str)
 
         # create console handler for error messages
         console_stderr = logging.StreamHandler(sys.stderr)
@@ -700,6 +710,7 @@ class LogrotateHandler(object):
         target = self._get_rotation_target(logfile, cur_desc_index, olddir)
         rotations = self._get_rotations(logfile, target, cur_desc_index)
 
+        extension = rotations['extension']
         compress_extension = rotations['compress_extension']
 
         # First move all cyclic stuff
@@ -709,7 +720,7 @@ class LogrotateHandler(object):
             if pair['compressed']:
                 file_from + compress_extension
                 file_to + compress_extension
-            msg = _("Moving file '%(from)s' => '%(to)'.") \
+            msg = _("Moving file '%(from)s' => '%(to)s'.") \
                     % {'from': file_from, 'to': file_to }
             self.logger.info(msg)
             if not self.test:
@@ -827,9 +838,255 @@ class LogrotateHandler(object):
                             msg = _("Error on chown of '%(file)s': %(err)s") \
                                     % {'file': file_from, 'err': e.strerror}
                             self.logger.warning(msg)
-                
+
+        oldfiles = self._collect_old_logfiles(logfile, extension, compress_extension, cur_desc_index)
+
+        # get files to delete and save them back in self.files_delete
+        files_delete = self._collect_files_delete(oldfiles, cur_desc_index)
+        if len(files_delete):
+            for oldfile in files_delete:
+                self.files_delete[oldfile] = True
 
         return True
+
+    #------------------------------------------------------------
+    def _collect_files_delete(self, oldfiles, cur_desc_index):
+        '''
+        Collects a list with all old (and compressed) logfiles, they have to delete.
+
+        @param oldfile: a dict whith all found old logfiles as keys and
+                        their modification time as values
+        @type oldfile:  dict
+        @param cur_desc_index: index of self.config for definition
+                               of logfile from configuration file
+        @type cur_desc_index:  int
+
+        @return: all old (and compressed) logfiles to delete
+        @rtype:  list
+        '''
+
+        definition = self.config[cur_desc_index]
+        _ = self.t.lgettext
+
+        if self.verbose > 2:
+            msg = _("Retrieving logfiles to delete ...")
+            self.logger.debug(msg)
+
+        result = []
+
+        if not oldfiles.keys():
+            if self.verbose > 3:
+                msg = _("No old logfiles available.")
+                self.logger.debug(msg)
+            return result
+
+        # Maxage in seconds or None
+        maxage = definition['maxage']
+        if maxage is None:
+            if self.verbose >= 4:
+                msg = _("No maxage given.")
+                self.logger.debug(msg)
+        else:
+            maxage *= (24 * 60 * 60)
+            if self.verbose >= 4:
+                msg = _("Maxage: %d seconds") % (maxage)
+                self.logger.debug(msg)
+
+        # Number of rotations or Zero
+        rotate = definition['rotate']
+        if rotate is None:
+            rotate = 0
+        if self.verbose >= 4:
+            msg = _("Max. count rotations: %d") % (rotate)
+            self.logger.debug(msg)
+
+        count = len(oldfiles.keys())
+        for oldfile in sorted(oldfiles.keys(), key=lambda x: oldfiles[x]):
+            count -= 1
+            age = int(time.time() - oldfiles[oldfile])
+            if self.verbose > 3:
+                msg = _("Checking file '%s' for deleting ...") % (oldfile)
+                self.logger.debug(msg)
+            if self.verbose >= 4:
+                msg = _("Current count: %(count)d, current age: %(age)d seconds") \
+                        % {'count': count, 'age': age}
+                self.logger.debug(msg)
+
+            # Delete all files, their count is more than the rotate option
+            if rotate:
+                if count >= rotate:
+                    if self.verbose >= 3:
+                        msg = _("Deleting '%s' because of too much.") % (oldfile)
+                        self.logger.debug(msg)
+                    result.append(oldfile)
+                    continue
+
+            # Now checking for maximum age
+            if maxage:
+                if age >= maxage:
+                    if self.verbose >= 3:
+                        msg = _("Deleting '%s' because of too old.") % (oldfile)
+                        self.logger.debug(msg)
+                    result.append(oldfile)
+
+        if self.verbose > 3:
+            if len(result):
+                pp = pprint.PrettyPrinter(indent=4)
+                msg = _("Found logfiles to delete:") + "\n" + pp.pformat(result)
+                self.logger.debug(msg)
+            else:
+                msg = _("No old logfiles to delete found.")
+                self.logger.debug(msg)
+        return result
+
+    #------------------------------------------------------------
+    def _collect_old_logfiles(self, logfile, extension, compress_extension, cur_desc_index):
+        '''
+        Collect all rotated versions of this logfile and gives back the
+        information about.
+
+        @param logfile: the logfile to rotate
+        @type logfile:  str
+        @param extension: additional fix file extension for rotated logfiles
+        @type extension:  str
+        @param compress_extension: file extension for rotated and
+                                   compressed logfiles
+        @type compress_extension:  str
+        @param cur_desc_index: index of self.config for definition
+                               of logfile from configuration file
+        @type cur_desc_index:  int
+
+        @return: all found old rotated logfiles as keys
+                 and the last modification timestamp of these files as values
+        @rtype:  dict
+        '''
+
+        definition = self.config[cur_desc_index]
+        _ = self.t.lgettext
+
+        if self.verbose > 2:
+            msg = _("Retrieving all old logfiles for file '%s' ...") % (logfile)
+            self.logger.debug(msg)
+
+        result = {}
+
+        basename = os.path.basename(logfile)
+        dirname  = os.path.dirname(logfile)
+
+        if definition['dateext']:
+            basename += '.*'
+
+        if definition['olddir']['dirname']:
+            # Create a file pattern depending on olddir definition
+
+            olddir = definition['olddir']['dirname']
+
+            # Substitution of $dirname
+            olddir = re.sub(r'(?:\${dirname}|\$dirname(?![a-zA-Z0-9_]))', dirname, olddir)
+
+            # Substitution of $basename
+            olddir = re.sub(r'(?:\${basename}|\$basename(?![a-zA-Z0-9_]))', basename, olddir)
+
+            # Substitution of $nodename
+            olddir = re.sub(r'(?:\${nodename}|\$nodename(?![a-zA-Z0-9_]))', self.template['nodename'], olddir)
+
+            # Substitution of $domain
+            olddir = re.sub(r'(?:\${domain}|\$domain(?![a-zA-Z0-9_]))', self.template['domain'], olddir)
+
+            # Substitution of $machine
+            olddir = re.sub(r'(?:\${machine}|\$machine(?![a-zA-Z0-9_]))', self.template['machine'], olddir)
+
+            # Substitution of $release
+            olddir = re.sub(r'(?:\${release}|\$release(?![a-zA-Z0-9_]))', self.template['release'], olddir)
+
+            # Substitution of $sysname
+            olddir = re.sub(r'(?:\${sysname}|\$sysname(?![a-zA-Z0-9_]))', self.template['sysname'], olddir)
+
+            if not os.path.isabs(olddir):
+                olddir = os.path.join(dirname, olddir)
+            olddir = os.path.normpath(olddir)
+
+            ####
+            # Substituting all datetime.strftime() placeholders by shell pattern
+
+            # weekday
+            olddir = re.sub(r'%[aA]', '*', olddir)
+            # name of month
+            olddir = re.sub(r'%[bBh]', '*', olddir)
+            # complete date
+            olddir = re.sub(r'%c', '*', olddir)
+            # century
+            olddir = re.sub(r'%C', '[0-9][0-9]', olddir)
+            # day of month
+            olddir = re.sub(r'%d', '[0-9][0-9]', olddir)
+            # date as %m/%d/%y
+            olddir = re.sub(r'%[Dx]', '[0-9][0-9]/[0-9][0-9]/[0-9][0-9]', olddir)
+            # Hour in 24-hours format
+            olddir = re.sub(r'%H', '[012][0-9]', olddir)
+            # Hour in 12-hours format
+            olddir = re.sub(r'%J', '[01][0-9]', olddir)
+            # number of month
+            olddir = re.sub(r'%m', '[01][0-9]', olddir)
+            # minute
+            olddir = re.sub(r'%M', '[0-5][0-9]', olddir)
+            # AM/PM
+            olddir = re.sub(r'%p', '[AP]M', olddir)
+            # complete time in 12-hours format with AM/PM
+            olddir = re.sub(r'%r', '[01][0-9]:[0-5][0-9]:[0-5][0-9] [AP]M', olddir)
+            # time in format %H:%M
+            olddir = re.sub(r'%R', '[012][0-9]:[0-5][0-9]', olddir)
+            # seconds
+            olddir = re.sub(r'%S', '[0-5][0-9]', olddir)
+            # complete time in 24-hours format
+            olddir = re.sub(r'%[TX]', '[012][0-9]:[0-5][0-9]:[0-5][0-9]', olddir)
+            # weekday as a number (0-7)
+            olddir = re.sub(r'%[uw]', '[0-7]', olddir)
+            # number of week in year (00-53)
+            olddir = re.sub(r'%[UVW]', '[0-5][0-9]', olddir)
+            # last two digits of the year
+            olddir = re.sub(r'%y', '[0-9][0-9]', olddir)
+            # year complete
+            olddir = re.sub(r'%Y', '[12][0-9][0-9][0-9]', olddir)
+            # time zone numeric
+            olddir = re.sub(r'%z', '[-+][0-9][0-9][0-9][0-9]', olddir)
+            # time zone name
+            olddir = re.sub(r'%Z', '*', olddir)
+
+            dirname = olddir
+
+        # composing file pattern
+        file_pattern = os.path.join(dirname, basename)
+        pattern_list = []
+        pattern_list.append(file_pattern + extension)
+        pattern_list.append(file_pattern + '.[0-9]' + extension)
+        pattern_list.append(file_pattern + '.[0-9][0-9]' + extension)
+        pattern_list.append(file_pattern + '.[0-9][0-9][0-9]' + extension)
+        pattern_list.append(file_pattern + '.[0-9][0-9][0-9][0-9]' + extension)
+        pattern_list.append(file_pattern + '.[0-9][0-9][0-9][0-9][0-9]' + extension)
+
+        if definition['compress']:
+            ext = extension + compress_extension
+            pattern_list.append(file_pattern + ext)
+            pattern_list.append(file_pattern + '.[0-9]' + ext)
+            pattern_list.append(file_pattern + '.[0-9][0-9]' + ext)
+            pattern_list.append(file_pattern + '.[0-9][0-9][0-9]' + ext)
+            pattern_list.append(file_pattern + '.[0-9][0-9][0-9][0-9]' + ext)
+            pattern_list.append(file_pattern + '.[0-9][0-9][0-9][0-9][0-9]' + ext)
+
+        for pattern in pattern_list:
+            if self.verbose > 2:
+                msg = _("Search for pattern '%s' ...") % (pattern)
+                self.logger.debug(msg)
+            found_files = glob.glob(pattern) 
+            for oldfile in found_files:
+                statinfo = os.stat(oldfile)
+                result[oldfile] = statinfo.st_mtime
+
+        if self.verbose > 3:
+            pp = pprint.PrettyPrinter(indent=4)
+            msg = _("Found old logfiles:") + "\n" + pp.pformat(result)
+            self.logger.debug(msg)
+        return result
 
     #------------------------------------------------------------
     def _get_rotations(self, logfile, target, cur_desc_index):
@@ -848,6 +1105,7 @@ class LogrotateHandler(object):
         @return: dict in the form::
                     {
                         'compress_extension': '.gz',
+                        'extension': '',
                         'rotate': {
                             'from': <file>,
                             'to': <target>
@@ -866,7 +1124,6 @@ class LogrotateHandler(object):
         '''
 
         definition = self.config[cur_desc_index]
-
         _ = self.t.lgettext
 
         if self.verbose > 2:
@@ -888,6 +1145,7 @@ class LogrotateHandler(object):
             match = re.search(r'^\.', extension)
             if not match:
                 extension = "." + extension
+        result['extension'] = extension
         extension_wo_compress = extension
 
         # retrieve additional file extension of logfile after rotation

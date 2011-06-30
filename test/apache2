@@ -30,11 +30,12 @@ endscript
     nomissingok
     notifempty
     sharedscripts
-    rotate 20
+    #rotate 20
+    rotate 2
     nodateext
     #start 1
     daily
-    maxage 1y
+    maxage 10d
     mail    test@uhu-banane.de
     noolddir
     postrotate apache_restart
