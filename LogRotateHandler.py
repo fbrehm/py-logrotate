@@ -243,6 +243,8 @@ class LogrotateHandler(object):
         self.files_compress = {}
         '''
         @ivar: dictionary with all files, they have to compress
+               keys are the filenames, values are the index number
+               of the list self.config (for compress options)
         @type: dict
         '''
 
@@ -605,6 +607,9 @@ class LogrotateHandler(object):
                     "\n" + pp.pformat(definition)
             self.logger.debug(msg)
 
+        # re-reading of status file
+        self.state_file.read()
+
         for logfile in definition['files']:
             if self.verbose > 1:
                 msg = ( _("Performing logfile '%s' ...") % (logfile)) + "\n"
@@ -718,8 +723,8 @@ class LogrotateHandler(object):
             file_from = pair['from']
             file_to = pair['to']
             if pair['compressed']:
-                file_from + compress_extension
-                file_to + compress_extension
+                file_from += compress_extension
+                file_to += compress_extension
             msg = _("Moving file '%(from)s' => '%(to)s'.") \
                     % {'from': file_from, 'to': file_to }
             self.logger.info(msg)
@@ -847,16 +852,105 @@ class LogrotateHandler(object):
             for oldfile in files_delete:
                 self.files_delete[oldfile] = True
 
+        # get files to compress save them back in self.files_compress
+        files_compress = self._collect_files_compress(oldfiles, compress_extension, cur_desc_index)
+        if len(files_compress):
+            for oldfile in files_compress:
+                self.files_compress = cur_desc_index
+
+        # write back date of rotation into state file
+        self.state_file.set_rotation_date(logfile)
+        self.state_file.write()
+
         return True
+
+    #------------------------------------------------------------
+    def _collect_files_compress(self, oldfiles, compress_extension, cur_desc_index):
+        '''
+        Collects a list with all old logfiles, they have to compress.
+
+        @param oldfiles: a dict whith all found old logfiles as keys and
+                        their modification time as values
+        @type oldfiles:  dict
+        @param compress_extension: file extension for rotated and
+                                   compressed logfiles
+        @type compress_extension:  str
+        @param cur_desc_index: index of self.config for definition
+                               of logfile from configuration file
+        @type cur_desc_index:  int
+
+        @return: all old (and compressed) logfiles to delete
+        @rtype:  list
+        '''
+
+        definition = self.config[cur_desc_index]
+        _ = self.t.lgettext
+
+        if self.verbose > 2:
+            msg = _("Retrieving logfiles to compress ...")
+            self.logger.debug(msg)
+
+        result = []
+
+        if not definition['compress']:
+            if self.verbose > 3:
+                msg = _("No compression defined.")
+                self.logger.debug(msg)
+            return result
+
+        if not oldfiles.keys():
+            if self.verbose > 3:
+                msg = _("No old logfiles available.")
+                self.logger.debug(msg)
+            return result
+
+        no_compress = definition['delaycompress']
+        if no_compress is None:
+            no_compress = 0
+
+        ce = re.escape(compress_extension)
+        for oldfile in sorted(oldfiles.keys(), key=lambda x: oldfiles[x], reverse=True):
+
+            match = re.search(ce + r'$', oldfile)
+            if match:
+                if self.verbose > 2:
+                    msg = _("File '%s' seems to be compressed, skip it.") % (oldfile)
+                    self.logger.debug(msg)
+                continue
+
+            if oldfile in self.files_delete:
+                if self.verbose > 2:
+                    msg = _("File '%s' will be deleted, compression unnecessary.") % (oldfile)
+                    self.logger.debug(msg)
+                continue
+
+            if no_compress:
+                if self.verbose > 2:
+                    msg = _("Compression of file '%s' will be delayed.") % (oldfile)
+                    self.logger.debug(msg)
+                no_compress -= 1
+                continue
+
+            result.append(oldfile)
+
+        if self.verbose > 3:
+            if len(result):
+                pp = pprint.PrettyPrinter(indent=4)
+                msg = _("Found logfiles to compress:") + "\n" + pp.pformat(result)
+                self.logger.debug(msg)
+            else:
+                msg = _("No old logfiles to compress found.")
+                self.logger.debug(msg)
+        return result
 
     #------------------------------------------------------------
     def _collect_files_delete(self, oldfiles, cur_desc_index):
         '''
         Collects a list with all old (and compressed) logfiles, they have to delete.
 
-        @param oldfile: a dict whith all found old logfiles as keys and
+        @param oldfiles: a dict whith all found old logfiles as keys and
                         their modification time as values
-        @type oldfile:  dict
+        @type oldfiles:  dict
         @param cur_desc_index: index of self.config for definition
                                of logfile from configuration file
         @type cur_desc_index:  int
@@ -1079,6 +1173,8 @@ class LogrotateHandler(object):
                 self.logger.debug(msg)
             found_files = glob.glob(pattern) 
             for oldfile in found_files:
+                if os.path.samefile(oldfile, logfile):
+                    continue
                 statinfo = os.stat(oldfile)
                 result[oldfile] = statinfo.st_mtime
 

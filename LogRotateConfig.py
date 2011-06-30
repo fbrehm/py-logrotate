@@ -407,7 +407,7 @@ class LogrotateConfigurationReader(object):
         self.default['period']        = 7
         self.default['dateext']       = False
         self.default['datepattern']   = '%Y-%m-%d'
-        self.default['delaycompress'] = False
+        self.default['delaycompress'] = None
         self.default['extension']     = ""
         self.default['ifempty']       = True
         self.default['mailaddress']   = None

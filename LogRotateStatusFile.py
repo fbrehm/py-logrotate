@@ -209,7 +209,7 @@ class LogrotateStatusFile(object):
             self.logger.addHandler(ch)
 
         # Initial read and check for permissions
-        self._read(must_exists = False)
+        self.read(must_exists = False)
         self._check_permissions()
 
     #-------------------------------------------------------
@@ -265,7 +265,7 @@ class LogrotateStatusFile(object):
         '''
 
         if not self.was_read:
-            self._read(must_exists = False)
+            self.read(must_exists = False)
 
         rotate_date = datetime.min.replace(tzinfo=utc)
         if logfile in self.file_state:
@@ -297,7 +297,7 @@ class LogrotateStatusFile(object):
                 % {'file': logfile, 'date': date_utc.isoformat(' ') }
         self.logger.debug(msg)
 
-        #self._read(must_exists = False)
+        #self.read(must_exists = False)
         self.file_state[logfile] = date_utc
         self.has_changed = True
 
@@ -457,7 +457,7 @@ class LogrotateStatusFile(object):
         return True
 
     #-------------------------------------------------------
-    def _read(self, must_exists = True):
+    def read(self, must_exists = True):
         '''
         Reads the status file and put the results in the dict self.file_state.
         Puts back the absolute path of the status file in self.file_name on success.
