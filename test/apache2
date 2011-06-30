@@ -5,6 +5,10 @@
 pidfile /home/frank/Development/Python/PyLogrotate/logrotate.pid
 statusfile /home/frank/Development/Python/PyLogrotate/logrotate.status
 
+script apache_restart
+    echo "/etc/init.d/apache2 reload > /dev/null 2>&1 || true"
+endscript
+
 /home/frank/devel/Python/PyLogrotate/test/log/access_log {
     compress
     missingok
@@ -18,9 +22,22 @@ statusfile /home/frank/Development/Python/PyLogrotate/logrotate.status
     mail	test@uhu-banane.de
     #olddir %Y-%m 0755 apache users
     olddir %Y-%m
-    postrotate
-        echo "/etc/init.d/apache2 reload > /dev/null 2>&1 || true"
-    endscript
+    postrotate apache_restart
+}
+
+/home/frank/devel/Python/PyLogrotate/test/log/error_log {
+    compress
+    nomissingok
+    notifempty
+    sharedscripts
+    rotate 20
+    nodateext
+    #start 1
+    daily
+    maxage 1y
+    mail    test@uhu-banane.de
+    noolddir
+    postrotate apache_restart
 }
 
 /home/frank/devel/Python/PyLogrotate/test/log/*.log {

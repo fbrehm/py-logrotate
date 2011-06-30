@@ -25,6 +25,7 @@ import os.path
 import errno
 import socket
 import subprocess
+import shutil
 from datetime import datetime, timedelta
 
 from LogRotateConfig import LogrotateConfigurationError
@@ -223,9 +224,11 @@ class LogrotateHandler(object):
         '''
         @ivar: list of all rotated logfiles. Each entry is a dict with
                three keys:
-                -  'original': str with the name of the unrotated file
-                -  'rotated':  str with the name of the rotated file
-                -  'oldfiles:  list with all old rotated files of this file
+                - 'original': str with the name of the unrotated file
+                - 'rotated':  str with the name of the rotated file
+                - 'oldfiles:  list with all old rotated files of this file
+                - 'desc_index': index of list self.config for appropriate
+                                logfile definition
         @type: list
         '''
 
@@ -563,21 +566,26 @@ class LogrotateHandler(object):
         msg = _("Starting underlying rotation ...")
         self.logger.info(msg)
 
-        for definition in self.config:
-            self._rotate_definition(definition)
+        cur_desc_index = 0
+        for d in self.config:
+            self._rotate_definition(cur_desc_index)
+            cur_desc_index += 1
 
         return
 
     #------------------------------------------------------------
-    def _rotate_definition(self, definition):
+    def _rotate_definition(self, cur_desc_index):
         '''
         Rotation of a logfile definition from a configuration file.
 
-        @param definition: definitions from configuration file
-        @type definition:  dict
+        @param cur_desc_index: index of self.config for definition
+                               of logfile from configuration file
+        @type cur_desc_index:  int
 
         @return: None
         '''
+
+        definition = self.config[cur_desc_index]
 
         _ = self.t.lgettext
 
@@ -591,7 +599,7 @@ class LogrotateHandler(object):
             if self.verbose > 1:
                 msg = ( _("Performing logfile '%s' ...") % (logfile)) + "\n"
                 self.logger.debug(msg)
-            should_rotate = self._should_rotate(logfile, definition)
+            should_rotate = self._should_rotate(logfile, cur_desc_index)
             if self.verbose > 1:
                 if should_rotate:
                     msg = _("logfile '%s' WILL rotated.")
@@ -600,12 +608,12 @@ class LogrotateHandler(object):
                 self.logger.debug(msg % (logfile))
             if not should_rotate:
                 continue
-            self._rotate_file(logfile, definition)
+            self._rotate_file(logfile, cur_desc_index)
 
         return
 
     #------------------------------------------------------------
-    def _rotate_file(self, logfile, definition):
+    def _rotate_file(self, logfile, cur_desc_index):
         '''
         Rotates a logfile with all with all necessary actions before
         and after rotation.
@@ -614,11 +622,14 @@ class LogrotateHandler(object):
 
         @param logfile: the logfile to rotate
         @type logfile:  str
-        @param definition: definitions from configuration file
-        @type definition:  dict
+        @param cur_desc_index: index of self.config for definition
+                               of logfile from configuration file
+        @type cur_desc_index:  int
 
         @return: None
         '''
+
+        definition = self.config[cur_desc_index]
 
         _ = self.t.lgettext
 
@@ -645,15 +656,15 @@ class LogrotateHandler(object):
         # Executing prerotate scripts ...
         # bla bla bla 
 
-        olddir = self._create_olddir(logfile, definition)
+        olddir = self._create_olddir(logfile, cur_desc_index)
         if olddir is None:
             return
 
-        if not self._do_rotate_file(logfile, definition, olddir):
+        if not self._do_rotate_file(logfile, cur_desc_index, olddir):
             return
 
     #------------------------------------------------------------
-    def _do_rotate_file(self, logfile, definition, olddir = None):
+    def _do_rotate_file(self, logfile, cur_desc_index, olddir = None):
         '''
         The underlaying unconditionally rotation of a logfile.
 
@@ -661,8 +672,9 @@ class LogrotateHandler(object):
 
         @param logfile: the logfile to rotate
         @type logfile:  str
-        @param definition: definitions from configuration file
-        @type definition:  dict
+        @param cur_desc_index: index of self.config for definition
+                               of logfile from configuration file
+        @type cur_desc_index:  int
         @param olddir: the directory of the rotated logfile
                        if "." or None, store the rotated logfile
                        in their original directory
@@ -671,6 +683,8 @@ class LogrotateHandler(object):
         @return: successful or not
         @rtype:  bool
         '''
+
+        definition = self.config[cur_desc_index]
 
         if (olddir is not None) and (olddir == "."):
             olddir = None
@@ -683,13 +697,142 @@ class LogrotateHandler(object):
         msg = _("Do rotate logfile '%s' ...") % (logfile)
         self.logger.debug(msg)
 
-        target = self._get_rotation_target(logfile, definition, olddir)
-        rotations = self._get_rotations(logfile, target, definition)
+        target = self._get_rotation_target(logfile, cur_desc_index, olddir)
+        rotations = self._get_rotations(logfile, target, cur_desc_index)
+
+        compress_extension = rotations['compress_extension']
+
+        # First move all cyclic stuff
+        for pair in rotations['move']:
+            file_from = pair['from']
+            file_to = pair['to']
+            if pair['compressed']:
+                file_from + compress_extension
+                file_to + compress_extension
+            msg = _("Moving file '%(from)s' => '%(to)'.") \
+                    % {'from': file_from, 'to': file_to }
+            self.logger.info(msg)
+            if not self.test:
+                try:
+                    shutil.move(file_from, file_to)
+                except OSError:
+                    msg = _("Error on moving '%(from)s' => '%(to)s': %(err)s") \
+                            % {'from': file_from, 'to': file_to, 'err': e.strerror}
+                    self.logger.error(msg)
+                    return False
+
+        # Now the underlaying rotation
+        file_from = rotations['rotate']['from']
+        file_to = rotations['rotate']['to']
+
+        if definition['copytruncate'] or definition['copy']:
+            # Copying logfile to target
+            msg = _("Copying file '%(from)s' => '%(to)'.") \
+                    % {'from': file_from, 'to': file_to }
+            self.logger.info(msg)
+            if not self.test:
+                try:
+                    shutil.copy2(file_from, file_to)
+                except OSError:
+                    msg = _("Error on copying '%(from)s' => '%(to)s': %(err)s") \
+                            % {'from': file_from, 'to': file_to, 'err': e.strerror}
+                    self.logger.error(msg)
+                    return False
+            if definition['copytruncate']: 
+                msg = _("Truncating file '%s'.") % (file_from)
+                self.logger.info(msg)
+                if not self.test:
+                    try:
+                        fd = open(file_from, 'w')
+                        fd.close()
+                    except IOError, e:
+                        msg = _("Error on truncing file '%(from)s': %(err)s") \
+                                % {'from': file_from, 'err': str(e)}
+                        self.logger.error(msg)
+                        return False
+
+        else:
+
+            # Moving logfile to target
+            msg = _("Moving file '%(from)s' => '%(to)'.") \
+                    % {'from': file_from, 'to': file_to }
+            self.logger.info(msg)
+
+            # get old permissions of logfile
+            statinfo = os.stat(file_from)
+
+            if not self.test:
+                try:
+                    shutil.move(file_from, file_to)
+                except OSError:
+                    msg = _("Error on moving '%(from)s' => '%(to)s': %(err)s") \
+                            % {'from': file_from, 'to': file_to, 'err': e.strerror}
+                    self.logger.error(msg)
+                    return False
+    
+            if definition['create']['enabled']:
+
+                # Recreate logfile
+                msg = _("Recreating file '%s'.") % (file_from)
+                self.logger.info(msg)
+                if not self.test:
+                    try:
+                        fd = open(file_from, 'w')
+                        fd.close()
+                    except IOError, e:
+                        msg = _("Error on creating file '%(from)s': %(err)s") \
+                                % {'from': file_from, 'err': str(e)}
+                        self.logger.error(msg)
+                        return False
+
+                # Setting permissions and ownership
+                new_mode = statinfo.st_mode
+                new_uid  = statinfo.st_uid
+                new_gid  = statinfo.st_gid
+
+                if not definition['create']['mode'] is None:
+                    new_mode = definition['create']['mode']
+                if not definition['create']['owner'] is None:
+                    new_uid = definition['create']['owner']
+                if not definition['create']['group'] is None:
+                    new_gid = definition['create']['group']
+
+                statinfo = os.stat(file_from)
+                old_mode = statinfo.st_mode
+                old_uid  = statinfo.st_uid
+                old_gid  = statinfo.st_gid
+
+                # Check and set permissions of new logfile
+                if new_mode != old_mode:
+                    msg = _("Setting permissions of '%(file)s' to %(mode)4o.") \
+                            % {'file': file_from, 'mode': new_mode}
+                    self.logger.info(msg)
+                    if not self.test:
+                        try:
+                            os.chmod(file_from, new_mode)
+                        except OSError, e:
+                            msg = _("Error on chmod of '%(file)s': %(err)s") \
+                                    % {'file': file_from, 'err': e.strerror}
+                            self.logger.warning(msg)
+
+                # Check and set ownership of new logfile
+                if (new_uid != old_uid) or (new_gid != old_gid):
+                    msg = _("Setting ownership of '%(file)s' to uid %(uid)d and gid %(gid)d.") \
+                            % {'file': file_from, 'uid': new_uid, 'gid': new_gid}
+                    self.logger.info(msg)
+                    if not self.test:
+                        try:
+                            os.chown(file_from, new_uid, new_gid)
+                        except OSError, e:
+                            msg = _("Error on chown of '%(file)s': %(err)s") \
+                                    % {'file': file_from, 'err': e.strerror}
+                            self.logger.warning(msg)
+                
 
         return True
 
     #------------------------------------------------------------
-    def _get_rotations(self, logfile, target, definition):
+    def _get_rotations(self, logfile, target, cur_desc_index):
         '''
         Retrieves all files to move and to rotate and gives them back
         as a dict.
@@ -698,30 +841,105 @@ class LogrotateHandler(object):
         @type logfile:  str
         @param target:  name of the rotated logfile
         @type target:   str
-        @param definition: definitions from configuration file
-        @type definition:  dict
+        @param cur_desc_index: index of self.config for definition
+                               of logfile from configuration file
+        @type cur_desc_index:  int
 
         @return: dict in the form::
                     {
+                        'compress_extension': '.gz',
                         'rotate': {
                             'from': <file>,
                             'to': <target>
                         },
                         'move': [
                             ...
-                            { 'from': <file2>, 'to': <file3>},
-                            { 'from': <file1>, 'to': <file2>},
-                            { 'from': <file0>, 'to': <file1>},
+                            { 'from': <file2>, 'to': <file3>, 'compressed': True},
+                            { 'from': <file1>, 'to': <file2>, 'compressed': True},
+                            { 'from': <file0>, 'to': <file1>, 'compressed': False},
                         ],
                     }
-                the order in the list 'move' is the order, how the
-                files have to rename.
+
+                 the order in the list 'move' is the order, how the
+                 files have to rename.
         @rtype: dict
         '''
 
+        definition = self.config[cur_desc_index]
+
         _ = self.t.lgettext
 
+        if self.verbose > 2:
+            msg = _("Retrieving all movings and rotations for logfile '%(file)s' to target '%(target)s' ...") \
+                    % {'file': logfile, 'target': target}
+            self.logger.debug(msg)
+
         result = { 'rotate': {}, 'move': [] }
+
+        # retrieve additional file extension of logfile after rotation
+        # without compress extension
+        extension = definition['extension']
+        if extension is None:
+            extension = ''
+        match = re.search(r'^\s*$', extension)
+        if match:
+            extension = ''
+        if extension != '':
+            match = re.search(r'^\.', extension)
+            if not match:
+                extension = "." + extension
+        extension_wo_compress = extension
+
+        # retrieve additional file extension of logfile after rotation
+        # for compress extension
+        compress_extension = ''
+        if definition['compress']:
+            compress_extension = definition['compress_ext']
+            match = re.search(r'^\.', compress_extension)
+            if not match:
+                compress_extension = "." + compress_extension
+        result['compress_extension'] = compress_extension
+
+        # appending a trailing '.0', if there are no other differences
+        # between logfile and target
+        i = definition['start']
+        if i is None:
+            i = 0
+        resulting_target = target + extension_wo_compress
+        target_wo_number = resulting_target
+        if resulting_target == logfile:
+            resulting_target = resulting_target + "." + str(i)
+
+        result['rotate']['from'] = logfile
+        result['rotate']['to']   = resulting_target
+
+        # resulting target exists, retrieve cyclic rotation
+        if os.path.exists(resulting_target):
+            if self.verbose > 3:
+                msg = _("Resulting target '%s' exists, retrieve cyclic rotation ...") \
+                        % (resulting_target)
+                self.logger.debug(msg)
+            target_wo_cext_old = target_wo_number + "." + str(i)
+            target_with_cext_old = target_wo_cext_old + compress_extension
+            while os.path.exists(target_wo_cext_old) or os.path.exists(target_with_cext_old):
+                i += 1
+                target_wo_cext_new = target_wo_number + "." + str(i)
+                target_with_cext_new = target_wo_cext_new + compress_extension
+                if self.verbose > 4:
+                    msg = _("Cyclic rotation from '%(from)s' to '%(to)s'.") \
+                            % {'from': target_wo_cext_old, 'to': target_wo_cext_new}
+                    self.logger.debug(msg)
+                pair = {
+                    'from': target_wo_cext_old,
+                    'to': target_wo_cext_new,
+                    'compressed': False,
+                }
+                if definition['compress']:
+                    if os.path.exists(target_with_cext_old):
+                        pair['compressed'] = True
+                result['move'].insert(0, pair)
+                target_wo_cext_old = target_wo_cext_new
+                target_with_cext_old = target_with_cext_new
 
         if self.verbose > 3:
             pp = pprint.PrettyPrinter(indent=4)
@@ -730,14 +948,15 @@ class LogrotateHandler(object):
         return result
 
     #------------------------------------------------------------
-    def _get_rotation_target(self, logfile, definition, olddir = None):
+    def _get_rotation_target(self, logfile, cur_desc_index, olddir = None):
         '''
         Retrieves the name of the rotated logfile and gives it back.
 
         @param logfile: the logfile to rotate
         @type logfile:  str
-        @param definition: definitions from configuration file
-        @type definition:  dict
+        @param cur_desc_index: index of self.config for definition
+                               of logfile from configuration file
+        @type cur_desc_index:  int
         @param olddir: the directory of the rotated logfile
                        if None, store the rotated logfile
                        in their original directory
@@ -746,6 +965,8 @@ class LogrotateHandler(object):
         @return: name of the rotated logfile
         @rtype:  str
         '''
+
+        definition = self.config[cur_desc_index]
 
         _ = self.t.lgettext
 
@@ -776,14 +997,15 @@ class LogrotateHandler(object):
         return target
 
     #------------------------------------------------------------
-    def _create_olddir(self, logfile, definition):
+    def _create_olddir(self, logfile, cur_desc_index):
         '''
         Creating the olddir, if necessary.
 
         @param logfile: the logfile to rotate
         @type logfile:  str
-        @param definition: definitions from configuration file (for olddir)
-        @type definition:  dict
+        @param cur_desc_index: index of self.config for definition
+                               of logfile from configuration file
+        @type cur_desc_index:  int
 
         @return: Name of the retrieved olddir, ".", if storing
                  the rotated logfiles in their original directory or
@@ -791,6 +1013,8 @@ class LogrotateHandler(object):
                  created a.s.o.)
         @rtype:  str or None
         '''
+
+        definition = self.config[cur_desc_index]
 
         _ = self.t.lgettext
 
@@ -987,7 +1211,7 @@ class LogrotateHandler(object):
         return False
 
     #------------------------------------------------------------
-    def _should_rotate(self, logfile, definition):
+    def _should_rotate(self, logfile, cur_desc_index):
         '''
         Determines, whether a logfile should rotated dependend on
         the informations in the definition.
@@ -996,12 +1220,15 @@ class LogrotateHandler(object):
 
         @param logfile: the logfile to inspect
         @type logfile:  str
-        @param definition: definitions from configuration file
-        @type definition:  dict
+        @param cur_desc_index: index of self.config for definition
+                               of logfile from configuration file
+        @type cur_desc_index:  int
 
         @return: to rotate or not
         @rtype:  bool
         '''
+
+        definition = self.config[cur_desc_index]
 
         _ = self.t.lgettext
 

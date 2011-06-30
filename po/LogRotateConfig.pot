@@ -204,6 +204,34 @@ msgid ""
 "%(lnr)s)"
 msgstr ""
 
+#: LogRotateConfig.py:997
+#, python-format
+msgid ""
+"Option 'copy' disables option 'copytruncate'. "
+"(file '%(file)s', line %(lnr)s)"
+msgstr ""
+
+#: LogRotateConfig.py:1001
+#, python-format
+msgid ""
+"Option 'copy' disables option 'create'. "
+"(file '%(file)s', line %(lnr)s)"
+msgstr ""
+
+#: LogRotateConfig.py:1008
+#, python-format
+msgid ""
+"Option 'copytruncate' disables option 'copy'. "
+"(file '%(file)s', line %(lnr)s)"
+msgstr ""
+
+#: LogRotateConfig.py:1013
+#, python-format
+msgid ""
+"Option 'copytruncate' disables option 'create'. "
+"(file '%(file)s', line %(lnr)s)"
+msgstr ""
+
 #: LogRotateConfig.py:959
 #, python-format
 msgid "Option '%s' without a necessary value."
@@ -340,6 +368,20 @@ msgstr ""
 #: LogRotateConfig.py:1212
 #, python-format
 msgid "Removing 'create'. (file '%(file)s', line %(lnr)s)"
+msgstr ""
+
+#: LogRotateConfig.py:1289
+#, python-format
+msgid ""
+"Option 'copy' was set, so option 'create' has no effect. "
+"(file '%(file)s', line %(lnr)s)"
+msgstr ""
+
+#: LogRotateConfig.py:1296
+#, python-format
+msgid ""
+"Option 'copytruncate' was set, so option 'create' has no effect. "
+"(file '%(file)s', line %(lnr)s)"
 msgstr ""
 
 #: LogRotateConfig.py:1232

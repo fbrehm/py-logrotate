@@ -72,6 +72,7 @@ options_with_values = (
 
 boolean_options = (
     'compress',
+    'copy',
     'copytruncate',
     'ifempty',
     'missingok',
@@ -991,6 +992,28 @@ class LogrotateConfigurationReader(object):
                         % {'option': key, 'directive': directive_str, 'value': str(option_value), 'file': filename, 'lnr': linenr})
                 )
             directive[key] = option_value
+            if key == 'copy' and option_value:
+                if directive['copytruncate']:
+                    msg = _("Option 'copy' disables option 'copytruncate'. (file '%(file)s', line %(lnr)s)") \
+                            % {'file': filename, 'lnr': linenr}
+                    self.logger.warning(msg)
+                    directive['copytruncate'] = False
+                if directive['create']['enabled']:
+                    msg = _("Option 'copy' disables option 'create'. (file '%(file)s', line %(lnr)s)") \
+                            % {'file': filename, 'lnr': linenr}
+                    self.logger.warning(msg)
+                    directive['create']['enabled'] = False
+            elif key == 'copytruncate' and option_value:
+                if directive['copy']:
+                    msg = _("Option 'copytruncate' disables option 'copy'. (file '%(file)s', line %(lnr)s)") \
+                            % {'file': filename, 'lnr': linenr}
+                    self.logger.warning(msg)
+                    directive['copy'] = False
+                if directive['create']['enabled']:
+                    msg = _("Option 'copytruncate' disables option 'create'. (file '%(file)s', line %(lnr)s)") \
+                            % {'file': filename, 'lnr': linenr}
+                    self.logger.warning(msg)
+                    directive['create']['enabled'] = False
             return True
 
         # Check for integer options
@@ -1259,6 +1282,20 @@ class LogrotateConfigurationReader(object):
                         ( _("Removing 'create'. (file '%(file)s', line %(lnr)s)")
                             % {'file': filename, 'lnr': linenr})
                     )
+                directive['create']['enabled'] = False
+                return True
+
+            if directive['copy']:
+                msg = _("Option 'copy' was set, so option 'create' has no effect. (file '%(file)s', line %(lnr)s)") \
+                        % {'file': filename, 'lnr': linenr}
+                self.logger.warning(msg)
+                directive['create']['enabled'] = False
+                return True
+
+            if directive['copytruncate']:
+                msg = _("Option 'copytruncate' was set, so option 'create' has no effect. (file '%(file)s', line %(lnr)s)") \
+                        % {'file': filename, 'lnr': linenr}
+                self.logger.warning(msg)
                 directive['create']['enabled'] = False
                 return True
 
@@ -1850,6 +1887,7 @@ class LogrotateConfigurationReader(object):
             'group':      self.default['olddir']['group'],
         }
         self.new_log['rotate']        = self.default['rotate']
+        self.new_log['sharedscripts'] = self.default['sharedscripts']
         self.new_log['shred']         = self.default['shred']
         self.new_log['size']          = self.default['size']
         self.new_log['start']         = self.default['start']
