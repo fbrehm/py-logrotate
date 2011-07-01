@@ -27,6 +27,7 @@ endscript
 
 /home/frank/devel/Python/PyLogrotate/test/log/error_log {
     compress
+    compresscmd internal_bzip2
     nomissingok
     notifempty
     sharedscripts

@@ -29,6 +29,8 @@ import shutil
 import glob
 from datetime import datetime, timedelta
 import time
+import gzip
+import bz2
 
 from LogRotateConfig import LogrotateConfigurationError
 from LogRotateConfig import LogrotateConfigurationReader
@@ -856,7 +858,7 @@ class LogrotateHandler(object):
         files_compress = self._collect_files_compress(oldfiles, compress_extension, cur_desc_index)
         if len(files_compress):
             for oldfile in files_compress:
-                self.files_compress = cur_desc_index
+                self.files_compress[oldfile] = cur_desc_index
 
         # write back date of rotation into state file
         self.state_file.set_rotation_date(logfile)
@@ -1248,7 +1250,7 @@ class LogrotateHandler(object):
         # for compress extension
         compress_extension = ''
         if definition['compress']:
-            compress_extension = definition['compress_ext']
+            compress_extension = definition['compressext']
             match = re.search(r'^\.', compress_extension)
             if not match:
                 compress_extension = "." + compress_extension
@@ -1687,7 +1689,301 @@ class LogrotateHandler(object):
 
     #------------------------------------------------------------
     def compress(self):
-        pass
+        '''
+        Compressing all logfiles in self.files_compress
+
+        @return: None
+        '''
+
+        _ = self.t.lgettext
+
+        msg = _("Compression of all uncompressed logfiles ...")
+        self.logger.debug(msg)
+
+        if not len(self.files_compress.keys()):
+            msg = _("No logfiles to compress found.")
+            self.logger.info(msg)
+
+        for logfile in sorted(self.files_compress.keys(), key=str.lower):
+
+            cur_desc_index = self.files_compress[logfile]
+            definition = self.config[cur_desc_index]
+            command = definition['compresscmd']
+            compress_extension = definition['compressext']
+            compress_opts = definition['compressopts']
+
+            match = re.search(r'^\.', compress_extension)
+            if not match:
+                compress_extension = "." + compress_extension
+            target = logfile + compress_extension
+
+            # Check existence source logfile
+            if not os.path.exists(logfile):
+                msg = _("Source file '%s' for compression doesn't exists.") % (logfile)
+                raise LogrotateHandlerError(msg)
+                return
+
+            # Check existence target (compressed file)
+            if os.path.exists(target):
+                if os.path.samefile(logfile, target):
+                    msg = _("Source file '%(source)s' and target file '%(target)s' are the same file.") \
+                            % {'source': logfile, 'target': target}
+                    raise LogrotateHandlerError(msg)
+                    return
+                msg = _("Target file '%s' for compression allready exists.") %(target)
+                self.logger.warning(msg)
+
+            # Check for filesize Zero => not compressed
+            filesize = os.path.getsize(logfile)
+            if filesize <= 0:
+                msg = _("File '%s' has a size of 0, skip compressing.") % (logfile)
+                self.logger.info(msg)
+                continue
+
+            # Execute compressing ...
+            msg = _("Compressing file '%(file)s' to '%(target)s' with '%(cmd)s' ...") \
+                    % {'file': logfile, 'target': target, 'cmd': command}
+            self.logger.info(msg)
+
+            if command == 'internal_gzip':
+                self._compress_internal_gzip(logfile, target)
+            elif command == 'internal_bzip2':
+                self._compress_internal_bzip2(logfile, target)
+            else:
+                self._compress_external(logfile, target, command, compress_opts)
+
+        return
+
+    #------------------------------------------------------------
+    def _compress_external(self, source, target, command, options):
+        '''
+        Compression of the given source file to the target file
+        with an external command.
+
+        It raises a LogrotateHandlerError on some errors.
+
+        @param source: the source file to compress
+        @type source:  str
+        @param target: the filename of the compressed file.
+        @type target:  str
+        @param command: the OS command to use to compress
+        @type command:  str
+        @param options: additional options to the compress command
+                        possible placeholders inside the options:
+                            - {}: placeholder for sourcefile
+                            - []: placeholder for targetfile
+        @type options:  str
+
+        @return: success or not
+        @rtype:  bool
+        '''
+
+        _ = self.t.lgettext
+
+        test_mode = self.test
+        test_mode = False
+
+        if self.verbose > 1:
+            msg = _("Compressing source '%(source)s' to target'%(target)s' with command '%(cmd)s'.") \
+                    % {'source': source, 'target': target, 'cmd': command}
+            self.logger.debug(msg)
+
+
+    #------------------------------------------------------------
+    def _compress_internal_gzip(self, source, target):
+        '''
+        Compression of the given source file to the target file
+        with the Python module gzip.
+        As compression level is allways used 9 (highest compression).
+
+        It raises a LogrotateHandlerError on some errors.
+
+        @param source: the source file to compress
+        @type source:  str
+        @param target: the filename of the compressed file.
+        @type target:  str
+
+        @return: success or not
+        @rtype:  bool
+        '''
+
+        _ = self.t.lgettext
+
+        test_mode = self.test
+
+        if self.verbose > 1:
+            msg = _("Compressing source '%(source)s' to target'%(target)s' with module gzip.") \
+                    % {'source': source, 'target': target}
+            self.logger.debug(msg)
+
+        if not test_mode:
+            # open source for reading
+            f_in = None
+            try:
+                f_in = open(source, 'rb')
+            except IOError, e:
+                msg = _("Error on open file '%(file)s' on reading: %(err)s") \
+                        % {'file': source, 'err': str(e)}
+                self.logger.error(msg)
+                return False
+
+            # open target for writing
+            f_out = None
+            try:
+                f_out = gzip.open(target, 'wb')
+            except IOError, e:
+                msg = _("Error on open file '%(file)s' on writing: %(err)s") \
+                        % {'file': target, 'err': str(e)}
+                self.logger.error(msg)
+                f_in.close()
+                return False
+
+            # compress and write target
+            f_out.writelines(f_in)
+            # close both files
+            f_out.close()
+            f_in.close()
+
+        # Copying permissions and timestamps from source to target
+        if self.verbose > 1:
+            msg = _("Copying permissions and timestamps from source to target.")
+            self.logger.debug(msg)
+        if not test_mode:
+            shutil.copystat(source, target)
+
+        # Copying ownership from source to target
+        statinfo = os.stat(source)
+        old_uid = statinfo.st_uid
+        old_gid = statinfo.st_gid
+        statinfo = os.stat(target)
+        new_uid = statinfo.st_uid
+        new_gid = statinfo.st_gid
+
+        if (old_uid != new_uid) or (old_gid != new_gid):
+            if self.verbose > 1:
+                msg = _("Copying ownershipfrom source to target.")
+                self.logger.debug(msg)
+            if not test_mode:
+                try:
+                    os.chown(target, old_uid, old_gid)
+                except OSError, e:
+                    msg = _("Error on chown of '%(file)s': %(err)s") \
+                            % {'file': target, 'err': e.strerror}
+                    self.logger.warning(msg)
+
+        # And last, but not least, delete uncompressed file
+        if self.verbose > 1:
+            msg = _("Deleting uncompressed file '%s' ...") % (source)
+            self.logger.debug(msg)
+
+        if not self.test:
+            try:
+                os.remove(source)
+            except OSError, e:
+                msg = _("Error removing uncompressed file '%(file)s': %(msg)") \
+                        % {'file': source, 'msg': str(e) }
+                self.logger.error(msg)
+                return False
+
+        return True
+
+    #------------------------------------------------------------
+    def _compress_internal_bzip2(self, source, target):
+        '''
+        Compression of the given source file to the target file
+        with the Python module bz2.
+        As compression level is allways used 9 (highest compression).
+
+        It raises a LogrotateHandlerError on some errors.
+
+        @param source: the source file to compress
+        @type source:  str
+        @param target: the filename of the compressed file.
+        @type target:  str
+
+        @return: success or not
+        @rtype:  bool
+        '''
+
+        _ = self.t.lgettext
+
+        test_mode = self.test
+
+        if self.verbose > 1:
+            msg = _("Compressing source '%(source)s' to target'%(target)s' with module bz2.") \
+                    % {'source': source, 'target': target}
+            self.logger.debug(msg)
+
+        if not test_mode:
+            # open source for reading
+            f_in = None
+            try:
+                f_in = open(source, 'rb')
+            except IOError, e:
+                msg = _("Error on open file '%(file)s' on reading: %(err)s") \
+                        % {'file': source, 'err': str(e)}
+                self.logger.error(msg)
+                return False
+
+            # open target for writing
+            f_out = None
+            try:
+                f_out = bz2.BZ2File(target, 'w')
+            except IOError, e:
+                msg = _("Error on open file '%(file)s' on writing: %(err)s") \
+                        % {'file': target, 'err': str(e)}
+                self.logger.error(msg)
+                f_in.close()
+                return False
+
+            # compress and write target
+            f_out.writelines(f_in)
+            # close both files
+            f_out.close()
+            f_in.close()
+
+        # Copying permissions and timestamps from source to target
+        if self.verbose > 1:
+            msg = _("Copying permissions and timestamps from source to target.")
+            self.logger.debug(msg)
+        if not test_mode:
+            shutil.copystat(source, target)
+
+        # Copying ownership from source to target
+        statinfo = os.stat(source)
+        old_uid = statinfo.st_uid
+        old_gid = statinfo.st_gid
+        statinfo = os.stat(target)
+        new_uid = statinfo.st_uid
+        new_gid = statinfo.st_gid
+
+        if (old_uid != new_uid) or (old_gid != new_gid):
+            if self.verbose > 1:
+                msg = _("Copying ownershipfrom source to target.")
+                self.logger.debug(msg)
+            if not test_mode:
+                try:
+                    os.chown(target, old_uid, old_gid)
+                except OSError, e:
+                    msg = _("Error on chown of '%(file)s': %(err)s") \
+                            % {'file': target, 'err': e.strerror}
+                    self.logger.warning(msg)
+
+        # And last, but not least, delete uncompressed file
+        if self.verbose > 1:
+            msg = _("Deleting uncompressed file '%s' ...") % (source)
+            self.logger.debug(msg)
+
+        if not self.test:
+            try:
+                os.remove(source)
+            except OSError, e:
+                msg = _("Error removing uncompressed file '%(file)s': %(msg)") \
+                        % {'file': source, 'msg': str(e) }
+                self.logger.error(msg)
+                return False
+
+        return True
 
 #========================================================================
 

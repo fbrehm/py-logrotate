@@ -175,17 +175,22 @@ msgstr ""
 msgid "Syntax error in file '%(file)s', line %(line)s"
 msgstr ""
 
-#: LogRotateConfig.py:894
+#: LogRotateConfig.py:942
 #, python-format
 msgid "Checking line '%(line)s' for a logrotate option. (file '%(file)s', line %(lnr)s)"
 msgstr ""
 
-#: LogRotateConfig.py:913
+#: LogRotateConfig.py:961
 #, python-format
 msgid "Could not detect option in line '%s'."
 msgstr ""
 
-#: LogRotateConfig.py:921
+#: LogRotateConfig.py:964
+#, python-format
+msgid "Found option '%(opt)s' with value '%(val)s'."
+msgstr ""
+
+#: LogRotateConfig.py:973
 #, python-format
 msgid "Unsupported option '%(option)s'. (file '%(file)s', line %(lnr)s)"
 msgstr ""

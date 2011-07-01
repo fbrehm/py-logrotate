@@ -197,21 +197,26 @@ msgstr "Neuer externer Scriptname: »%s«"
 msgid "Syntax error in file '%(file)s', line %(line)s"
 msgstr "Syntaxfehler in Datei Datei »%(file)s«, Zeile %(line)s"
 
-#: LogRotateConfig.py:894
+#: LogRotateConfig.py:942
 #, python-format
 msgid ""
-"Checking line '%(line)s' for a logrotate option. (file '%(file)s', line "
-"%(lnr)s)"
+"Checking line '%(line)s' for a logrotate option. "
+"(file '%(file)s', line %(lnr)s)"
 msgstr ""
 "Überprüfe Zeile »%(line)s« nach einer Logrotate-Option. "
 "(Datei »%(file)s«, Zeile %(lnr)s)"
 
-#: LogRotateConfig.py:913
+#: LogRotateConfig.py:961
 #, python-format
 msgid "Could not detect option in line '%s'."
 msgstr "Konnte keine Option in Zeile »%s« ermitteln."
 
-#: LogRotateConfig.py:921
+#: LogRotateConfig.py:964
+#, python-format
+msgid "Found option '%(opt)s' with value '%(val)s'."
+msgstr "Option »%(opt)s« mit Wert »%(val)s« gefunden."
+
+#: LogRotateConfig.py:973
 #, python-format
 msgid "Unsupported option '%(option)s'. (file '%(file)s', line %(lnr)s)"
 msgstr "Nicht unterstützte Option »%(option)s«. (Datei »%(file)s«, Zeile %(lnr)s)"

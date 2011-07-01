@@ -88,6 +88,7 @@ integer_options = (
 string_options = (
     'extension',
     'compresscmd',
+    'compressext',
     'compressoptions',
 )
 
@@ -393,9 +394,9 @@ class LogrotateConfigurationReader(object):
         self.default = {}
 
         self.default['compress']      = False
-        self.default['compress_cmd']  = 'internal_gzip'
-        self.default['compress_ext']  = None
-        self.default['compress_opts'] = None
+        self.default['compresscmd']   = 'internal_gzip'
+        self.default['compressext']   = None
+        self.default['compressopts']  = None
         self.default['copy']          = False
         self.default['copytruncate']  = False
         self.default['create']        = {
@@ -820,11 +821,11 @@ class LogrotateConfigurationReader(object):
                     )
                 # set a compress ext, if Compress is True
                 if self.new_log['compress']:
-                    if not self.new_log['compress_ext']:
-                        if self.new_log['compress_cmd'] == 'internal_gzip':
-                            self.new_log['compress_ext'] = '.gz'
-                        elif self.new_log['compress_cmd'] == 'internal_bzip2':
-                            self.new_log['compress_ext'] = '.bz2'
+                    if not self.new_log['compressext']:
+                        if self.new_log['compresscmd'] == 'internal_gzip':
+                            self.new_log['compressext'] = '.gz'
+                        elif self.new_log['compresscmd'] == 'internal_bzip2':
+                            self.new_log['compressext'] = '.bz2'
                         else:
                             msg = _("No extension for compressed logfiles given " +
                                     "(File of definition: '%(file)s', start definition: %(rownum)d).") \
@@ -960,6 +961,11 @@ class LogrotateConfigurationReader(object):
         else:
             self.logger.warning( ( _("Could not detect option in line '%s'.") % (line)))
             return False
+        val = re.sub(r'^\s+$', '', val)
+        if self.verbose > 4:
+            msg = _("Found option '%(opt)s' with value '%(val)s'.") \
+                    % {'opt': option, 'val': val}
+            self.logger.debug(msg)
 
         # Check for unsupported options
         pattern = r'^(' + '|'.join(unsupported_options) + r')$'
@@ -1107,7 +1113,7 @@ class LogrotateConfigurationReader(object):
             if key in options_with_values:
                 if self.verbose > 5:
                     self.logger.debug( ( _("Option '%s' must have a value.") %(key)))
-                if (val is None) or (re.search(r'^\s*$', val) is None):
+                if (val is None) or (val == ''):
                     self.logger.warning( ( _("Option '%s' without a value") %(key)))
                     return False
             if key == 'compresscmd':
@@ -1855,9 +1861,9 @@ class LogrotateConfigurationReader(object):
         self.new_log['file_patterns'] = []
 
         self.new_log['compress']      = self.default['compress']
-        self.new_log['compress_cmd']  = self.default['compress_cmd']
-        self.new_log['compress_ext']  = self.default['compress_ext']
-        self.new_log['compress_opts'] = self.default['compress_opts']
+        self.new_log['compresscmd']   = self.default['compresscmd']
+        self.new_log['compressext']   = self.default['compressext']
+        self.new_log['compressopts']  = self.default['compressopts']
         self.new_log['configfile']    = config_file
         self.new_log['configrow']     = rownum
         self.new_log['copy']          = self.default['copy']
