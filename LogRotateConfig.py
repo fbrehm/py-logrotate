@@ -396,7 +396,7 @@ class LogrotateConfigurationReader(object):
         self.default['compress']      = False
         self.default['compresscmd']   = 'internal_gzip'
         self.default['compressext']   = None
-        self.default['compressopts']  = None
+        self.default['compressoptions']  = None
         self.default['copy']          = False
         self.default['copytruncate']  = False
         self.default['create']        = {
@@ -1869,7 +1869,7 @@ class LogrotateConfigurationReader(object):
         self.new_log['compress']      = self.default['compress']
         self.new_log['compresscmd']   = self.default['compresscmd']
         self.new_log['compressext']   = self.default['compressext']
-        self.new_log['compressopts']  = self.default['compressopts']
+        self.new_log['compressoptions']  = self.default['compressoptions']
         self.new_log['configfile']    = config_file
         self.new_log['configrow']     = rownum
         self.new_log['copy']          = self.default['copy']

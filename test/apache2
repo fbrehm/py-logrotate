@@ -28,8 +28,10 @@ endscript
 
 /home/frank/devel/Python/PyLogrotate/test/log/error_log {
     compress
-    compresscmd internal_zip
-    copytruncate
+    #compresscmd lzma
+    #compressext .lzma
+    #compressoptions --best {}
+    create
     nomissingok
     notifempty
     sharedscripts

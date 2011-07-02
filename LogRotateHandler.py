@@ -1537,12 +1537,17 @@ class LogrotateHandler(object):
         return olddir
 
     #------------------------------------------------------------
-    def _execute_command(self, command):
+    def _execute_command(self, command, force=False, expected_retcode=0):
         '''
         Executes the given command as an OS command in a shell.
 
         @param command: the command to execute
         @type command:  str
+        @param force:   force executing command even if self.test == True
+        @type force:    bool
+        @param expected_retcode: expected returncode of the command
+                                 (should be 0)
+        @type expected_retcode:  int
 
         @return: Success of the comand (shell returncode == 0)
         @rtype:  bool
@@ -1552,6 +1557,9 @@ class LogrotateHandler(object):
         if self.verbose > 3:
             msg = _("Executing command: '%s'") % (command)
             self.logger.debug(msg)
+        if not force:
+            if self.test:
+                return True
         try:
             retcode = subprocess.call(command, shell=True)
             if self.verbose > 3:
@@ -1561,7 +1569,7 @@ class LogrotateHandler(object):
                 msg = _("Child was terminated by signal %d") % (-retcode)
                 self.logger.error(msg)
                 return False
-            if retcode > 0:
+            if retcode != expected_retcode:
                 return False
             return True
         except OSError, e:
@@ -1712,7 +1720,7 @@ class LogrotateHandler(object):
             definition = self.config[cur_desc_index]
             command = definition['compresscmd']
             compress_extension = definition['compressext']
-            compress_opts = definition['compressopts']
+            compress_opts = definition['compressoptions']
 
             match = re.search(r'^\.', compress_extension)
             if not match:
@@ -1792,6 +1800,68 @@ class LogrotateHandler(object):
                     % {'source': source, 'target': target, 'cmd': command}
             self.logger.debug(msg)
 
+        if options is None:
+            options = ''
+
+        # substituting [] in compressoptions with qouted target file name
+        match = re.search(r'\[\]', options)
+        if match:
+            if self.verbose > 3:
+                msg = _("Substituting '[]' in compressoptions with '%s'.") % ('"' + target + '"')
+                self.logger.debug(msg)
+            options = re.sub(r'\[\]', '"' + target + '"', options)
+
+        # substituting or trailing command with quoted source file name
+        match = re.search(r'\{\}', options)
+        if match:
+            if self.verbose > 3:
+                msg = _("Substituting '{}' in compressoptions with '%s'.") % ('"' + source + '"')
+                self.logger.debug(msg)
+            options = re.sub(r'\{\}', '"' + source + '"', options)
+        else:
+            options += ' "' + source + '"'
+
+        if self.verbose > 2:
+            msg = _("Compress options: '%s'.") % (options)
+            self.logger.debug(msg)
+
+        cmd = command + ' ' + options
+
+        src_statinfo = os.stat(source)
+
+        if not self._execute_command(cmd):
+            return False
+
+        if not self.test:
+            if not os.path.exists(target):
+                msg = _("Target '%s' of compression doesn't exists after executing compression command.") \
+                        % (target)
+                self.logger.error(msg)
+                return False
+
+        if os.path.exists(source):
+
+            self._copy_file_metadata(source=source, target=target)
+
+            # And last, but not least, delete uncompressed file
+            if self.verbose > 1:
+                msg = _("Deleting uncompressed file '%s' ...") % (source)
+                self.logger.debug(msg)
+
+            if not self.test:
+                try:
+                    os.remove(source)
+                except OSError, e:
+                    msg = _("Error removing uncompressed file '%(file)s': %(msg)") \
+                            % {'file': source, 'msg': str(e) }
+                    self.logger.error(msg)
+                    return False
+
+        else:
+
+            self._copy_file_metadata(target=target, statinfo=src_statinfo)
+
+        return True
     #------------------------------------------------------------
     def _copy_file_metadata(self, target, source=None, statinfo=None):
         '''
