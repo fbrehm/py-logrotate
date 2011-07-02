@@ -567,8 +567,8 @@ class LogrotateConfigurationReader(object):
         '''
         Checks the availability of the given compress command.
 
-        'internal_gzip' and 'internal_bzip2' are accepted as valid compress
-        commands for compressing with the appropriate python modules.
+        'internal_zip, 'internal_gzip' and 'internal_bzip2' are accepted as
+        valid compress commands for compressing with the appropriate python modules.
 
         @param command: command to validate (absolute or relative for
                         searching in standard search path)
@@ -581,6 +581,10 @@ class LogrotateConfigurationReader(object):
 
         _ = self.t.lgettext
         path_list = self._get_std_search_path(True)
+
+        match = re.search(r'^\s*internal[\-_\s]?zip\s*', command, re.IGNORECASE)
+        if match:
+            return 'internal_zip'
 
         match = re.search(r'^\s*internal[\-_\s]?gzip\s*', command, re.IGNORECASE)
         if match:
@@ -824,6 +828,8 @@ class LogrotateConfigurationReader(object):
                     if not self.new_log['compressext']:
                         if self.new_log['compresscmd'] == 'internal_gzip':
                             self.new_log['compressext'] = '.gz'
+                        elif self.new_log['compresscmd'] == 'internal_zip':
+                            self.new_log['compressext'] = '.zip'
                         elif self.new_log['compresscmd'] == 'internal_bzip2':
                             self.new_log['compressext'] = '.bz2'
                         else:

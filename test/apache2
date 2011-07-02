@@ -11,6 +11,7 @@ endscript
 
 /home/frank/devel/Python/PyLogrotate/test/log/access_log {
     compress
+    create
     missingok
     notifempty
     sharedscripts
@@ -27,7 +28,8 @@ endscript
 
 /home/frank/devel/Python/PyLogrotate/test/log/error_log {
     compress
-    compresscmd internal_bzip2
+    compresscmd internal_zip
+    copytruncate
     nomissingok
     notifempty
     sharedscripts
@@ -44,6 +46,7 @@ endscript
 
 /home/frank/devel/Python/PyLogrotate/test/log/*.log {
     compress
+    create
     missingok
     notifempty
     sharedscripts
