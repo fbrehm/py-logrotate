@@ -723,7 +723,7 @@ class LogrotateHandler(object):
             if do_it:
                 msg = _("Executing postrun script '%s' ...") % (postscript)
                 self.logger.info(msg)
-                if not self.scripts[prescript].execute():
+                if not self.scripts[postscript].execute():
                     return
                 self.scripts[postscript].done_postrun = True
 

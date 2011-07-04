@@ -1870,8 +1870,9 @@ class LogrotateConfigurationReader(object):
         while True:
 
             if name in self.scripts:
-                if 'cmd' in self.scripts[name]:
-                    if len(self.scripts[name].cmd):
+                cmd = self.scripts[name].cmd
+                if cmd is not None:
+                    if len(cmd):
                         i += 1
                         name = template % (i)
                     else:
