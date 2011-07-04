@@ -903,16 +903,24 @@ class LogrotateHandler(object):
 
                 # Check and set ownership of new logfile
                 if (new_uid != old_uid) or (new_gid != old_gid):
-                    msg = _("Setting ownership of '%(file)s' to uid %(uid)d and gid %(gid)d.") \
-                            % {'file': file_from, 'uid': new_uid, 'gid': new_gid}
-                    self.logger.info(msg)
-                    if not self.test:
-                        try:
-                            os.chown(file_from, new_uid, new_gid)
-                        except OSError, e:
-                            msg = _("Error on chown of '%(file)s': %(err)s") \
-                                    % {'file': file_from, 'err': e.strerror}
+                    myuid = os.geteuid()
+                    if myuid != 0:
+                        msg = _("Only root may execute chown().")
+                        if self.test:
+                            self.logger.info(msg)
+                        else:
                             self.logger.warning(msg)
+                    else:
+                        msg = _("Setting ownership of '%(file)s' to uid %(uid)d and gid %(gid)d.") \
+                                % {'file': file_from, 'uid': new_uid, 'gid': new_gid}
+                        self.logger.info(msg)
+                        if not self.test:
+                            try:
+                                os.chown(file_from, new_uid, new_gid)
+                            except OSError, e:
+                                msg = _("Error on chown of '%(file)s': %(err)s") \
+                                        % {'file': file_from, 'err': e.strerror}
+                                self.logger.warning(msg)
 
         oldfiles = self._collect_old_logfiles(logfile, extension, compress_extension, cur_desc_index)
 
@@ -1589,16 +1597,24 @@ class LogrotateHandler(object):
                     self.logger.error(msg)
                     return None
                 if (create_uid != uid) or (create_gid != gid):
-                    if self.verbose > 2:
-                        msg = "os.chown('%s', %d, %d)" % (create_dir, create_uid, create_gid)
-                        self.logger.debug(msg)
-                    try:
-                        os.chown(create_dir, create_uid, create_gid)
-                    except OSError, e:
-                        msg = _("Error on chowning directory '%(dir)s': %(err)s") \
-                                % {'dir': create_dir, 'err': e.strerror}
-                        self.logger.error(msg)
-                        return None
+                    myuid = os.geteuid()
+                    if myuid != 0:
+                        msg = _("Only root may execute chown().")
+                        if self.test:
+                            self.logger.info(msg)
+                        else:
+                            self.logger.warning(msg)
+                    else:
+                        if self.verbose > 2:
+                            msg = "os.chown('%s', %d, %d)" % (create_dir, create_uid, create_gid)
+                            self.logger.debug(msg)
+                        try:
+                            os.chown(create_dir, create_uid, create_gid)
+                        except OSError, e:
+                            msg = _("Error on chowning directory '%(dir)s': %(err)s") \
+                                    % {'dir': create_dir, 'err': e.strerror}
+                            self.logger.error(msg)
+                            return None
 
         olddir = os.path.realpath(olddir)
         return olddir

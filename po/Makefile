@@ -7,7 +7,7 @@
 
 .SUFFIXES: .mo .po
 
-MODULE = pylogrotate LogRotateGetopts LogRotateConfig LogRotateStatusFile
+MODULE = pylogrotate LogRotateGetopts LogRotateConfig LogRotateStatusFile LogRotateScript LogRotateHandler
 
 all: $(MODULE:=.de.mo)
 

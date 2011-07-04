@@ -67,8 +67,6 @@ class LogRotateScript(object):
         @type verbose:    int
         @param test_mode: test mode - no write actions are made
         @type test_mode:  bool
-        @param logger:    logger object to use for logging a.s.o.
-        @type logger:     logging.getLogger or None
 
         @return: None
         '''
