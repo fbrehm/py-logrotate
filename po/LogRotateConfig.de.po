@@ -144,15 +144,25 @@ msgstr ""
 "Keine Dateierweiterung für die komprimierten Logdateien gegeben "
 "(Beginn der Definition: Datei »%(file)s«, Zeile %(rownum)d)."
 
-#: LogRotateConfig.py:791
+#: LogRotateConfig.py:845
 msgid "New logfile definition:"
 msgstr "Neue Logdateidefinition:"
 
-#: LogRotateConfig.py:804
+#: LogRotateConfig.py:852
+#, python-format
+msgid "Postrotate script '%s' not found."
+msgstr "Das Postrotate-Skript »%s« wurde nicht gefunden."
+
+#: LogRotateConfig.py:859
+#, python-format
+msgid "Lastaction script '%s' not found."
+msgstr "Das Lastaction-Skript »%s« wurde nicht gefunden."
+
+#: LogRotateConfig.py:873
 #, python-format
 msgid ""
-"Syntax error: include may not appear inside of log file definition (file "
-"'%(file)s', line %(line)s)"
+"Syntax error: include may not appear inside of log file definition "
+"(file '%(file)s', line %(line)s)"
 msgstr ""
 "Syntaxfehler: Eine include-Anweisung darf nicht einer Logdateidefinition auftreten "
 "(Datei »%(file)s«, Zeile %(line)s)"

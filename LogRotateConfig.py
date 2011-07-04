@@ -24,6 +24,7 @@ import grp
 import glob
 
 from LogRotateCommon import split_parts, email_valid, period2days, human2bytes
+from LogRotateScript import LogRotateScript
 
 revision = '$Revision$'
 revision = re.sub( r'\$', '', revision )
@@ -154,9 +155,10 @@ class LogrotateConfigurationReader(object):
 
     #-------------------------------------------------------
     def __init__( self, config_file,
-                        verbose    = 0,
-                        logger     = None,
-                        local_dir  = None,
+                        verbose   = 0,
+                        logger    = None,
+                        local_dir = None,
+                        test_mode = False,
     ):
         '''
         Constructor.
@@ -171,6 +173,8 @@ class LogrotateConfigurationReader(object):
                             are located. If None, then system default
                             (/usr/share/locale) is used.
         @type local_dir:    str or None
+        @param test_mode:   test mode - no write actions are made
+        @type test_mode:    bool
 
         @return: None
         '''
@@ -203,6 +207,12 @@ class LogrotateConfigurationReader(object):
         '''
         @ivar: the initial configuration file to use
         @type: str
+        '''
+
+        self.test_mode = test_mode
+        '''
+        @ivar: test mode - no write actions are made
+        @type: bool
         '''
 
         self.logger = logger.getChild('config')
@@ -324,8 +334,9 @@ class LogrotateConfigurationReader(object):
 
         self.scripts = {}
         '''
-        @ivar: list of all named scripts found in configuration
-        @type: list
+        @ivar: dict of LogRotateScript objects
+               with all named scripts found in configuration
+        @type: dict
         '''
 
         self.defined_logfiles = {}
@@ -371,12 +382,16 @@ class LogrotateConfigurationReader(object):
             'local_dir':        self.local_dir,
             'new_log':          self.new_log,
             'search_path':      self.search_path,
-            'scripts':          self.scripts,
+            'scripts':          {},
             'shred_command':    self.shred_command,
             't':                self.t,
             'taboo':            self.taboo,
+            'test_mode':        self.test_mode,
             'verbose':          self.verbose,
         }
+
+        for script_name in self.scripts.keys():
+            res['scripts'][script_name] = self.scripts[script_name].as_dict()
 
         return res
 
@@ -737,7 +752,8 @@ class LogrotateConfigurationReader(object):
                 if match:
                     in_script = False
                     continue
-                self.scripts[newscript]['cmd'].append(line)
+                #self.scripts[newscript]['cmd'].append(line)
+                self.scripts[newscript].add_cmd(line)
                 continue
 
             # start of a logfile definition
@@ -844,6 +860,20 @@ class LogrotateConfigurationReader(object):
                 if self.verbose > 3:
                     self.logger.debug( ( _("New logfile definition:") + "\n" + pp.pformat(self.new_log)))
                 if found_files > 0:
+                    if self.new_log['postrotate']:
+                        script = self.new_log['postrotate']
+                        if self.scripts[script]:
+                            self.scripts[script].post_files += found_files
+                        else:
+                            msg = _("Postrotate script '%s' not found.") % (script)
+                            self.logger.error(msg)
+                    if self.new_log['lastaction']:
+                        script = self.new_log['lastaction']
+                        if self.scripts[script]:
+                            self.scripts[script].last_files += found_files
+                        else:
+                            msg = _("Lastaction script '%s' not found.") % (script)
+                            self.logger.error(msg)
                     self.config.append(self.new_log)
                 in_fd = False
                 in_logfile_list = False
@@ -1583,14 +1613,19 @@ class LogrotateConfigurationReader(object):
                     % {'name': script_name, 'file': filename, 'lnr': linenr})
             )
 
-        self.scripts[script_name] = {}
-        self.scripts[script_name]['cmd'] = []
-        self.scripts[script_name]['post'] = False
-        self.scripts[script_name]['last'] = False
-        self.scripts[script_name]['first'] = False
-        self.scripts[script_name]['prerun'] = False
-        self.scripts[script_name]['donepost'] = False
-        self.scripts[script_name]['donelast'] = False
+        self.scripts[script_name] = LogRotateScript(
+            name      = script_name,
+            local_dir = self.local_dir,
+            verbose   = self.verbose,
+            test_mode = self.test_mode,
+        )
+        #self.scripts[script_name]['cmd'] = []
+        #self.scripts[script_name]['post_files'] = 0
+        #self.scripts[script_name]['last_files'] = 0
+        #self.scripts[script_name]['first'] = False
+        #self.scripts[script_name]['prerun'] = False
+        #self.scripts[script_name]['donepost'] = False
+        #self.scripts[script_name]['donelast'] = False
 
         return script_name
 
@@ -1797,14 +1832,20 @@ class LogrotateConfigurationReader(object):
 
         new_script_name = self._new_scriptname(script_type)
 
-        self.scripts[new_script_name] = {}
-        self.scripts[new_script_name]['cmd'] = []
-        self.scripts[new_script_name]['post'] = False
-        self.scripts[new_script_name]['last'] = False
-        self.scripts[new_script_name]['first'] = False
-        self.scripts[new_script_name]['prerun'] = False
-        self.scripts[new_script_name]['donepost'] = False
-        self.scripts[new_script_name]['donelast'] = False
+        self.scripts[new_script_name] = LogRotateScript(
+            name      = new_script_name,
+            local_dir = self.local_dir,
+            verbose   = self.verbose,
+            test_mode = self.test_mode,
+        )
+        #self.scripts[new_script_name] = {}
+        #self.scripts[new_script_name]['cmd'] = []
+        #self.scripts[new_script_name]['post_files'] = 0
+        #self.scripts[new_script_name]['last_files'] = 0
+        #self.scripts[new_script_name]['first'] = False
+        #self.scripts[new_script_name]['prerun'] = False
+        #self.scripts[new_script_name]['donepost'] = False
+        #self.scripts[new_script_name]['donelast'] = False
 
         self.new_log[script_type] = new_script_name
 
@@ -1830,7 +1871,7 @@ class LogrotateConfigurationReader(object):
 
             if name in self.scripts:
                 if 'cmd' in self.scripts[name]:
-                    if len(self.scripts[name]['cmd']):
+                    if len(self.scripts[name].cmd):
                         i += 1
                         name = template % (i)
                     else:

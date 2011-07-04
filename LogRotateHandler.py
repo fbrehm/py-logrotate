@@ -9,7 +9,7 @@
 @contact: frank@brehm-online.com
 @license: GPL3
 @copyright: (c) 2010-2011 by Frank Brehm, Berlin
-@version: 0.1.0
+@version: 0.4.0
 @summary: Application handler module for Python logrotating
 '''
 
@@ -48,7 +48,7 @@ revision = re.sub( r'\s*$', '', revision )
 __author__    = 'Frank Brehm'
 __copyright__ = '(C) 2011 by Frank Brehm, Berlin'
 __contact__    = 'frank@brehm-online.com'
-__version__    = '0.3.0 ' + revision
+__version__    = '0.4.0 ' + revision
 __license__    = 'GPL3'
 
 
@@ -214,7 +214,7 @@ class LogrotateHandler(object):
 
         self.scripts = {}
         '''
-        @ivar: list of all named scripts found in configuration
+        @ivar: list of LogRotateScript objects with all named scripts found in configuration
         @type: list
         '''
 
@@ -352,7 +352,7 @@ class LogrotateHandler(object):
             'logfiles':        self.logfiles,
             'logger':          self.logger,
             'mail_cmd':        self.mail_cmd,
-            'scripts':         self.scripts,
+            'scripts':         {},
             'state_file':      None,
             'state_file_name': self.state_file_name,
             'pid_file':        self.pid_file,
@@ -364,6 +364,9 @@ class LogrotateHandler(object):
         }
         if self.state_file:
             res['state_file'] = self.state_file.as_dict()
+
+        for script_name in self.scripts.keys():
+            res['scripts'][script_name] = self.scripts[script_name].as_dict()
 
         return res
 
@@ -426,6 +429,7 @@ class LogrotateHandler(object):
             verbose     = self.verbose,
             logger      = self.logger,
             local_dir   = self.local_dir,
+            test_mode   = self.test,
         )
 
         if self.verbose > 2:
@@ -586,6 +590,14 @@ class LogrotateHandler(object):
             self._rotate_definition(cur_desc_index)
             cur_desc_index += 1
 
+        # Check for left over scripts to execute
+        for scriptname in self.scripts.keys():
+            if self.verbose >= 4:
+                msg = ( _("State of script '%s':") % (scriptname) ) \
+                        + "\n" + str(self.scripts[scriptname])
+                self.logger.debug(msg)
+            del self.scripts[scriptname]
+
         return
 
     #------------------------------------------------------------
@@ -662,17 +674,30 @@ class LogrotateHandler(object):
             if self.verbose > 2:
                 msg = _("Looking, whether the firstaction script should be executed.")
                 self.logger.debug(msg)
-            if not self.scripts[firstscript]['first']:
+            if not self.scripts[firstscript].done_firstrun:
                 msg = _("Executing firstaction script '%s' ...") % (firstscript)
                 self.logger.info(msg)
-                if not self.test:
-                    cmd = '\n'.join(self.scripts[firstscript]['cmd'])
-                    if not self._execute_command(cmd):
-                        return
-                self.scripts[firstscript]['first'] = True
+                if not self.scripts[firstscript].execute():
+                    return
+                self.scripts[firstscript].done_firstrun = True
 
-        # Executing prerotate scripts ...
-        # bla bla bla 
+        # Executing prerotate scripts, if not sharedscripts or even not executed
+        if prescript:
+            if self.verbose > 2:
+                msg = _("Looking, whether the prerun script should be executed.")
+                self.logger.debug(msg)
+            do_it = False
+            if sharedscripts:
+                if not self.scripts[prescript].done_prerun:
+                    do_it = True
+            else:
+                do_it = True
+            if do_it:
+                msg = _("Executing prerun script '%s' ...") % (prescript)
+                self.logger.info(msg)
+                if not self.scripts[prescript].execute():
+                    return
+                self.scripts[prescript].done_prerun = True
 
         olddir = self._create_olddir(logfile, cur_desc_index)
         if olddir is None:
@@ -680,6 +705,48 @@ class LogrotateHandler(object):
 
         if not self._do_rotate_file(logfile, cur_desc_index, olddir):
             return
+
+        # Looking for postrotate script in a similar way like for the prerotate
+        if postscript:
+            if self.verbose > 2:
+                msg = _("Looking, whether the postrun script should be executed.")
+                self.logger.debug(msg)
+            do_it = False
+            self.scripts[postscript].post_files -= 1
+            self.scripts[postscript].do_post = True
+            if sharedscripts:
+                if self.scripts[postscript].post_files <= 0:
+                    do_it = True
+                    self.scripts[postscript].do_post = False
+            else:
+                do_it = True
+            if do_it:
+                msg = _("Executing postrun script '%s' ...") % (postscript)
+                self.logger.info(msg)
+                if not self.scripts[prescript].execute():
+                    return
+                self.scripts[postscript].done_postrun = True
+
+        # Looking for lastaction script
+        if lastscript:
+            if self.verbose > 2:
+                msg = _("Looking, whether the lastaction script should be executed.")
+                self.logger.debug(msg)
+            do_it = False
+            self.scripts[lastscript].last_files -= 1
+            self.scripts[lastscript].do_last = True
+            if self.scripts[lastscript].done_lastrun:
+                self.scripts[lastscript].do_last = False
+            else:
+                if self.scripts[lastscript].last_files <= 0:
+                    do_it = True
+                    self.scripts[lastscript].do_last = False
+            if do_it:
+                msg = _("Executing lastaction script '%s' ...") % (lastscript)
+                self.logger.info(msg)
+                if not self.scripts[lastscript].execute():
+                    return
+                self.scripts[lastscript].done_lastrun = True
 
     #------------------------------------------------------------
     def _do_rotate_file(self, logfile, cur_desc_index, olddir = None):
