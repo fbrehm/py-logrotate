@@ -316,7 +316,6 @@ class LogrotateHandler(object):
             local_dir = self.local_dir,
             verbose   = self.verbose,
             test_mode = self.test,
-            logger    = self.logger,
         )
 
     #------------------------------------------------------------
@@ -427,7 +426,6 @@ class LogrotateHandler(object):
         config_reader = LogrotateConfigurationReader(
             config_file = self.config_file,
             verbose     = self.verbose,
-            logger      = self.logger,
             local_dir   = self.local_dir,
             test_mode   = self.test,
         )

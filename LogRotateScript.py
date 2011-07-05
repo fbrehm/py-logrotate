@@ -180,15 +180,6 @@ class LogRotateScript(object):
 
     name = property(_get_name, None, None, "Name of the script as an identifier")
 
-    #@property
-    #def name(self):
-    #    '''
-    #    Property 'name' as the name of the script as an identifier
-    #
-    #    readonly
-    #    '''
-    #    return self._name
-
     #------------------------------------------------------------
     # Property 'cmd'
     def _get_cmd(self):

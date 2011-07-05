@@ -22,6 +22,7 @@ import os.path
 import pwd
 import grp
 import glob
+import logging
 
 from LogRotateCommon import split_parts, email_valid, period2days, human2bytes
 from LogRotateScript import LogRotateScript
@@ -156,7 +157,6 @@ class LogrotateConfigurationReader(object):
     #-------------------------------------------------------
     def __init__( self, config_file,
                         verbose   = 0,
-                        logger    = None,
                         local_dir = None,
                         test_mode = False,
     ):
@@ -167,8 +167,6 @@ class LogrotateConfigurationReader(object):
         @type config_file:  str
         @param verbose:     verbosity (debug) level
         @type verbose:      int
-        @param logger:      logger object to use for logging a.s.o.
-        @type logger:       logging.getLogger or None
         @param local_dir:   The directory, where the i18n-files (*.mo)
                             are located. If None, then system default
                             (/usr/share/locale) is used.
@@ -215,7 +213,7 @@ class LogrotateConfigurationReader(object):
         @type: bool
         '''
 
-        self.logger = logger.getChild('config')
+        self.logger = logging.getLogger('pylogrotate.config')
         '''
         @ivar: logger object
         @type: logging.getLogger
@@ -226,34 +224,6 @@ class LogrotateConfigurationReader(object):
         @ivar: all global options
         @type: dict
         '''
-
-        if not logger:
-
-            #################################################
-            # Create a logger object, if necessary
-            self.logger = logging.getLogger('logrotate_cfg')
-
-            self.logger.setLevel(logging.DEBUG)
-
-            pp = pprint.PrettyPrinter(indent=4)
-            # create console handler and set level to debug
-            ch = logging.StreamHandler()
-            #ch.setLevel(logging.DEBUG)
-            if verbose:
-                ch.setLevel(logging.DEBUG)
-            else:
-                ch.setLevel(logging.INFO)
-
-            # create formatter
-            formatter = logging.Formatter(
-                '[%(asctime)s]: %(name)s %(levelname)-8s - %(message)s'
-            )
-
-            # add formatter to ch
-            ch.setFormatter(formatter)
-
-            # add ch to logger
-            self.logger.addHandler(ch)
 
         #############################################
         # the rest of instance variables:

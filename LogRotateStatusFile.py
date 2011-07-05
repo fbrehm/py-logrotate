@@ -77,7 +77,6 @@ class LogrotateStatusFile(object):
                         local_dir  = None,
                         verbose    = 0,
                         test_mode  = False,
-                        logger     = None,
     ):
         '''
         Constructor.
@@ -88,8 +87,6 @@ class LogrotateStatusFile(object):
         @type verbose:    int
         @param test_mode: test mode - no write actions are made
         @type test_mode:  bool
-        @param logger:    logger object to use for logging a.s.o.
-        @type logger:     logging.getLogger or None
         @param local_dir: The directory, where the i18n-files (*.mo)
                           are located. If None, then system default
                           (/usr/share/locale) is used.
@@ -164,7 +161,7 @@ class LogrotateStatusFile(object):
         @type: bool
         '''
 
-        self.logger = logger.getChild('status_file')
+        self.logger = logging.getLogger('pylogrotate.status_file')
         '''
         @ivar: logger object
         @type: logging.getLogger
@@ -179,34 +176,6 @@ class LogrotateStatusFile(object):
                If no rotation was made, value is datetime.min().
         @type: dict
         '''
-
-        if not logger:
-
-            #################################################
-            # Create a logger object, if necessary
-            self.logger = logging.getLogger('logrotate_state_file')
-
-            self.logger.setLevel(logging.DEBUG)
-
-            pp = pprint.PrettyPrinter(indent=4)
-            # create console handler and set level to debug
-            ch = logging.StreamHandler()
-            #ch.setLevel(logging.DEBUG)
-            if verbose:
-                ch.setLevel(logging.DEBUG)
-            else:
-                ch.setLevel(logging.INFO)
-
-            # create formatter
-            formatter = logging.Formatter(
-                '[%(asctime)s]: %(name)s %(levelname)-8s - %(message)s'
-            )
-
-            # add formatter to ch
-            ch.setFormatter(formatter)
-
-            # add ch to logger
-            self.logger.addHandler(ch)
 
         # Initial read and check for permissions
         self.read(must_exists = False)
