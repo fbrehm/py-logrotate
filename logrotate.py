@@ -27,6 +27,8 @@ from LogRotateGetopts import LogrotateOptParserError
 from LogRotateHandler import LogrotateHandler
 from LogRotateHandler import LogrotateHandlerError
 
+import LogRotateCommon
+
 revision = '$Revision$'
 revision = re.sub( r'\$', '', revision )
 revision = re.sub( r'Revision: ', r'r', revision )
@@ -50,6 +52,8 @@ def main():
     if not os.path.isdir(local_dir):
         local_dir = None
     #print "Locale-Dir: %s" % ( local_dir )
+
+    LogRotateCommon.locale_dir = local_dir
 
     t = gettext.translation('pylogrotate', local_dir, fallback=True)
     _ = t.lgettext

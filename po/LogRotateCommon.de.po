@@ -1,0 +1,129 @@
+# German translations for pylogrotate package.
+# Copyright (C) 2011 Frank Brehm, Berlin
+# This file is distributed under the same license as the pylogrotate package.
+# Frank Brehm <frank@brehm-online.com>, 2011.
+#
+# $Id$
+# $URL$
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: pylogrotate 0.4\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2011-07-05 12:41+0200\n"
+"PO-Revision-Date: 2011-07-05 12:43+0200\n"
+"Last-Translator: Frank Brehm <frank@brehm-online.com>\n"
+"Language-Team: German\n"
+"Language: de\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#: LogRotateCommon.py:190
+msgid "Given value is 'None'."
+msgstr "Der übergebene Wert ist »None«."
+
+#: LogRotateCommon.py:198
+#, python-format
+msgid "using radix '%s'."
+msgstr "Verwende Radix »%s«."
+
+#: LogRotateCommon.py:209
+#, python-format
+msgid "Could not determine bytes in '%s'."
+msgstr "Konnte keine Bytes in »%s« feststellen."
+
+#: LogRotateCommon.py:248
+#, python-format
+msgid "Couldn't detect prefix '%s'."
+msgstr "Konnte keinen Präfix inn »%s« ermitteln."
+
+#: LogRotateCommon.py:252
+#, python-format
+msgid "Found factor %d."
+msgstr "Faktor %d gefunden."
+
+#: LogRotateCommon.py:291
+msgid "Given period is 'None'."
+msgstr "Die übergebene Periode ist »None«."
+
+#: LogRotateCommon.py:296
+msgid "Given period was empty"
+msgstr "Die übergebene Periode ist leer."
+
+#: LogRotateCommon.py:300
+#, python-format
+msgid "Called with '%s'."
+msgstr "Aufgerufen mit »%s«."
+
+#: LogRotateCommon.py:316
+#, python-format
+msgid "Using radix '%s'."
+msgstr "Verwende Radix »%s«."
+
+#: LogRotateCommon.py:322 LogRotateCommon.py:342 LogRotateCommon.py:362
+#: LogRotateCommon.py:382 LogRotateCommon.py:402
+#, python-format
+msgid "Pattern '%s'."
+msgstr "Suchmuster »%s«."
+
+#: LogRotateCommon.py:332
+#, python-format
+msgid "Found %f hours."
+msgstr "Fand %f Stunden."
+
+#: LogRotateCommon.py:336
+#, python-format
+msgid "Rest after hours: '%s'."
+msgstr "Rest nach Stundenermittlung: »%s«."
+
+#: LogRotateCommon.py:352
+#, python-format
+msgid "Found %f weeks."
+msgstr "Fand %f Wochen."
+
+#: LogRotateCommon.py:356
+#, python-format
+msgid "Rest after weeks: '%s'."
+msgstr "Rest nach Wochenermittlung: »%s«."
+
+#: LogRotateCommon.py:372
+#, python-format
+msgid "Found %f months."
+msgstr "Fand %f Monate."
+
+#: LogRotateCommon.py:376
+#, python-format
+msgid "Rest after months: '%s'."
+msgstr "Rest nach Monatsermittlung: »%s«."
+
+#: LogRotateCommon.py:392
+#, python-format
+msgid "Found %f years."
+msgstr "Fand %f Jahre."
+
+#: LogRotateCommon.py:396
+#, python-format
+msgid "Rest after years: '%s'."
+msgstr "Rest nach Jahresermittlung: »%s«."
+
+#: LogRotateCommon.py:412
+#, python-format
+msgid "Found %f days."
+msgstr "Fand %f Tage."
+
+#: LogRotateCommon.py:416
+#, python-format
+msgid "Rest after days: '%s'."
+msgstr "Rest nach Tagesermittlung: »%s«."
+
+#: LogRotateCommon.py:421
+#, python-format
+msgid "Invalid content for a period: '%s'."
+msgstr "Ungültiger Inhalt für eine Periode: »%s«."
+
+#: LogRotateCommon.py:425
+#, python-format
+msgid "Total %f days found."
+msgstr "Insgesamt %f Tage gefunden."

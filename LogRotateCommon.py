@@ -17,6 +17,7 @@ import re
 import sys
 import locale
 import logging
+import gettext
 
 revision = '$Revision$'
 revision = re.sub( r'\$', '', revision )
@@ -31,6 +32,7 @@ __license__    = 'GPL3'
 
 
 logger = logging.getLogger('pylogrotate.common')
+locale_dir = None
 
 #========================================================================
 
@@ -181,15 +183,20 @@ def human2bytes(value, si_conform = True, use_locale_radix = False, verbose = 0)
     @rtype:  long
     '''
 
+    t = gettext.translation('LogRotateCommon', locale_dir, fallback=True)
+    _ = t.lgettext
+
     if value is None:
-        raise ValueError("Given value is »None«")
+        msg = _("Given value is 'None'.")
+        raise ValueError(msg)
 
     radix = '.'
     if use_locale_radix:
         radix = locale.RADIXCHAR
     radix = re.escape(radix)
     if verbose > 5:
-        logger.debug("using radix »%s«" % (radix))
+        msg = _("using radix '%s'.") % (radix)
+        logger.debug(msg)
 
     value_raw = ''
     prefix = None
@@ -199,7 +206,8 @@ def human2bytes(value, si_conform = True, use_locale_radix = False, verbose = 0)
         value_raw = match.group(1)
         prefix = match.group(2)
     else:
-        raise ValueError("human2bytes(): Could not determine bytes in »%s«." %(value))
+        msg = _("Could not determine bytes in '%s'.") % (value)
+        raise ValueError(msg)
 
     if use_locale_radix:
         value_raw = re.sub(radix, '.', value_raw, 1)
@@ -237,10 +245,12 @@ def human2bytes(value, si_conform = True, use_locale_radix = False, verbose = 0)
     elif re.search(r'^\s*PiB(?:yte)?\s*$', prefix, re.IGNORECASE):
         factor = (factor_bin * factor_bin * factor_bin * factor_bin * factor_bin)
     else:
-        raise ValueError("human2bytes(): Couldn't detect prefix »%s«." %(prefix))
+        msg = _("Couldn't detect prefix '%s'.") % (prefix)
+        raise ValueError(msg)
 
     if verbose > 5:
-        logger.debug("found factor %d" % (factor))
+        msg = _("Found factor %d.") % (factor)
+        logger.debug(msg)
 
     return long(factor * value_float)
 
@@ -274,15 +284,21 @@ def period2days(period, use_locale_radix = False, verbose = 0):
     @rtype:  float
     '''
 
+    t = gettext.translation('LogRotateCommon', locale_dir, fallback=True)
+    _ = t.lgettext
+
     if period is None:
-        raise ValueError("Given period is »None«")
+        msg = _("Given period is 'None'.")
+        raise ValueError(msg)
 
     value = str(period).strip().lower()
     if period == '':
-        raise ValueError("Given period was empty")
+        msg = _("Given period was empty")
+        raise ValueError(msg)
 
     if verbose > 4:
-        logger.debug("called with: »%s«" % (period))
+        msg = _("Called with '%s'.") % (period)
+        logger.debug(msg)
 
     if period == 'now':
         return float(0)
@@ -297,12 +313,14 @@ def period2days(period, use_locale_radix = False, verbose = 0):
         radix = locale.RADIXCHAR
     radix = re.escape(radix)
     if verbose > 5:
-        logger.debug("using radix »%s«" % (radix))
+        msg = _("Using radix '%s'.") % (radix)
+        logger.debug(msg)
 
     # Search for hours in value
     pattern = r'(\d+(?:' + radix + r'\d*)?)\s*h(?:ours?)?'
     if verbose > 5:
-        logger.debug("pattern »%s«" % (pattern))
+        msg = _("Pattern '%s'.") % (pattern)
+        logger.debug(msg)
     match = re.search(pattern, value, re.IGNORECASE)
     if match:
         hours_str = match.group(1)
@@ -311,15 +329,18 @@ def period2days(period, use_locale_radix = False, verbose = 0):
         hours = float(hours_str)
         days += (hours/24)
         if verbose > 4:
-            logger.debug("found %f hours." % (hours))
+            msg = _("Found %f hours.") % (hours)
+            logger.debug(msg)
         value = re.sub(pattern, '', value, re.IGNORECASE)
     if verbose > 5:
-        logger.debug("rest after hours: »%s«" %(value))
+        msg = _("Rest after hours: '%s'." % (value))
+        logger.debug(msg)
 
     # Search for weeks in value
     pattern = r'(\d+(?:' + radix + r'\d*)?)\s*w(?:eeks?)?'
     if verbose > 5:
-        logger.debug("pattern »%s«" % (pattern))
+        msg = _("Pattern '%s'.") % (pattern)
+        logger.debug(msg)
     match = re.search(pattern, value, re.IGNORECASE)
     if match:
         weeks_str = match.group(1)
@@ -328,15 +349,18 @@ def period2days(period, use_locale_radix = False, verbose = 0):
         weeks = float(weeks_str)
         days += (weeks*7)
         if verbose > 4:
-            logger.debug("found %f weeks." %(weeks))
+            msg = _("Found %f weeks.") % (weeks)
+            logger.debug(msg)
         value = re.sub(pattern, '', value, re.IGNORECASE)
     if verbose > 5:
-        logger.debug("rest after weeks: »%s«" %(value))
+        msg = _("Rest after weeks: '%s'." % (value))
+        logger.debug(msg)
 
     # Search for months in value
     pattern = r'(\d+(?:' + radix + r'\d*)?)\s*m(?:onths?)?'
     if verbose > 5:
-        logger.debug("pattern »%s«" % (pattern))
+        msg = _("Pattern '%s'.") % (pattern)
+        logger.debug(msg)
     match = re.search(pattern, value, re.IGNORECASE)
     if match:
         months_str = match.group(1)
@@ -345,15 +369,18 @@ def period2days(period, use_locale_radix = False, verbose = 0):
         months = float(months_str)
         days += (months*30)
         if verbose > 4:
-            logger.debug("found %f months." %(months))
+            msg = _("Found %f months.") % (months)
+            logger.debug(msg)
         value = re.sub(pattern, '', value, re.IGNORECASE)
     if verbose > 5:
-        logger.debug("rest after months: »%s«" %(value))
+        msg = _("Rest after months: '%s'." % (value))
+        logger.debug(msg)
 
     # Search for years in value
     pattern = r'(\d+(?:' + radix + r'\d*)?)\s*y(?:ears?)?'
     if verbose > 5:
-        logger.debug("pattern »%s«" % (pattern))
+        msg = _("Pattern '%s'.") % (pattern)
+        logger.debug(msg)
     match = re.search(pattern, value, re.IGNORECASE)
     if match:
         years_str = match.group(1)
@@ -362,15 +389,18 @@ def period2days(period, use_locale_radix = False, verbose = 0):
         years = float(years_str)
         days += (years*365)
         if verbose > 4:
-            logger.debug("found %f years." %(years))
+            msg = _("Found %f years.") % (years)
+            logger.debug(msg)
         value = re.sub(pattern, '', value, re.IGNORECASE)
     if verbose > 5:
-        logger.debug("rest after years: »%s«" %(value))
+        msg = _("Rest after years: '%s'." % (value))
+        logger.debug(msg)
 
     # At last search for days in value
     pattern = r'(\d+(?:' + radix + r'\d*)?)\s*(?:d(?:ays?)?)?'
     if verbose > 5:
-        logger.debug("pattern »%s«" % (pattern))
+        msg = _("Pattern '%s'.") % (pattern)
+        logger.debug(msg)
     match = re.search(pattern, value, re.IGNORECASE)
     if match:
         days_str = match.group(1)
@@ -379,17 +409,21 @@ def period2days(period, use_locale_radix = False, verbose = 0):
         days_float = float(days_str)
         days += days_float
         if verbose > 4:
-            logger.debug("found %f days." %(days_float))
+            msg = _("Found %f days.") % (days_float)
+            logger.debug(msg)
         value = re.sub(pattern, '', value, re.IGNORECASE)
     if verbose > 5:
-        logger.debug("rest after days: »%s«" %(value))
+        msg = _("Rest after days: '%s'." % (value))
+        logger.debug(msg)
 
     # warn, if there is a rest
     if re.search(r'^\s*$', value) is None:
-        logger.warning('invalid content for a period: »%s«'%(value))
+        msg = _("Invalid content for a period: '%s'.") % (value)
+        logger.warning(msg)
 
     if verbose > 4:
-        logger.debug("total %f days found." %(days))
+        msg = _("Total %f days found.") % (days)
+        logger.debug(msg)
 
     return days
 
