@@ -314,6 +314,16 @@ msgstr ""
 msgid "Value '%(value)s' for option '%(option)s' is not an absolute path."
 msgstr ""
 
+#: LogRotateConfig.py:1175
+#, python-format
+msgid "Invalid mail address for 'mailfrom' given: '%s'."
+msgstr ""
+
+#: LogRotateConfig.py:1184 LogRotateConfig.py:1188
+#, python-format
+msgid "Invalid SMTP port '%s' given."
+msgstr ""
+
 #: LogRotateConfig.py:1083
 #, python-format
 msgid "Setting global option '%(option)s' to '%(value)s'. (file '%(file)s', line %(lnr)s)"

@@ -124,6 +124,37 @@ class LogRotateMailer(object):
         '''
         self._init_from_address()
 
+        self._smtp_host = 'localhost'
+        '''
+        @ivar: the hostname to use for SMTP (smarthost), if no
+               sendmail binary was found
+        @type: str
+        '''
+
+        self._smtp_port = 25
+        '''
+        @ivar: the port to use for SMTP to the smarthost
+        @type: int
+        '''
+
+        self._smtp_tls  = False
+        '''
+        @ivar: use TLS for sending via SMTP to smarthost
+        @type: bool
+        '''
+
+        self.smtp_user = None
+        '''
+        @ivar: Authentication username for SMTP
+        @type: str or None
+        '''
+
+        self.smtp_passwd = None
+        '''
+        @ivar: Authentication password for SMTP
+        @type: str or None
+        '''
+
     #------------------------------------------------------------
     # Defintion of some properties
 
@@ -222,6 +253,65 @@ class LogRotateMailer(object):
     sendmail = property(_get_sendmail, _set_sendmail, _del_sendmail, "The sendmail executable for sending mails local")
 
     #------------------------------------------------------------
+    # Property 'smtp_host'
+    def _get_smtp_host(self):
+        '''
+        Getter method for property 'smtp_host'
+        '''
+        return self._smtp_host
+
+    def _set_smtp_host(self, value):
+        '''
+        Setter method for property 'smtp_host'
+        '''
+        _ = self.t.lgettext
+        if value:
+            self._smtp_host = value
+
+    smtp_host = property(_get_smtp_host, _set_smtp_host, None, "The hostname to use for sending mails via SMTP (smarthost)")
+
+    #------------------------------------------------------------
+    # Property 'smtp_port'
+    def _get_smtp_port(self):
+        '''
+        Getter method for property 'smtp_port'
+        '''
+        return self._smtp_port
+
+    def _set_smtp_port(self, value):
+        '''
+        Setter method for property 'smtp_port'
+        '''
+        _ = self.t.lgettext
+        if value:
+            port = 25
+            try:
+                port = int(value)
+            except ValueError, e:
+                return
+            if port < 1 or port >= 2**15:
+                return
+            self._smtp_port = port
+
+    smtp_port = property(_get_smtp_port, _set_smtp_port, None, "The port to use for sending mails via SMTP")
+
+    #------------------------------------------------------------
+    # Property 'smtp_tls'
+    def _get_smtp_tls(self):
+        '''
+        Getter method for property 'smtp_tls'
+        '''
+        return self._smtp_tls
+
+    def _set_smtp_tls(self, value):
+        '''
+        Setter method for property 'smtp_tls'
+        '''
+        self._smtp_tls = bool(value)
+
+    smtp_tls = property(_get_smtp_tls, _set_smtp_tls, None, "Use TLS for sending mails via SMTP (smarthost)")
+
+    #------------------------------------------------------------
     # Other Methods
 
     #-------------------------------------------------------
@@ -232,7 +322,7 @@ class LogRotateMailer(object):
 
         _ = self.t.lgettext
         if self.verbose > 2:
-            msg = _("Mailer script object will destroyed.")
+            msg = _("Mailer object will destroyed.")
             self.logger.debug(msg)
 
     #------------------------------------------------------------
@@ -259,12 +349,17 @@ class LogRotateMailer(object):
         '''
 
         res = {}
-        res['t']         = self.t
-        res['verbose']   = self.verbose
-        res['test_mode'] = self.test_mode
-        res['logger']    = self.logger
-        res['sendmail']  = self.sendmail
-        res['from']      = self.from_address
+        res['t']           = self.t
+        res['verbose']     = self.verbose
+        res['test_mode']   = self.test_mode
+        res['logger']      = self.logger
+        res['sendmail']    = self.sendmail
+        res['from']        = self.from_address
+        res['smtp_host']   = self.smtp_host
+        res['smtp_port']   = self.smtp_port
+        res['smtp_tls']    = self.smtp_tls
+        res['smtp_user']   = self.smtp_user
+        res['smtp_passwd'] = self.smtp_passwd
 
         return res
 

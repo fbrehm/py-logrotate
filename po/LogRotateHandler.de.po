@@ -45,6 +45,10 @@ msgstr "Fehler beim Löschen der PID-Datei »%(file)s«: %(msg)"
 msgid "Configuration reader object structure"
 msgstr "Objektstruktur des Konfigurtionslesers"
 
+#: LogRotateHandler.py:459
+msgid "Found global options:"
+msgstr "Gefundene globale Optionen:"
+
 #: LogRotateHandler.py:452
 #, python-format
 msgid "Name of state file: '%s'"

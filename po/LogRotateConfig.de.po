@@ -358,6 +358,16 @@ msgstr "Die Option »%s« ist innerhalb einer Logdateidefinition nicht erlaubt."
 msgid "Value '%(value)s' for option '%(option)s' is not an absolute path."
 msgstr "Der Wert »%(value)s« für die Option »%(option)s« ist keine absolute Pfadangabe."
 
+#: LogRotateConfig.py:1175
+#, python-format
+msgid "Invalid mail address for 'mailfrom' given: '%s'."
+msgstr "Ungültige Mailadresse »%s« für »mailfrom« angegeben."
+
+#: LogRotateConfig.py:1184 LogRotateConfig.py:1188
+#, python-format
+msgid "Invalid SMTP port '%s' given."
+msgstr "Ungültiger SMTP-Port »%s« angegeben."
+
 #: LogRotateConfig.py:1083
 msgid "Setting global option '%(option)s' to '%(value)s'. (file '%(file)s', line %(lnr)s)"
 msgstr ""

@@ -445,8 +445,8 @@ class LogrotateHandler(object):
         )
 
         if self.verbose > 2:
-            self.logger.debug( _("Configuration reader object structure")
-                            + ':\n' + str(config_reader) )
+            msg = _("Configuration reader object structure") + ':\n' + str(config_reader)
+            self.logger.debug(msg)
 
         try:
             self.config  = config_reader.get_config()
@@ -454,6 +454,27 @@ class LogrotateHandler(object):
         except LogrotateConfigurationError, e:
             self.logger.error( str(e) )
             sys.exit(10)
+
+        if self.verbose > 2:
+            pp = pprint.PrettyPrinter(indent=4)
+            msg = _("Found global options:") + "\n" + pp.pformat(config_reader.global_option)
+            self.logger.debug(msg)
+
+        # Get and set mailer options
+        if 'mailfrom' in config_reader.global_option and \
+                config_reader.global_option['mailfrom']:
+            self.mailer.from_address = config_reader.global_option['mailfrom']
+        if config_reader.global_option['smtphost'] and \
+                config_reader.global_option['smtphost'] != 'localhost':
+            self.mailer.smtp_host = config_reader.global_option['smtphost']
+        if 'smtpport' in config_reader.global_option:
+            self.mailer.smtp_port = config_reader.global_option['smtpport']
+        if 'smtptls' in config_reader.global_option:
+            self.mailer.smtp_tls = config_reader.global_option['smtptls']
+        if 'smtpuser' in config_reader.global_option:
+            self.mailer.smtp_user = config_reader.global_option['smtpuser']
+        if 'smtppasswd' in config_reader.global_option:
+            self.mailer.smtp_passwd = config_reader.global_option['smtppasswd']
 
         if self.state_file_name is None:
             if 'statusfile' in config_reader.global_option and \

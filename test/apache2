@@ -4,6 +4,12 @@
 
 pidfile /home/frank/Development/Python/PyLogrotate/logrotate.pid
 statusfile /home/frank/Development/Python/PyLogrotate/logrotate.status
+mailfrom ich <info@uhu-banane.de>
+smtphost mail.brehm-online.com
+smtpport 25
+smtpuser vmail
+smtppasswd bla
+smtptls true
 
 script apache_restart
     echo "/etc/init.d/apache2 reload > /dev/null 2>&1 || true"

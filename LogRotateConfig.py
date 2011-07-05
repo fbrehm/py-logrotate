@@ -23,6 +23,7 @@ import pwd
 import grp
 import glob
 import logging
+import email.utils
 
 from LogRotateCommon import split_parts, email_valid, period2days, human2bytes
 from LogRotateScript import LogRotateScript
@@ -70,6 +71,12 @@ options_with_values = (
     'compressext',
     'rotate',
     'maxage',
+    'mailfrom',
+    'smtphost',
+    'smtpport',
+    'smtptls',
+    'smtpuser',
+    'smtppasswd',
 )
 
 boolean_options = (
@@ -97,6 +104,12 @@ string_options = (
 global_options = (
     'statusfile',
     'pidfile',
+    'mailfrom',
+    'smtphost',
+    'smtpport',
+    'smtptls',
+    'smtpuser',
+    'smtppasswd',
 )
 
 path_options = (
@@ -224,6 +237,7 @@ class LogrotateConfigurationReader(object):
         @ivar: all global options
         @type: dict
         '''
+        self.global_option['smtphost'] = 'localhost'
 
         #############################################
         # the rest of instance variables:
@@ -398,6 +412,7 @@ class LogrotateConfigurationReader(object):
         self.default['ifempty']       = True
         self.default['mailaddress']   = None
         self.default['mailfirst']     = None
+        self.default['mailfrom']      = None
         self.default['maxage']        = None
         self.default['missingok']     = False
         self.default['olddir']        = {
@@ -1154,6 +1169,36 @@ class LogrotateConfigurationReader(object):
                             % {'value': val, 'option': key} )
                     )
                     return False
+            if key == 'mailfrom':
+               pair = email.utils.parseaddr(val)
+               if not email_valid(pair[1]):
+                    msg = _("Invalid mail address for 'mailfrom' given: '%s'.") % (val)
+                    self.logger.warning(msg)
+                    return False
+               val = pair
+            elif key == 'smtpport':
+                port = 25
+                try:
+                    port = int(val)
+                except ValueError, e:
+                    msg = _("Invalid SMTP port '%s' given.") % (val)
+                    self.logger.warning(msg)
+                    return False
+                if port < 1 or port >= 2**15:
+                    msg = _("Invalid SMTP port '%s' given.") % (val)
+                    self.logger.warning(msg)
+                    return False
+                val = port
+            elif key == 'smtptls':
+                use_tls = False
+                match = re.search(r'^\s*(?:0+|false|no?)\s*$', val, re.IGNORECASE)
+                if not match:
+                    match = re.search(r'^\s*(?:1|true|y(?:es)?)\s*$', val, re.IGNORECASE)
+                    if match:
+                        use_tls = True
+                    else:
+                        use_tls = bool(val)
+                val = use_tls
             if self.verbose > 4:
                 self.logger.debug(
                     ( _("Setting global option '%(option)s' to '%(value)s'. (file '%(file)s', line %(lnr)s)")
@@ -1900,6 +1945,7 @@ class LogrotateConfigurationReader(object):
         self.new_log['ifempty']       = self.default['ifempty']
         self.new_log['mailaddress']   = self.default['mailaddress']
         self.new_log['mailfirst']     = self.default['mailfirst']
+        self.new_log['mailfrom']      = self.default['mailfrom']
         self.new_log['maxage']        = self.default['maxage']
         self.new_log['missingok']     = self.default['missingok']
         self.new_log['olddir']        = {

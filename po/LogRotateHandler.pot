@@ -45,6 +45,10 @@ msgstr ""
 msgid "Configuration reader object structure"
 msgstr ""
 
+#: LogRotateHandler.py:459
+msgid "Found global options:"
+msgstr ""
+
 #: LogRotateHandler.py:452
 #, python-format
 msgid "Name of state file: '%s'"
