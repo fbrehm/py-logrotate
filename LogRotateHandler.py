@@ -40,6 +40,9 @@ from LogRotateStatusFile import LogrotateStatusFileError
 from LogRotateStatusFile import LogrotateStatusFile
 from LogRotateStatusFile import utc
 
+from LogRotateMailer import LogRotateMailerError
+from LogRotateMailer import LogRotateMailer
+
 revision = '$Revision$'
 revision = re.sub( r'\$', '', revision )
 revision = re.sub( r'Revision: ', r'r', revision )
@@ -293,6 +296,16 @@ class LogrotateHandler(object):
         console_stdout.setFormatter(formatter)
         self.logger.addHandler(console_stdout)
 
+        # define a mailer object
+        self.mailer = LogRotateMailer(
+            local_dir = self.local_dir,
+            verbose   = self.verbose,
+            test_mode = self.test,
+        )
+        if mail_cmd:
+            self.mailer.sendmail = mail_cmd
+
+        # end of init properties
         self.logger.debug( _("Logrotating initialised") )
 
         if not self.read_configuration():
@@ -351,6 +364,7 @@ class LogrotateHandler(object):
             'logfiles':        self.logfiles,
             'logger':          self.logger,
             'mail_cmd':        self.mail_cmd,
+            'mailer':          self.mailer.as_dict(),
             'scripts':         {},
             'state_file':      None,
             'state_file_name': self.state_file_name,
