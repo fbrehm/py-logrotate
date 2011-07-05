@@ -171,36 +171,38 @@ class LogRotateScript(object):
     # Defintion of some properties
 
     #------------------------------------------------------------
-    @property
-    def name(self):
+    # Property 'name'
+    def _get_name(self):
         '''
-        Property 'name' as the name of the script as an identifier
-
-        readonly
+        Getter method for property 'name'
         '''
         return self._name
 
+    name = property(_get_name, None, None, "Name of the script as an identifier")
+
+    #@property
+    #def name(self):
+    #    '''
+    #    Property 'name' as the name of the script as an identifier
+    #
+    #    readonly
+    #    '''
+    #    return self._name
+
     #------------------------------------------------------------
-    @property
-    def cmd(self):
+    # Property 'cmd'
+    def _get_cmd(self):
         '''
-        Property 'cmd' as the commands to execute
+        Getter method for property 'cmd'
         '''
         if len(self._cmd):
             return "\n".join(self._cmd)
         else:
             return None
 
-    #---------------
-    @cmd.setter
-    def cmd(self, value):
+    def _set_cmd(self, value):
         '''
-        Setter of property 'cmd'
-
-        @param value: the command to set to self._cmd
-        @type value:  str
-
-        @return: None
+        Setter method for property 'cmd'
         '''
         if value:
             if isinstance(value, list):
@@ -210,30 +212,26 @@ class LogRotateScript(object):
         else:
             self._cmd = []
 
-    #---------------
-    @cmd.deleter
-    def cmd(self):
+    def _del_cmd(self):
         '''
-        Deleter of property 'cmd'
+        Deleter method for property 'cmd'
         '''
         self._cmd = []
 
+    cmd = property(_get_cmd, _set_cmd, _del_cmd, "the commands to execute")
+
     #------------------------------------------------------------
-    @property
-    def post_files(self):
+    # Property 'post_files'
+    def _get_post_files(self):
         '''
-        Property 'post_files' as the number of logfiles
-        referencing to this script as a postrotate script
+        Getter method for property 'post_files'
         '''
         return self._post_files
 
-    #---------------
-    @post_files.setter
-    def post_files(self, value):
+    def _set_post_files(self, value):
         '''
-        Setter of property 'post_files'
+        Setter method for property 'post_files'
         '''
-
         _ = self.t.lgettext
         if isinstance(value, int):
             self._post_files = value
@@ -241,22 +239,25 @@ class LogRotateScript(object):
             msg = _("Invalid value for property '%s' given.") % ('post_files')
             raise LogRotateScriptError(msg)
 
+    post_files = property(
+                    _get_post_files,
+                    _set_post_files,
+                    None,
+                    "Number of logfiles referencing to this script as a postrotate script."
+    )
+
     #------------------------------------------------------------
-    @property
-    def last_files(self):
+    # Property 'last_files'
+    def _get_last_files(self):
         '''
-        Property 'last_files' as the number of logfiles
-        referencing to this script as a lastaction script
+        Getter method for property 'last_files'
         '''
         return self._last_files
 
-    #---------------
-    @last_files.setter
-    def last_files(self, value):
+    def _set_last_files(self, value):
         '''
-        Setter of property 'last_files'
+        Setter method for property 'last_files'
         '''
-
         _ = self.t.lgettext
         if isinstance(value, int):
             self._last_files = value
@@ -264,107 +265,138 @@ class LogRotateScript(object):
             msg = _("Invalid value for property '%s' given.") % ('last_files')
             raise LogRotateScriptError(msg)
 
+    last_files = property(
+                    _get_last_files,
+                    _set_last_files,
+                    None,
+                    "Number of logfiles referencing to this script as a lastaction script."
+    )
+
     #------------------------------------------------------------
-    @property
-    def done_firstrun(self):
+    # Property 'done_firstrun'
+    def _get_done_firstrun(self):
         '''
-        Property 'done_firstrun' as a flag, whether the script
-        was executed as a firstaction script
+        Getter method for property 'done_firstrun'
         '''
         return self._done_firstrun
 
-    #---------------
-    @done_firstrun.setter
-    def done_firstrun(self, value):
+    def _set_done_firstrun(self, value):
         '''
-        Setter of property 'done_firstrun'
+        Setter method for property 'done_firstrun'
         '''
         self._done_firstrun = bool(value)
 
+    done_firstrun = property(
+                    _get_done_firstrun,
+                    _set_done_firstrun,
+                    None,
+                    "Flag, whether the script was executed as a firstaction script."
+    )
+
     #------------------------------------------------------------
-    @property
-    def done_prerun(self):
+    # Property 'done_prerun'
+    def _get_done_prerun(self):
         '''
-        Property 'done_prerun' as a flag, whether the script
-        was executed as a prerun script
+        Getter method for property 'done_prerun'
         '''
         return self._done_prerun
 
-    #---------------
-    @done_prerun.setter
-    def done_prerun(self, value):
+    def _set_done_prerun(self, value):
         '''
-        Setter of property 'done_prerun'
+        Setter method for property 'done_prerun'
         '''
         self._done_prerun = bool(value)
 
+    done_prerun = property(
+                    _get_done_prerun,
+                    _set_done_prerun,
+                    None,
+                    "Flag, whether the script was executed as a prerun script."
+    )
+
     #------------------------------------------------------------
-    @property
-    def done_postrun(self):
+    # Property 'done_postrun'
+    def _get_done_postrun(self):
         '''
-        Property 'done_postrun' as a flag, whether the script
-        was executed as a postrun script
+        Getter method for property 'done_postrun'
         '''
         return self._done_postrun
 
-    #---------------
-    @done_postrun.setter
-    def done_postrun(self, value):
+    def _set_done_postrun(self, value):
         '''
-        Setter of property 'done_postrun'
+        Setter method for property 'done_postrun'
         '''
         self._done_postrun = bool(value)
 
+    done_postrun = property(
+                    _get_done_postrun,
+                    _set_done_postrun,
+                    None,
+                    "Flag, whether the script was executed as a postrun script."
+    )
+
     #------------------------------------------------------------
-    @property
-    def done_lastrun(self):
+    # Property 'done_lastrun'
+    def _get_done_lastrun(self):
         '''
-        Property 'done_lastrun' as a flag, whether the script
-        was executed as a lastaction script
+        Getter method for property 'done_lastrun'
         '''
         return self._done_lastrun
 
-    #---------------
-    @done_lastrun.setter
-    def done_lastrun(self, value):
+    def _set_done_lastrun(self, value):
         '''
-        Setter of property 'done_lastrun'
+        Setter method for property 'done_lastrun'
         '''
         self._done_lastrun = bool(value)
 
+    done_lastrun = property(
+                    _get_done_lastrun,
+                    _set_done_lastrun,
+                    None,
+                    "Flag, whether the script was executed as a lastaction script."
+    )
+
     #------------------------------------------------------------
-    @property
-    def do_post(self):
+    # Property 'do_post'
+    def _get_do_post(self):
         '''
-        Property 'do_post' as a flag, whether the script
-        should be executed as a postrun script
+        Getter method for property 'do_post'
         '''
         return self._do_post
 
-    #---------------
-    @do_post.setter
-    def do_post(self, value):
+    def _set_do_post(self, value):
         '''
-        Setter of property 'do_post'
+        Setter method for property 'do_post'
         '''
         self._do_post = bool(value)
 
+    do_post = property(
+                    _get_do_post,
+                    _set_do_post,
+                    None,
+                    "Flag, whether the script should be executed as a postrun script."
+    )
+
     #------------------------------------------------------------
-    @property
-    def do_last(self):
+    # Property 'do_last'
+    def _get_do_last(self):
         '''
-        Property 'do_last' as a flag, whether the script
-        should be executed as a lastaction script
+        Getter method for property 'do_last'
         '''
         return self._do_last
 
-    #---------------
-    @do_last.setter
-    def do_last(self, value):
+    def _set_do_last(self, value):
         '''
-        Setter of property 'do_last'
+        Setter method for property 'do_last'
         '''
         self._do_last = bool(value)
+
+    do_last = property(
+                    _get_do_last,
+                    _set_do_last,
+                    None,
+                    "Flag, whether the script should be executed as a lastaction script."
+    )
 
     #------------------------------------------------------------
     # Other Methods
