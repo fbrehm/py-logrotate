@@ -26,6 +26,7 @@ import logging
 import email.utils
 
 from LogRotateCommon import split_parts, email_valid, period2days, human2bytes
+from LogRotateCommon import get_address_list
 from LogRotateScript import LogRotateScript
 
 revision = '$Revision$'
@@ -412,7 +413,6 @@ class LogrotateConfigurationReader(object):
         self.default['ifempty']       = True
         self.default['mailaddress']   = None
         self.default['mailfirst']     = None
-        self.default['mailfrom']      = None
         self.default['maxage']        = None
         self.default['missingok']     = False
         self.default['olddir']        = {
@@ -1093,16 +1093,21 @@ class LogrotateConfigurationReader(object):
                     )
                     return False
                 return True
-            if not email_valid(val):
+            address_list = get_address_list(val, self.verbose)
+            if len(address_list):
+                directive['mailaddress'] = address_list
+            else:
                 directive['mailaddress'] = None
-                self.logger.warning( ( _("Invalid Mail address '%s'.") % (val)))
-                return False
-            directive['mailaddress'] = val
             if self.verbose > 4:
-                self.logger.debug(
-                    ( _("Setting mail address in '%(directive)s' to '%(addr)s'. (file '%(file)s', line %(lnr)s)")
-                        % {'directive': directive_str, 'addr': val, 'file': filename, 'lnr': linenr})
-                )
+                pp = pprint.PrettyPrinter(indent=4)
+                msg = _("Setting mail address in '%(directive)s' to '%(addr)s'. (file '%(file)s', line %(lnr)s)") \
+                    % {
+                        'directive': directive_str,
+                        'addr': pp.pformat(directive['mailaddress']),
+                        'file': filename,
+                        'lnr': linenr,
+                    }
+                self.logger.debug(msg)
             return True
 
         # Check for mailfirst/maillast
@@ -1945,7 +1950,6 @@ class LogrotateConfigurationReader(object):
         self.new_log['ifempty']       = self.default['ifempty']
         self.new_log['mailaddress']   = self.default['mailaddress']
         self.new_log['mailfirst']     = self.default['mailfirst']
-        self.new_log['mailfrom']      = self.default['mailfrom']
         self.new_log['maxage']        = self.default['maxage']
         self.new_log['missingok']     = self.default['missingok']
         self.new_log['olddir']        = {

@@ -107,6 +107,7 @@ class LogrotateHandler(object):
                         pid_file     = None,
                         mail_cmd     = None,
                         local_dir    = None,
+                        version      = None,
     ):
         '''
         Constructor.
@@ -132,6 +133,8 @@ class LogrotateHandler(object):
                              are located. If None, then system default
                              (/usr/share/locale) is used.
         @type local_dir:     str or None
+        @param version:      version number to show
+        @type version:       str
 
         @return: None
         '''
@@ -159,6 +162,14 @@ class LogrotateHandler(object):
         @ivar: verbosity level (0 - 9)
         @type: int
         '''
+
+        self.version = __version__
+        '''
+        @ivar: version number to show, e.g. as the X-Mailer version
+        @type: str
+        '''
+        if version is not None:
+            self.version = version
 
         self.test = test
         '''
@@ -254,6 +265,21 @@ class LogrotateHandler(object):
         @type: dict
         '''
 
+        self.files2send = {}
+        '''
+        @ivar: dictionary with all all rotated logfiles to send via
+               mail to one or more recipients.
+               Keys are the file names of the (even existing) rotated
+               and maybe compressed logfiles.
+               Values are a tuple of (mailaddress, original_logfile), where
+               mailaddress is a comma separated list of mail addresses of
+               the recipients of the mails, and original_logfile is the name
+               of unrotated logfile.
+               This dict will filled by _do_rotate_file(), and will performed
+               by send_logfiles().
+        @type: dict
+        '''
+
         #################################################
         # Create a logger object
         self.logger = logging.getLogger('pylogrotate')
@@ -299,8 +325,9 @@ class LogrotateHandler(object):
         # define a mailer object
         self.mailer = LogRotateMailer(
             local_dir = self.local_dir,
-            verbose   = self.verbose,
+            verbose = self.verbose,
             test_mode = self.test,
+            mailer_version = self.version,
         )
         if mail_cmd:
             self.mailer.sendmail = mail_cmd
@@ -359,6 +386,7 @@ class LogrotateHandler(object):
             'config_file':     self.config_file,
             'files_delete':    self.files_delete,
             'files_compress':  self.files_compress,
+            'files2send':      self.files2send,
             'force':           self.force,
             'local_dir':       self.local_dir,
             'logfiles':        self.logfiles,
@@ -374,6 +402,7 @@ class LogrotateHandler(object):
             'test':            self.test,
             'template':        self.template,
             'verbose':         self.verbose,
+            'version':         self.version,
         }
         if self.state_file:
             res['state_file'] = self.state_file.as_dict()
@@ -623,6 +652,10 @@ class LogrotateHandler(object):
             self._rotate_definition(cur_desc_index)
             cur_desc_index += 1
 
+        if self.verbose > 1:
+            line = 60 * '-'
+            print line + "\n\n"
+
         # Check for left over scripts to execute
         for scriptname in self.scripts.keys():
             if self.verbose >= 4:
@@ -649,6 +682,10 @@ class LogrotateHandler(object):
 
         _ = self.t.lgettext
 
+        if self.verbose > 1:
+            line = 60 * '-'
+            print line + "\n\n"
+
         if self.verbose >= 4:
             pp = pprint.PrettyPrinter(indent=4)
             msg = _("Rotating of logfile definition:") + \
@@ -660,7 +697,9 @@ class LogrotateHandler(object):
 
         for logfile in definition['files']:
             if self.verbose > 1:
-                msg = ( _("Performing logfile '%s' ...") % (logfile)) + "\n"
+                line = 30 * '-'
+                print (line + "\n")
+                msg = ( _("Performing logfile '%s' ...") % (logfile))
                 self.logger.debug(msg)
             should_rotate = self._should_rotate(logfile, cur_desc_index)
             if self.verbose > 1:
@@ -672,6 +711,9 @@ class LogrotateHandler(object):
             if not should_rotate:
                 continue
             self._rotate_file(logfile, cur_desc_index)
+
+        if self.verbose > 1:
+            print "\n"
 
         return
 
@@ -844,6 +886,11 @@ class LogrotateHandler(object):
         file_from = rotations['rotate']['from']
         file_to = rotations['rotate']['to']
 
+        # First check for an existing mail address
+        if definition['mailaddress'] and definition['mailfirst']:
+            self.mailer.send_file(file_from, definition['mailaddress'])
+
+        # separate between copy(truncate) and move (and create)
         if definition['copytruncate'] or definition['copy']:
             # Copying logfile to target
             msg = _("Copying file '%(from)s' => '%(to)s'.") \
@@ -962,6 +1009,8 @@ class LogrotateHandler(object):
         if len(files_delete):
             for oldfile in files_delete:
                 self.files_delete[oldfile] = True
+                if definition['mailaddress'] and not definition['mailfirst']:
+                    self.files2send[oldfile] = (definition['mailaddress'], logfile)
 
         # get files to compress save them back in self.files_compress
         files_compress = self._collect_files_compress(oldfiles, compress_extension, cur_desc_index)
@@ -981,7 +1030,7 @@ class LogrotateHandler(object):
         Collects a list with all old logfiles, they have to compress.
 
         @param oldfiles: a dict whith all found old logfiles as keys and
-                        their modification time as values
+                         their modification time as values
         @type oldfiles:  dict
         @param compress_extension: file extension for rotated and
                                    compressed logfiles
@@ -1908,9 +1957,6 @@ class LogrotateHandler(object):
 
         _ = self.t.lgettext
 
-        test_mode = self.test
-        test_mode = False
-
         if self.verbose > 1:
             msg = _("Compressing source '%(source)s' to target'%(target)s' with command '%(cmd)s'.") \
                     % {'source': source, 'target': target, 'cmd': command}
@@ -2192,14 +2238,12 @@ class LogrotateHandler(object):
 
         _ = self.t.lgettext
 
-        test_mode = self.test
-
         if self.verbose > 1:
             msg = _("Compressing source '%(source)s' to target'%(target)s' with module gzip.") \
                     % {'source': source, 'target': target}
             self.logger.debug(msg)
 
-        if not test_mode:
+        if not self.test:
             # open source for reading
             f_in = None
             try:
@@ -2265,14 +2309,12 @@ class LogrotateHandler(object):
 
         _ = self.t.lgettext
 
-        test_mode = self.test
-
         if self.verbose > 1:
             msg = _("Compressing source '%(source)s' to target'%(target)s' with module bz2.") \
                     % {'source': source, 'target': target}
             self.logger.debug(msg)
 
-        if not test_mode:
+        if not self.test:
             # open source for reading
             f_in = None
             try:
@@ -2317,6 +2359,25 @@ class LogrotateHandler(object):
                 return False
 
         return True
+
+
+    #------------------------------------------------------------
+    def send_logfiles(self):
+        '''
+        Sending all mails, they should be sent, to their recipients.
+        '''
+
+        _ = self.t.lgettext
+
+        if self.verbose > 1:
+            pp = pprint.PrettyPrinter(indent=4)
+            msg = _("Struct files2send:") + "\n" + pp.pformat(self.files2send)
+            self.logger.debug(msg)
+
+        for filename in self.files2send.keys():
+            self.mailer.send_file(filename, self.files2send[filename][0], self.files2send[filename][1])
+
+        return
 
 #========================================================================
 

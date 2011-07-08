@@ -18,6 +18,9 @@ import sys
 import locale
 import logging
 import gettext
+import csv
+import pprint
+import email.utils
 
 revision = '$Revision$'
 revision = re.sub( r'\$', '', revision )
@@ -426,6 +429,55 @@ def period2days(period, use_locale_radix = False, verbose = 0):
         logger.debug(msg)
 
     return days
+
+#------------------------------------------------------------------------
+
+def get_address_list(address_str, verbose = 0):
+    '''
+    Retrieves all mail addresses from address_str and give them back
+    as a list of tuples.
+
+    @param address_str: the string with all mail addresses as a comma
+                        separated list
+    @type address_str:  str
+    @param verbose:     level of verbosity
+    @type verbose:      int
+
+    @return: list of tuples in the form of the return value
+             of email.utils.parseaddr()
+    @rtype:  list
+
+    '''
+
+    t = gettext.translation('LogRotateCommon', locale_dir, fallback=True)
+    _ = t.lgettext
+    pp = pprint.PrettyPrinter(indent=4)
+
+    addr_list = []
+    addresses = []
+
+    for row in csv.reader([address_str], doublequote=False, skipinitialspace=True):
+        for address in row:
+            addr_list.append(address)
+
+    if verbose > 2:
+        msg = _("Found address entries:") + "\n" + pp.pformat(addr_list)
+        logger.debug(msg)
+
+    for address in addr_list:
+        address = re.sub(r',', ' ', address)
+        address = re.sub(r'\s+', ' ', address)
+        pair = email.utils.parseaddr(address)
+        if verbose > 2:
+            msg = _("Got mail address pair:") + "\n" + pp.pformat(pair)
+            logger.debug(msg)
+        if not email_valid(pair[1]):
+            msg = _("Found invalid mail address '%s'.") % (address)
+            logger.warning(msg)
+            continue
+        addresses.append(pair)
+
+    return addresses
 
 #========================================================================
 

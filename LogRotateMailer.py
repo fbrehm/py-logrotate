@@ -22,8 +22,15 @@ import os
 import os.path
 import pwd
 import socket
+import csv
 
+import mimetypes
 import email.utils
+from email import encoders
+from email.message import Message
+from email.mime.base import MIMEBase
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
 
 from LogRotateCommon import email_valid
 
@@ -60,18 +67,21 @@ class LogRotateMailer(object):
     def __init__( self, local_dir = None,
                         verbose   = 0,
                         test_mode = False,
+                        mailer_version = None,
     ):
         '''
         Constructor.
 
-        @param local_dir: The directory, where the i18n-files (*.mo)
-                          are located. If None, then system default
-                          (/usr/share/locale) is used.
-        @type local_dir:  str or None
-        @param verbose:   verbosity (debug) level
-        @type verbose:    int
-        @param test_mode: test mode - no write actions are made
-        @type test_mode:  bool
+        @param local_dir:      The directory, where the i18n-files (*.mo)
+                               are located. If None, then system default
+                               (/usr/share/locale) is used.
+        @type local_dir:       str or None
+        @param verbose:        verbosity (debug) level
+        @type verbose:         int
+        @param test_mode:      test mode - no write actions are made
+        @type test_mode:       bool
+        @param mailer_version: version of the X-Mailer tag in the mail header
+        @type mailer_version:  str
 
         @return: None
         '''
@@ -154,6 +164,14 @@ class LogRotateMailer(object):
         @ivar: Authentication password for SMTP
         @type: str or None
         '''
+
+        self.mailer_version = __version__
+        '''
+        @ivar: version of the X-Mailer tag in the mail header
+        @type: str
+        '''
+        if mailer_version is not None:
+            self.mailer_version = mailer_version
 
     #------------------------------------------------------------
     # Defintion of some properties
@@ -349,17 +367,18 @@ class LogRotateMailer(object):
         '''
 
         res = {}
-        res['t']           = self.t
-        res['verbose']     = self.verbose
-        res['test_mode']   = self.test_mode
-        res['logger']      = self.logger
-        res['sendmail']    = self.sendmail
-        res['from']        = self.from_address
-        res['smtp_host']   = self.smtp_host
-        res['smtp_port']   = self.smtp_port
-        res['smtp_tls']    = self.smtp_tls
-        res['smtp_user']   = self.smtp_user
-        res['smtp_passwd'] = self.smtp_passwd
+        res['t']              = self.t
+        res['verbose']        = self.verbose
+        res['test_mode']      = self.test_mode
+        res['logger']         = self.logger
+        res['sendmail']       = self.sendmail
+        res['from']           = self.from_address
+        res['smtp_host']      = self.smtp_host
+        res['smtp_port']      = self.smtp_port
+        res['smtp_tls']       = self.smtp_tls
+        res['smtp_user']      = self.smtp_user
+        res['smtp_passwd']    = self.smtp_passwd
+        res['mailer_version'] = self.mailer_version
 
         return res
 
@@ -416,6 +435,73 @@ class LogRotateMailer(object):
                     self.logger.warning(msg)
 
         return
+
+    #-------------------------------------------------------
+    def send_file(self, filename, addresses, original=None,
+            mime_type='text/plain'):
+        '''
+        Mails the file with the given file name as an attachement
+        to the given recipient(s).
+
+        Raises a LogRotateMailerError on harder errors.
+
+        @param filename:  The file name of the file to send (the existing,
+                          rotated and maybe compressed logfile).
+        @type filename:   str
+        @param addresses: A list of tuples of a pair in the form
+                          of the return value of email.utils.parseaddr()
+        @type addresses:  list
+        @param original:  The file name of the original (unrotated) logfile for
+                          informational purposes.
+                          If not given, filename is used instead.
+        @type original:   str or None
+        @param mime_type: MIME type (content type) of the original logfile,
+                          defaults to 'text/plain'
+        @type mime_type:  str
+
+        @return: success of sending
+        @rtype:  bool
+        '''
+
+        _ = self.t.lgettext
+
+        if not os.path.exists(filename):
+            msg = _("File '%s' dosn't exists.") % (filename)
+            self.logger.error(msg)
+            return False
+
+        if not os.path.isfile(filename):
+            msg = _("File '%s' is not a regular file.") % (filename)
+            self.logger.warning(msg)
+            return False
+
+        basename = os.path.basename(filename)
+        if not original:
+            original = os.path.abspath(filename)
+
+        msg = _("Sending mail with attached file '%(file)s' to: %(rcpt)s") \
+                % {'file': basename,
+                   'rcpt': ', '.join(map(lambda x: '"' + email.utils.formataddr(x) + '"', addresses))}
+        self.logger.debug(msg)
+
+        mail_container = MIMEMultipart()
+        mail_container['Subject']  = ( "Rotated logfile '%s'" % (filename) )
+        mail_container['X-Mailer'] = ( "pylogrotate version %s" % (self.mailer_version) )
+        mail_container['From']     = self.from_address
+        mail_container['To']       = ', '.join(map(lambda x: email.utils.formataddr(x), addresses))
+
+        ctype, encoding = mimetypes.guess_type(filename)
+        if self.verbose > 3:
+            msg = _("Guessed content-type: '%(ctype)s' and encoding '%(encoding)s'.") \
+                    % {'ctype': ctype, 'encoding': encoding }
+            self.logger.debug(msg)
+
+        composed = mail_container.as_string()
+        if self.verbose > 2:
+            msg = _("Generated E-mail:") + "\n" + composed
+            self.logger.debug(msg)
+
+        return True
 
 #========================================================================
 

@@ -339,7 +339,7 @@ msgstr "Gefundene Logdateien zum Löschen:"
 
 #: LogRotateHandler.py:1102
 msgid "No old logfiles to delete found."
-msgstr "Keile Logdateien zum Löschen gefunden."
+msgstr "Keine Logdateien zum Löschen gefunden."
 
 #: LogRotateHandler.py:1132
 #, python-format

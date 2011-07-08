@@ -36,7 +36,7 @@ revision = re.sub( r'Revision: ', r'r', revision )
 __author__    = 'Frank Brehm'
 __copyright__ = '(C) 2011 by Frank Brehm, Berlin'
 __contact__    = 'frank@brehm-online.com'
-__version__    = '0.2.2 ' + revision
+__version__    = '0.5.1 ' + revision
 __license__    = 'GPL3'
 
 
@@ -95,7 +95,7 @@ def main():
               % {'prog': cur_proc, 'date': datetime.now().isoformat(' '), }
               ) + "\n"
 
-    sep_line = '-' * 79
+    sep_line = '=' * 79
 
     if testmode:
         print _("Test mode is ON.")
@@ -124,6 +124,7 @@ def main():
             pid_file     = opt_parser.options.pidfile,
             mail_cmd     = opt_parser.options.mailcmd,
             local_dir    = local_dir,
+            version      = __version__,
         )
     except LogrotateHandlerError, e:
         sys.stderr.write(str(e) + "\n")
@@ -144,13 +145,19 @@ def main():
     print ""
     if verbose_level > 0:
         print sep_line + "\n"
-    print _("Stage 3: deleting of old logfiles") + "\n"
+    print _("Stage 3: sending logfiles per mail") + "\n"
+    lr_handler.send_logfiles()
+
+    print ""
+    if verbose_level > 0:
+        print sep_line + "\n"
+    print _("Stage 4: deleting of old logfiles") + "\n"
     lr_handler.delete_oldfiles()
 
     print ""
     if verbose_level > 0:
         print sep_line + "\n"
-    print _("Stage 4: compression of old log files") + "\n"
+    print _("Stage 5: compression of old log files") + "\n"
     lr_handler.compress()
 
     lr_handler = None

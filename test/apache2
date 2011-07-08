@@ -46,8 +46,9 @@ endscript
     delaycompress
     #start 1
     daily
-    maxage 1y
-    mail    test@uhu-banane.de
+    #maxage 1y
+    maxage 1d
+    mail    test@uhu-banane.de, Frank Brehm <frank@brehm-online.com>, "Brehm, Frank" <frank.brehm@profitbricks.com>
     noolddir
     postrotate apache_restart
 }

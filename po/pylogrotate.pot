@@ -54,23 +54,27 @@ msgstr ""
 msgid "Stage 1: reading configuration"
 msgstr ""
 
-#: logrotate.py:125
+#: logrotate.py:133
 msgid "Handler object structure"
 msgstr ""
 
-#: logrotate.py:133
+#: logrotate.py:141
 msgid "Stage 2: underlying log rotation"
 msgstr ""
 
-#: logrotate.py:139
-msgid "Stage 3: deleting of old logfiles"
+#: logrotate.py:147
+msgid "Stage 3: sending logfiles per mail"
 msgstr ""
 
-#: logrotate.py:145
-msgid "Stage 4: compression of old log files"
+#: logrotate.py:153
+msgid "Stage 4: deleting of old logfiles"
 msgstr ""
 
-#: logrotate.py:152
+#: logrotate.py:159
+msgid "Stage 5: compression of old log files"
+msgstr ""
+
+#: logrotate.py:166
 #, python-format
 msgid "[%(date)s]: %(prog)s ended logrotation."
 msgstr ""
