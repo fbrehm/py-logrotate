@@ -127,3 +127,16 @@ msgstr ""
 #, python-format
 msgid "Total %f days found."
 msgstr ""
+
+#: LogRotateCommon.py:464
+msgid "Found address entries:"
+msgstr ""
+
+#: LogRotateCommon.py:472
+msgid "Got mail address pair:"
+msgstr ""
+
+#: LogRotateCommon.py:475
+#, python-format
+msgid "Found invalid mail address '%s'."
+msgstr ""

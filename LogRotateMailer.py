@@ -20,9 +20,12 @@ import pprint
 import gettext
 import os
 import os.path
+import sys
 import pwd
 import socket
 import csv
+
+from datetime import datetime
 
 import mimetypes
 import email.utils
@@ -30,7 +33,10 @@ from email import encoders
 from email.message import Message
 from email.mime.base import MIMEBase
 from email.mime.multipart import MIMEMultipart
+from email.mime.nonmultipart import MIMENonMultipart
 from email.mime.text import MIMEText
+
+from quopri import encodestring as _encodestring
 
 from LogRotateCommon import email_valid
 
@@ -437,8 +443,14 @@ class LogRotateMailer(object):
         return
 
     #-------------------------------------------------------
-    def send_file(self, filename, addresses, original=None,
-            mime_type='text/plain'):
+    def send_file(self,
+            filename,
+            addresses,
+            original=None,
+            mime_type='text/plain',
+            rotate_date=None,
+            charset=None
+            ):
         '''
         Mails the file with the given file name as an attachement
         to the given recipient(s).
@@ -458,6 +470,11 @@ class LogRotateMailer(object):
         @param mime_type: MIME type (content type) of the original logfile,
                           defaults to 'text/plain'
         @type mime_type:  str
+        @param rotate_date: datetime object of rotation, defaults to now()
+        @type rotate_date:  datetime or None
+        @param charset: character set of (uncompreesed) logfile, if the
+                        mime_type is 'text/plain', defaults to 'utf-8'
+        @type charset:  str or None
 
         @return: success of sending
         @rtype:  bool
@@ -479,6 +496,9 @@ class LogRotateMailer(object):
         if not original:
             original = os.path.abspath(filename)
 
+        if not rotate_date:
+            rotate_date = datetime.now()
+
         msg = _("Sending mail with attached file '%(file)s' to: %(rcpt)s") \
                 % {'file': basename,
                    'rcpt': ', '.join(map(lambda x: '"' + email.utils.formataddr(x) + '"', addresses))}
@@ -489,6 +509,20 @@ class LogRotateMailer(object):
         mail_container['X-Mailer'] = ( "pylogrotate version %s" % (self.mailer_version) )
         mail_container['From']     = self.from_address
         mail_container['To']       = ', '.join(map(lambda x: email.utils.formataddr(x), addresses))
+        mail_container.preamble = 'You will not see this in a MIME-aware mail reader.\n'
+
+        # Generate Text of the first part of mail body
+        mailtext = "Rotated Logfile:\n\n"
+        mailtext += "\t - " + filename + "\n"
+        mailtext += "\t   (" + original + ")\n"
+        mailtext += "\n"
+        mailtext += "Date of rotation: " + rotate_date.isoformat(' ')
+        mailtext += "\n"
+        mailtext = _encodestring(mailtext, quotetabs=False)
+        mail_part = MIMENonMultipart('text', 'plain', charset=sys.getdefaultencoding())
+        mail_part.set_payload(mailtext)
+        mail_part['Content-Transfer-Encoding'] = 'quoted-printable'
+        mail_container.attach(mail_part)
 
         ctype, encoding = mimetypes.guess_type(filename)
         if self.verbose > 3:
@@ -496,8 +530,34 @@ class LogRotateMailer(object):
                     % {'ctype': ctype, 'encoding': encoding }
             self.logger.debug(msg)
 
+        if encoding:
+            if encoding == 'gzip':
+                ctype = 'application/x-gzip'
+            elif encoding == 'bzip2':
+                ctype = 'application/x-bzip2'
+            else:
+                ctype = 'application/octet-stream'
+
+        if not ctype:
+            ctype = mime_type
+
+        maintype, subtype = ctype.split('/', 1)
+        fp = open(filename, 'rb')
+        mail_part = MIMEBase(maintype, subtype)
+        mail_part.set_payload(fp.read())
+        fp.close()
+        if maintype == 'text':
+            msgtext = mail_part.get_payload()
+            msgtext =  _encodestring(msgtext, quotetabs=False)
+            mail_part.set_payload(msgtext)
+            mail_part['Content-Transfer-Encoding'] = 'quoted-printable'
+        else:
+            encoders.encode_base64(mail_part)
+        mail_part.add_header('Content-Disposition', 'attachment', filename=basename)
+        mail_container.attach(mail_part)
+
         composed = mail_container.as_string()
-        if self.verbose > 2:
+        if self.verbose > 4:
             msg = _("Generated E-mail:") + "\n" + composed
             self.logger.debug(msg)
 

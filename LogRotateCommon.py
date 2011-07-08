@@ -479,6 +479,29 @@ def get_address_list(address_str, verbose = 0):
 
     return addresses
 
+#------------------------------------------------------------------------
+
+def to_unicode_or_bust(obj, encoding='utf-8'):
+    '''
+    Transforms a string, what is not a unicode string, into a unicode string.
+    All other objects are left untouched.
+
+    @param obj: the object to transform
+    @type obj:  object
+    @param encoding: the encoding to use to decode the object
+                     defaults to 'utf-8'
+    @type encoding:  str
+
+    @return: the maybe decoded object
+    @rtype:  object
+    '''
+
+    if isinstance(obj, basestring):
+        if not isinstance(obj, unicode):
+            obj = unicode(obj, encoding)
+
+    return obj
+
 #========================================================================
 
 if __name__ == "__main__":

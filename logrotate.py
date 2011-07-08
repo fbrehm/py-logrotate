@@ -36,7 +36,7 @@ revision = re.sub( r'Revision: ', r'r', revision )
 __author__    = 'Frank Brehm'
 __copyright__ = '(C) 2011 by Frank Brehm, Berlin'
 __contact__    = 'frank@brehm-online.com'
-__version__    = '0.5.1 ' + revision
+__version__    = '0.5.2 ' + revision
 __license__    = 'GPL3'
 
 

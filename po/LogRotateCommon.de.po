@@ -127,3 +127,16 @@ msgstr "Ungültiger Inhalt für eine Periode: »%s«."
 #, python-format
 msgid "Total %f days found."
 msgstr "Insgesamt %f Tage gefunden."
+
+#: LogRotateCommon.py:464
+msgid "Found address entries:"
+msgstr "Gefundene Adresseinträge:"
+
+#: LogRotateCommon.py:472
+msgid "Got mail address pair:"
+msgstr "Mailadress-Paar gefunden:"
+
+#: LogRotateCommon.py:475
+#, python-format
+msgid "Found invalid mail address '%s'."
+msgstr "Ungültige Mailadresse »%s« gefunden."
