@@ -72,7 +72,7 @@ class LogRotateScript(object):
         '''
 
         self.t = gettext.translation(
-            'LogRotateScript',
+            'pylogrotate',
             local_dir,
             fallback = True
         )

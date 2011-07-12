@@ -92,7 +92,7 @@ class LogrotateOptParser(object):
         '''
 
         self.t = gettext.translation(
-            'LogRotateGetopts',
+            'pylogrotate',
             local_dir,
             fallback = True
         )

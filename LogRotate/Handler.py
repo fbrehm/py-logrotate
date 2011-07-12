@@ -152,7 +152,7 @@ class LogrotateHandler(object):
         '''
 
         self.t = gettext.translation(
-            'LogRotateHandler',
+            'pylogrotate',
             local_dir,
             fallback = True
         )

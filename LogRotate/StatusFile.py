@@ -108,7 +108,7 @@ class LogrotateStatusFile(object):
         '''
 
         self.t = gettext.translation(
-            'LogRotateStatusFile',
+            'pylogrotate',
             local_dir,
             fallback = True
         )

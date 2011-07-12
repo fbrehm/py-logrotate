@@ -99,7 +99,7 @@ class LogRotateMailer(object):
         '''
 
         self.t = gettext.translation(
-            'LogRotateMailer',
+            'pylogrotate',
             local_dir,
             fallback = True
         )

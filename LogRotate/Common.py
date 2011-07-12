@@ -186,7 +186,7 @@ def human2bytes(value, si_conform = True, use_locale_radix = False, verbose = 0)
     @rtype:  long
     '''
 
-    t = gettext.translation('LogRotateCommon', locale_dir, fallback=True)
+    t = gettext.translation('pylogrotate', locale_dir, fallback=True)
     _ = t.lgettext
 
     if value is None:
@@ -287,7 +287,7 @@ def period2days(period, use_locale_radix = False, verbose = 0):
     @rtype:  float
     '''
 
-    t = gettext.translation('LogRotateCommon', locale_dir, fallback=True)
+    t = gettext.translation('pylogrotate', locale_dir, fallback=True)
     _ = t.lgettext
 
     if period is None:
@@ -449,7 +449,7 @@ def get_address_list(address_str, verbose = 0):
 
     '''
 
-    t = gettext.translation('LogRotateCommon', locale_dir, fallback=True)
+    t = gettext.translation('pylogrotate', locale_dir, fallback=True)
     _ = t.lgettext
     pp = pprint.PrettyPrinter(indent=4)
 

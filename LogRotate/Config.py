@@ -204,7 +204,7 @@ class LogrotateConfigurationReader(object):
         '''
 
         self.t = gettext.translation(
-            'LogRotateConfig',
+            'pylogrotate',
             local_dir,
             fallback = True
         )
