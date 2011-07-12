@@ -9,7 +9,7 @@
 @contact: frank@brehm-online.com
 @license: GPL3
 @copyright: (c) 2010-2011 by Frank Brehm, Berlin
-@version: 0.2.2
+@version: 0.5.3
 @summary: rotates and compress system logs
 '''
 
@@ -21,13 +21,13 @@ import os
 import os.path
 from datetime import datetime
 
-from LogRotateGetopts import LogrotateOptParser
-from LogRotateGetopts import LogrotateOptParserError
+from LogRotate.Getopts import LogrotateOptParser
+from LogRotate.Getopts import LogrotateOptParserError
 
-from LogRotateHandler import LogrotateHandler
-from LogRotateHandler import LogrotateHandlerError
+from LogRotate.Handler import LogrotateHandler
+from LogRotate.Handler import LogrotateHandlerError
 
-import LogRotateCommon
+import LogRotate.Common
 
 revision = '$Revision$'
 revision = re.sub( r'\$', '', revision )
@@ -36,7 +36,7 @@ revision = re.sub( r'Revision: ', r'r', revision )
 __author__    = 'Frank Brehm'
 __copyright__ = '(C) 2011 by Frank Brehm, Berlin'
 __contact__    = 'frank@brehm-online.com'
-__version__    = '0.5.2 ' + revision
+__version__    = '0.5.3 ' + revision
 __license__    = 'GPL3'
 
 
@@ -53,7 +53,7 @@ def main():
         local_dir = None
     #print "Locale-Dir: %s" % ( local_dir )
 
-    LogRotateCommon.locale_dir = local_dir
+    LogRotate.Common.locale_dir = local_dir
 
     t = gettext.translation('pylogrotate', local_dir, fallback=True)
     _ = t.lgettext
