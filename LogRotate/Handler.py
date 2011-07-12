@@ -33,15 +33,21 @@ import gzip
 import bz2
 import zipfile
 
-from LogRotateConfig import LogrotateConfigurationError
-from LogRotateConfig import LogrotateConfigurationReader
+try:
+    import LogRotate.Common
+except ImportError:
+    sys.path.append(os.path.abspath(os.path.join(sys.path[0], '..')))
+    import LogRotate.Common
 
-from LogRotateStatusFile import LogrotateStatusFileError
-from LogRotateStatusFile import LogrotateStatusFile
-from LogRotateStatusFile import utc
+from LogRotate.Config import LogrotateConfigurationError
+from LogRotate.Config import LogrotateConfigurationReader
 
-from LogRotateMailer import LogRotateMailerError
-from LogRotateMailer import LogRotateMailer
+from LogRotate.StatusFile import LogrotateStatusFileError
+from LogRotate.StatusFile import LogrotateStatusFile
+from LogRotate.StatusFile import utc
+
+from LogRotate.Mailer import LogRotateMailerError
+from LogRotate.Mailer import LogRotateMailer
 
 revision = '$Revision$'
 revision = re.sub( r'\$', '', revision )

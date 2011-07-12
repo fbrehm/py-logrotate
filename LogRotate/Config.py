@@ -25,9 +25,15 @@ import glob
 import logging
 import email.utils
 
-from LogRotateCommon import split_parts, email_valid, period2days, human2bytes
-from LogRotateCommon import get_address_list
-from LogRotateScript import LogRotateScript
+try:
+    import LogRotate.Common
+except ImportError:
+    sys.path.append(os.path.abspath(os.path.join(sys.path[0], '..')))
+    import LogRotate.Common
+
+from LogRotate.Common import split_parts, email_valid, period2days, human2bytes
+from LogRotate.Common import get_address_list
+from LogRotate.Script import LogRotateScript
 
 revision = '$Revision$'
 revision = re.sub( r'\$', '', revision )

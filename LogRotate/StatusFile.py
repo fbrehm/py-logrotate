@@ -23,7 +23,13 @@ import pprint
 
 from datetime import tzinfo, timedelta, datetime, date, time
 
-from LogRotateCommon import split_parts 
+try:
+    import LogRotate.Common
+except ImportError:
+    sys.path.append(os.path.abspath(os.path.join(sys.path[0], '..')))
+    import LogRotate.Common
+
+from LogRotate.Common import split_parts 
 
 revision = '$Revision$'
 revision = re.sub( r'\$', '', revision )

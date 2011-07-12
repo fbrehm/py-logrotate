@@ -9,7 +9,7 @@
 @contact: frank@brehm-online.com
 @license: GPL3
 @copyright: (c) 2010-2011 by Frank Brehm, Berlin
-@version: 0.5.3
+@version: 0.6.0
 @summary: rotates and compress system logs
 '''
 
@@ -36,7 +36,7 @@ revision = re.sub( r'Revision: ', r'r', revision )
 __author__    = 'Frank Brehm'
 __copyright__ = '(C) 2011 by Frank Brehm, Berlin'
 __contact__    = 'frank@brehm-online.com'
-__version__    = '0.5.3 ' + revision
+__version__    = '0.6.0 ' + revision
 __license__    = 'GPL3'
 
 

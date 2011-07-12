@@ -38,7 +38,13 @@ from email.mime.text import MIMEText
 
 from quopri import encodestring as _encodestring
 
-from LogRotateCommon import email_valid
+try:
+    import LogRotate.Common
+except ImportError:
+    sys.path.append(os.path.abspath(os.path.join(sys.path[0], '..')))
+    import LogRotate.Common
+
+from LogRotate.Common import email_valid
 
 revision = '$Revision$'
 revision = re.sub( r'\$', '', revision )
