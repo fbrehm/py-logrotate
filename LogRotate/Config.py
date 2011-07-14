@@ -1453,27 +1453,30 @@ class LogrotateConfigurationReader(object):
             # Check for create mode
             if len(values) > 0:
                 if self.verbose > 5:
-                    self.logger.debug(
-                        ( _("Trying to determine create mode '%(mode)s'... (file '%(file)s', line %(lnr)s)")
-                            % {'mode': values[0], 'file': filename, 'lnr': linenr})
-                    )
+                    msg = _("Trying to determine create mode '%s' ...") \
+                            % ('values[0]')
+                    msg += " " + ( _("(file '%(file)s', line %(lnr)s)")
+                                % {'file': filename, 'lnr': linenr})
+                    self.logger.debug(msg)
                 mode_octal = values[0]
                 if re.search(r'^0', mode_octal) is None:
                     mode_octal = '0' + mode_octal
                 try:
                     mode = int(mode_octal, 8)
                 except ValueError:
-                    self.logger.warning( ( _("Invalid create mode '%s'.") %(values[1])))
+                    msg = _("Invalid create mode '%s'.") % (values[1])
+                    self.logger.warning(msg)
                     return False
 
             # Check for Owner (user, uid)
             if len(values) > 1:
                 owner_raw = values[1]
                 if self.verbose > 5:
-                    self.logger.debug(
-                        ( _("Trying to determine create owner '%(owner)s'... (file '%(file)s', line %(lnr)s)")
-                            % {'owner': owner_raw, 'file': filename, 'lnr': linenr})
-                    )
+                    msg = _("Trying to determine create owner '%s' ...") \
+                            % (owner_raw)
+                    msg += " " + ( _("(file '%(file)s', line %(lnr)s)")
+                                % {'file': filename, 'lnr': linenr})
+                    self.logger.debug(msg)
                 if re.search(r'^[1-9]\d*$', owner_raw) is not None:
                     owner = int(owner_raw)
                 else:
@@ -1489,10 +1492,11 @@ class LogrotateConfigurationReader(object):
             if len(values) > 2:
                 group_raw = values[2]
                 if self.verbose > 5:
-                    self.logger.debug(
-                        ( _("Trying to determine create group '%(group)s'... (file '%(file)s', line %(lnr)s)")
-                            % {'group': group_raw, 'file': filename, 'lnr': linenr})
-                    )
+                    msg = _("Trying to determine create group '%s' ...") \
+                            % (group_raw)
+                    msg += " " + ( _("(file '%(file)s', line %(lnr)s)")
+                                % {'file': filename, 'lnr': linenr})
+                    self.logger.debug(msg)
                 if re.search(r'^[1-9]\d*$', group_raw) is not None:
                     group = int(group_raw)
                 else:
