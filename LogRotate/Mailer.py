@@ -489,7 +489,7 @@ class LogRotateMailer(object):
         _ = self.t.lgettext
 
         if not os.path.exists(filename):
-            msg = _("File '%s' dosn't exists.") % (filename)
+            msg = _("File '%s' doesn't exists.") % (filename)
             self.logger.error(msg)
             return False
 

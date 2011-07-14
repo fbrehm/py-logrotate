@@ -234,7 +234,8 @@ class LogrotateHandler(object):
 
         self.scripts = {}
         '''
-        @ivar: list of LogRotateScript objects with all named scripts found in configuration
+        @ivar: list of LogRotateScript objects with all named scripts
+               found in configuration
         @type: list
         '''
 
@@ -302,11 +303,14 @@ class LogrotateHandler(object):
             format_str = '%(levelname)-8s - %(message)s'
         if verbose:
             if verbose > 1:
-                format_str = '[%(asctime)s]: %(name)s %(funcName)s() %(levelname)-8s - %(message)s'
+                format_str = '[%(asctime)s]: %(name)s %(funcName)s() ' \
+                                '%(levelname)-8s - %(message)s'
                 if test:
-                    format_str = '%(name)s %(funcName)s() %(levelname)-8s - %(message)s'
+                    format_str = '%(name)s %(funcName)s() %(levelname)-8s ' \
+                                    '- %(message)s'
             else:
-                format_str = '[%(asctime)s]: %(name)s %(levelname)-8s - %(message)s'
+                format_str = '[%(asctime)s]: %(name)s %(levelname)-8s ' \
+                                '- %(message)s'
                 if test:
                     format_str = '%(name)s %(levelname)-8s - %(message)s'
         formatter = logging.Formatter(format_str)
@@ -339,10 +343,12 @@ class LogrotateHandler(object):
             self.mailer.sendmail = mail_cmd
 
         # end of init properties
-        self.logger.debug( _("Logrotating initialised.") )
+        msg = _("Logrotating initialised.")
+        self.logger.debug(msg)
 
         if not self.read_configuration():
-            self.logger.error( _('Could not read configuration.') )
+            msg = _('Could not read configuration.')
+            self.logger.error(msg)
             sys.exit(1)
 
         if config_check:
@@ -354,7 +360,8 @@ class LogrotateHandler(object):
         if not self._write_pidfile():
             sys.exit(3)
 
-        self.logger.debug( _("Logrotating ready for work.") )
+        msg = _("Logrotating ready for work.")
+        self.logger.debug(msg)
 
         # Create status file object
         self.state_file = LogrotateStatusFile(
@@ -429,13 +436,14 @@ class LogrotateHandler(object):
 
         if self.pidfile_created:
             if os.path.exists(self.pid_file):
-                self.logger.debug( _("Removing PID file '%s' ...") % (self.pid_file) )
+                msg = _("Removing PID file '%s' ...") % (self.pid_file)
+                self.logger.debug(msg)
                 try:
                     os.remove(self.pid_file)
                 except OSError, e:
-                    self.logger.error( _("Error removing PID file '%(file)s': %(msg)")
-                        % { 'file': self.pid_file, 'msg': str(e) }
-                    )
+                    msg = _("Error removing PID file '%(file)s': %(msg)") \
+                            % { 'file': self.pid_file, 'msg': str(e) }
+                    self.logger.error(msg)
 
     #------------------------------------------------------------
     def _prepare_templates(self):
@@ -480,7 +488,8 @@ class LogrotateHandler(object):
         )
 
         if self.verbose > 2:
-            msg = _("Configuration reader object structure") + ':\n' + str(config_reader)
+            msg = _("Configuration reader object structure") \
+                    + ':\n' + str(config_reader)
             self.logger.debug(msg)
 
         try:
@@ -492,7 +501,8 @@ class LogrotateHandler(object):
 
         if self.verbose > 2:
             pp = pprint.PrettyPrinter(indent=4)
-            msg = _("Found global options:") + "\n" + pp.pformat(config_reader.global_option)
+            msg = _("Found global options:") \
+                    + "\n" + pp.pformat(config_reader.global_option)
             self.logger.debug(msg)
 
         # Get and set mailer options
@@ -516,16 +526,20 @@ class LogrotateHandler(object):
                     config_reader.global_option['statusfile'] is not None:
                 self.state_file_name = config_reader.global_option['statusfile']
             else:
-                self.state_file_name = os.sep + os.path.join('var', 'lib', 'py-logrotate.status')
-        self.logger.debug( _("Name of state file: '%s'") % (self.state_file_name) )
+                self.state_file_name = os.sep \
+                        + os.path.join('var', 'lib', 'py-logrotate.status')
+        msg = _("Name of state file: '%s'") % (self.state_file_name)
+        self.logger.debug(msg)
 
         if self.pid_file is None:
             if 'pidfile' in config_reader.global_option and \
                     config_reader.global_option['pidfile'] is not None:
                 self.pid_file = config_reader.global_option['pidfile']
             else:
-                self.pid_file = os.sep + os.path.join('var', 'run', 'py-logrotate.pid')
-        self.logger.debug( _("PID file: '%s'") % (self.pid_file) )
+                self.pid_file = os.sep \
+                        + os.path.join('var', 'run', 'py-logrotate.pid')
+        msg = _("PID file: '%s'") % (self.pid_file)
+        self.logger.debug(msg)
 
         return True
 
@@ -547,22 +561,24 @@ class LogrotateHandler(object):
 
         if not os.path.exists(self.pid_file):
             if self.verbose > 1:
-                self.logger.debug( _("PID file '%s' doesn't exists.") % (self.pid_file) )
+                msg = _("PID file '%s' doesn't exists.") % (self.pid_file)
+                self.logger.debug(msg)
             return True
 
         if self.test:
-            self.logger.info( _("Testmode, skip test of PID file '%s'.") % (self.pid_file) )
+            msg = _("Testmode, skip test of PID file '%s'.") % (self.pid_file)
+            self.logger.info(msg)
             return True
 
-        self.logger.debug( _("Reading PID file '%s' ...") % (self.pid_file) )
+        msg = _("Reading PID file '%s' ...") % (self.pid_file)
+        self.logger.debug(msg)
         f = None
         try:
             f = open(self.pid_file, 'r')
         except IOError, e:
-            raise LogrotateHandlerError(
-                _("Couldn't open PID file '%(file)s' for reading: %(msg)s")
-                % { 'file': self.pid_file, 'msg': str(e) }
-            )
+            msg =  _("Couldn't open PID file '%(file)s' for reading: %(msg)s") \
+                    % { 'file': self.pid_file, 'msg': str(e) }
+            raise LogrotateHandlerError(msg)
 
         line = f.readline()
         f.close()
@@ -573,9 +589,10 @@ class LogrotateHandler(object):
         if match:
             pid = int(match.group(1))
         else:
-            self.logger.warn( _("No useful information found in PID file '%(file)s': '%(line)s'")
-                % { 'file': self.pid_file, 'line': line }
-            )
+            msg = _("No useful information found in PID file "
+                     + "'%(file)s': '%(line)s'") \
+                    % { 'file': self.pid_file, 'line': line }
+            self.logger.warn(msg)
             return False
 
         if self.verbose > 1:
@@ -584,16 +601,20 @@ class LogrotateHandler(object):
             os.kill(pid, 0)
         except OSError, err:
             if err.errno == errno.ESRCH:
-                self.logger.info( _("Process with PID %d anonymous died.") % (pid) )
+                msg = _("Process with PID %d anonymous died.") % (pid)
+                self.logger.info(msg)
                 return True
             elif err.errno == errno.EPERM:
-                self.logger.warn( _("No permission to signal the process %d ...") % (pid) )
+                msg = _("No permission to signal the process %d ...") % (pid)
+                self.logger.warn(msg)
                 return True
             else:
-                self.logger.warn( _("Unknown error: '%s'") % (str(err)) )
+                msg = _("Unknown error: '%s'.") % (str(err))
+                self.logger.warn(msg)
                 return False
         else:
-            self.logger.error( _("Process with PID %d is allready running.") % (pid) )
+            msg = _("Process with PID %d is allready running.") % (pid)
+            self.logger.error(msg)
             return False
 
         return False
@@ -615,10 +636,13 @@ class LogrotateHandler(object):
         _ = self.t.lgettext
 
         if self.test:
-            self.logger.info( _("Testmode, skip writing of PID file '%s'.") % (self.pid_file) )
+            msg = _("Testmode, skip writing of PID file '%s'.") \
+                        % (self.pid_file)
+            self.logger.info(msg)
             return True
 
-        self.logger.debug( _("Writing PID file '%s' ...") % (self.pid_file) )
+        msg = _("Writing PID file '%s' ...") % (self.pid_file)
+        self.logger.debug(msg)
 
         f = None
         try:
@@ -626,10 +650,9 @@ class LogrotateHandler(object):
             f.write(str(os.getppid()) + "\n")
             f.close()
         except IOError, e:
-            raise LogrotateHandlerError(
-                _("Couldn't open PID file '%(file)s' for writing: %(msg)s")
-                % { 'file': self.pid_file, 'msg': str(e) }
-            )
+            msg = _("Couldn't open PID file '%(file)s' for writing: %(msg)s") \
+                        % { 'file': self.pid_file, 'msg': str(e) }
+            raise LogrotateHandlerError(msg)
 
         self.pidfile_created = True
 
@@ -2182,8 +2205,12 @@ class LogrotateHandler(object):
         _ = self.t.lgettext
 
         if self.verbose > 1:
-            msg = _("Compressing source '%(source)s' to target'%(target)s' with module '%(module)s'.") \
-                    % {'source': source, 'target': target, 'module': 'zipfile'}
+            msg = _("Compressing source '%(source)s' to target "
+                     + "'%(target)s' with module '%(module)s'.") \
+                    % { 'source': source,
+                        'target': target,
+                        'module': 'zipfile'
+                      }
             self.logger.debug(msg)
 
         if not self.test:
@@ -2245,8 +2272,12 @@ class LogrotateHandler(object):
         _ = self.t.lgettext
 
         if self.verbose > 1:
-            msg = _("Compressing source '%(source)s' to target'%(target)s' with module '%(module)s'.") \
-                    % {'source': source, 'target': target, 'module': 'gzip'}
+            msg = _("Compressing source '%(source)s' to target "
+                     + "'%(target)s' with module '%(module)s'.") \
+                    % { 'source': source,
+                        'target': target,
+                        'module': 'gzip'
+                      }
             self.logger.debug(msg)
 
         if not self.test:
@@ -2316,8 +2347,12 @@ class LogrotateHandler(object):
         _ = self.t.lgettext
 
         if self.verbose > 1:
-            msg = _("Compressing source '%(source)s' to target'%(target)s' with module '%(module)s'.") \
-                    % {'source': source, 'target': target, 'module': 'bz2'}
+            msg = _("Compressing source '%(source)s' to target "
+                     + "'%(target)s' with module '%(module)s'.") \
+                    % { 'source': source,
+                        'target': target,
+                        'module': 'bz2'
+                      }
             self.logger.debug(msg)
 
         if not self.test:

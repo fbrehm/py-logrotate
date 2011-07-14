@@ -394,7 +394,7 @@ class LogrotateConfigurationReader(object):
         _ = self.t.lgettext
 
         if self.verbose > 3:
-            msg = _("Resetting default values for directives to hard coded values")
+            msg = _("Resetting default values for directives to hard coded values.")
             self.logger.debug(msg)
 
         self.default = {}
@@ -627,7 +627,9 @@ class LogrotateConfigurationReader(object):
                     found = True
                     break
             else:
-                self.logger.debug( _("Search path '%s' doesn't exists or is not a directory") % (search_dir))
+                msg = _("Search path '%s' doesn't exists or "
+                         + "is not a directory.") % (search_dir)
+                self.logger.debug(msg)
 
         if found:
             return os.path.abspath(cmd)
@@ -1556,27 +1558,31 @@ class LogrotateConfigurationReader(object):
             # Check for create mode of olddir
             if len(values) > 1:
                 if self.verbose > 5:
-                    self.logger.debug(
-                        ( _("Trying to determine olddir create mode '%(mode)s' ... (file '%(file)s', line %(lnr)s)")
-                            % {'mode': values[1], 'file': filename, 'lnr': linenr})
-                    )
+                    msg = _("Trying to determine olddir create mode '%s' ...") \
+                                % (values[1])
+                    msg += " " + ( _("(file '%(file)s', line %(lnr)s)")
+                                    % {'file': filename, 'lnr': linenr})
+                    self.logger.debug(msg)
                 mode_octal = values[1]
                 if re.search(r'^0', mode_octal) is None:
                     mode_octal = '0' + mode_octal
                 try:
                     mode = int(mode_octal, 8)
                 except ValueError:
-                    self.logger.warning( ( _("Invalid create mode '%s' in 'olddir'.") %(values[1])))
+                    msg = _("Invalid create mode '%s' in 'olddir'.") \
+                            % (values[1])
+                    self.logger.debug(msg)
                     return False
 
             # Check for Owner (user, uid)
             if len(values) > 2:
                 owner_raw = values[2]
                 if self.verbose > 5:
-                    self.logger.debug(
-                        ( _("Trying to determine olddir owner '%(owner)s' ... (file '%(file)s', line %(lnr)s)")
-                            % {'owner': owner_raw, 'file': filename, 'lnr': linenr})
-                    )
+                    msg = _("Trying to determine olddir owner '%s' ...") \
+                                % (owner_raw)
+                    msg += " " + ( _("(file '%(file)s', line %(lnr)s)")
+                                    % {'file': filename, 'lnr': linenr})
+                    self.logger.debug(msg)
                 if re.search(r'^[1-9]\d*$', owner_raw) is not None:
                     owner = int(owner_raw)
                 else:
@@ -1592,8 +1598,10 @@ class LogrotateConfigurationReader(object):
             if len(values) > 3:
                 group_raw = values[3]
                 if self.verbose > 5:
-                    msg = _("Trying to determine olddir group '%s' ...") % (group_raw)
-                    msg += " " + ( _("(file '%(file)s', line %(lnr)s)") % {'file': filename, 'lnr': linenr})
+                    msg = _("Trying to determine olddir group '%s' ...") \
+                            % (group_raw)
+                    msg += " " + ( _("(file '%(file)s', line %(lnr)s)")
+                                    % {'file': filename, 'lnr': linenr})
                     self.logger.debug(msg)
                 if re.search(r'^[1-9]\d*$', group_raw) is not None:
                     group = int(group_raw)
