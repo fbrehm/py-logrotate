@@ -22,6 +22,13 @@ from optparse import OptionParser
 from optparse import OptionGroup
 from optparse import OptionConflictError
 
+try:
+    import LogRotate.Common
+except ImportError:
+    sys.path.append(os.path.abspath(os.path.join(sys.path[0], '..')))
+    import LogRotate.Common
+
+from LogRotate.Common import to_unicode_or_bust
 
 revision = '$Revision$'
 revision = re.sub( r'\$', '', revision )
@@ -109,7 +116,8 @@ class LogrotateOptParser(object):
         @type: str
         '''
 
-        self.usage = ( _("%s [options] <configfile>") + "\n" ) %(prog)
+        msg = _("%s [options] <configfile>")
+        self.usage = msg % (prog)
         '''
         @ivar: the usage string in getopt help output
         @type: str
@@ -161,8 +169,12 @@ class LogrotateOptParser(object):
         to the OptionParser object
         '''
 
-        _ = self.t.ugettext
-        __ = self.t.ungettext
+        #print ""
+        #print "Default system encoding:     »%s«." % (sys.getdefaultencoding())
+        #print "Default filesystem encoding: »%s«." % (sys.getfilesystemencoding())
+        #print ""
+
+        _ = self.t.lgettext
 
         if self.parser.has_option('--help'):
             self.parser.remove_option('--help')
@@ -170,6 +182,7 @@ class LogrotateOptParser(object):
         if self.parser.has_option('--version'):
             self.parser.remove_option('--version')
 
+        msg = _('set this do simulate commands')
         self.parser.add_option(
             '--simulate',
             '--test',
@@ -177,69 +190,74 @@ class LogrotateOptParser(object):
             default = False,
             action  = 'store_true',
             dest    = 'test',
-            help    = _('set this do simulate commands'),
+            help    = to_unicode_or_bust(msg),
         )
 
+        msg = _('set the verbosity level')
         self.parser.add_option(
             '--verbose',
             '-v',
             default = False,
             action  = 'count',
             dest    = 'verbose',
-            help    = _('set the verbosity level'),
+            help    = to_unicode_or_bust(msg),
         )
 
+        msg = _("Don't do anything, just test (implies -v and -T)")
         self.parser.add_option(
             '--debug',
             '-d',
             default = False,
             action  = 'store_true',
             dest    = 'debug',
-            help    = _("Don't do anything, just test (implies -v and -T)"),
+            help    = to_unicode_or_bust(msg),
         )
 
+        msg = _("Force file rotation")
         self.parser.add_option(
             '--force',
             '-f',
             default = False,
             action  = 'store_true',
             dest    = 'force',
-            help    = _("Force file rotation"),
+            help    = to_unicode_or_bust(msg),
         )
 
+        msg = _("Checks only the given configuration file and does nothing. Conflicts with -f.")
         self.parser.add_option(
             '--config-check',
             '-c',
             default = False,
             action  = 'store_true',
             dest    = 'configcheck',
-            help    = _("Checks only the given configuration file and does "
-                      + "nothing. Conflicts with -f."),
+            help    = to_unicode_or_bust(msg),
         )
 
+        msg = _('Path of state file (different to configuration)')
         self.parser.add_option(
             '--state',
             '-s',
             dest    = "statefile",
             metavar = 'FILE',
-            help    = _('Path of state file (different to configuration)'),
+            help    = to_unicode_or_bust(msg),
         )
 
+        msg = _('Path of PID file (different to configuration)')
         self.parser.add_option(
             '--pid-file',
             '-P',
             dest    = "pidfile",
             metavar = 'FILE',
-            help    = _('Path of PID file (different to configuration)'),
+            help    = to_unicode_or_bust(msg),
         )
 
+        msg = _('Command to send mail (instead of using the Phyton email package)')
         self.parser.add_option(
             '--mail',
             '-m',
             dest    = "mailcmd",
             metavar = 'CMD',
-            help    = _('Command to send mail (instead of using '
-                        + 'the Phyton email package)'),
+            help    = to_unicode_or_bust(msg),
         )
 
         ######
@@ -247,6 +265,7 @@ class LogrotateOptParser(object):
 
         group = OptionGroup(self.parser, _("Common options"))
 
+        msg = _('Shows a help message and exit.')
         group.add_option(
             '-h',
             '-?',
@@ -254,24 +273,26 @@ class LogrotateOptParser(object):
             default = False,
             action  = 'help',
             dest    = 'help',
-            help    = _('Shows a help message and exit.'),
+            help    = to_unicode_or_bust(msg),
         )
 
+        msg = _('Display brief usage message and exit.')
         group.add_option(
             '--usage',
             default = False,
             action  = 'store_true',
             dest    = 'usage',
-            help    = _('Display brief usage message and exit.'),
+            help    = to_unicode_or_bust(msg),
         )
 
+        msg = _('Shows the version number of the program and exit.')
         group.add_option(
             '-V',
             '--version',
             default = False,
             action  = 'version',
             dest    = 'version',
-            help    = _('Shows the version number of the program and exit.'),
+            help    = to_unicode_or_bust(msg),
         )
 
         self.parser.add_option_group(group)
@@ -284,7 +305,7 @@ class LogrotateOptParser(object):
         @return: None
         '''
 
-        _ = self.t.ugettext
+        _ = self.t.lgettext
 
         if not self.parsed:
             self.options, self.args = self.parser.parse_args()
@@ -295,16 +316,16 @@ class LogrotateOptParser(object):
             sys.exit(0)
 
         if self.options.force and self.options.configcheck:
-            raise LogrotateOptParserError( _('Invalid usage of --force and '
-                + '--config-check.') )
+            msg = _('Invalid usage of --force and --config-check.')
+            raise LogrotateOptParserError(msg)
 
         if self.args is None or len(self.args) < 1:
-            raise LogrotateOptParserError( _('No configuration file given.') )
+            msg = _('No configuration file given.')
+            raise LogrotateOptParserError(msg)
 
         if len(self.args) != 1:
-            raise LogrotateOptParserError(
-                _('Only one configuration file is allowed.')
-            )
+            msg = _('Only one configuration file is allowed.')
+            raise LogrotateOptParserError(msg)
 
 #========================================================================
 

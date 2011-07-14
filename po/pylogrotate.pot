@@ -2,17 +2,14 @@
 # Copyright (C) 2011 Frank Brehm, Berlin
 # This file is distributed under the same license as the pylogrotate
 # project.
-# Frank Brehm <frank@brehm-online.com>, 2011.
-#
-# $Id$
-# $URL$
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2011.
 #
 #, fuzzy
 msgid ""
 msgstr ""
 "Project-Id-Version: pylogrotate 0.6.0\n"
 "Report-Msgid-Bugs-To: frank@brehm-online.com\n"
-"POT-Creation-Date: 2011-07-12 23:57+0200\n"
+"POT-Creation-Date: 2011-07-14 12:26+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -21,7 +18,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 0.9.6\n"
 
-#: LogRotate/Getopts.py:112
+#: LogRotate/Getopts.py:119
 #, python-format
 msgid "%s [options] <configfile>"
 msgstr ""
@@ -132,7 +129,7 @@ msgstr ""
 msgid "Checking, whether the script '%s' should be executed."
 msgstr ""
 
-#: LogRotate/Getopts.py:216
+#: LogRotate/Getopts.py:226
 msgid ""
 "Checks only the given configuration file and does nothing. Conflicts with"
 " -f."
@@ -148,11 +145,11 @@ msgstr ""
 msgid "Child was terminated by signal %d"
 msgstr ""
 
-#: LogRotate/Getopts.py:241
+#: LogRotate/Getopts.py:254
 msgid "Command to send mail (instead of using the Phyton email package)"
 msgstr ""
 
-#: LogRotate/Getopts.py:248
+#: LogRotate/Getopts.py:266
 msgid "Common options"
 msgstr ""
 
@@ -374,7 +371,7 @@ msgstr ""
 msgid "Directory chain to create: '%s'"
 msgstr ""
 
-#: LogRotate/Getopts.py:265
+#: LogRotate/Getopts.py:279
 msgid "Display brief usage message and exit."
 msgstr ""
 
@@ -383,7 +380,7 @@ msgstr ""
 msgid "Do rotate logfile '%s' ..."
 msgstr ""
 
-#: LogRotate/Getopts.py:198
+#: LogRotate/Getopts.py:206
 msgid "Don't do anything, just test (implies -v and -T)"
 msgstr ""
 
@@ -563,7 +560,7 @@ msgstr ""
 msgid "Find all logfiles for shell matching pattern '%s' ..."
 msgstr ""
 
-#: LogRotate/Getopts.py:207
+#: LogRotate/Getopts.py:216
 msgid "Force file rotation"
 msgstr ""
 
@@ -825,7 +822,7 @@ msgstr ""
 msgid "Invalid taboo pattern type '%s' given"
 msgstr ""
 
-#: LogRotate/Getopts.py:298
+#: LogRotate/Getopts.py:319
 msgid "Invalid usage of --force and --config-check."
 msgstr ""
 
@@ -990,7 +987,7 @@ msgstr ""
 msgid "No compression defined."
 msgstr ""
 
-#: LogRotate/Getopts.py:302
+#: LogRotate/Getopts.py:323
 msgid "No configuration file given."
 msgstr ""
 
@@ -1113,7 +1110,7 @@ msgstr ""
 msgid "Only absolute path allowed for a sendmail command: '%s'."
 msgstr ""
 
-#: LogRotate/Getopts.py:306
+#: LogRotate/Getopts.py:327
 msgid "Only one configuration file is allowed."
 msgstr ""
 
@@ -1245,11 +1242,11 @@ msgstr ""
 msgid "Parent directory '%(dir)s' of status file '%(file)s' is not a directory."
 msgstr ""
 
-#: LogRotate/Getopts.py:233
+#: LogRotate/Getopts.py:245
 msgid "Path of PID file (different to configuration)"
 msgstr ""
 
-#: LogRotate/Getopts.py:225
+#: LogRotate/Getopts.py:236
 msgid "Path of state file (different to configuration)"
 msgstr ""
 
@@ -1393,7 +1390,7 @@ msgstr ""
 msgid "Retrieving the name of the rotated file of '%s' ..."
 msgstr ""
 
-#: LogRotate/Getopts.py:106
+#: LogRotate/Getopts.py:113
 msgid "Rotates, compresses and mails system logs."
 msgstr ""
 
@@ -1531,11 +1528,11 @@ msgstr ""
 msgid "Setting rotation date of '%(file)s' to '%(date)s' ..."
 msgstr ""
 
-#: LogRotate/Getopts.py:257
+#: LogRotate/Getopts.py:268
 msgid "Shows a help message and exit."
 msgstr ""
 
-#: LogRotate/Getopts.py:274
+#: LogRotate/Getopts.py:288
 msgid "Shows the version number of the program and exit."
 msgstr ""
 
@@ -1874,11 +1871,11 @@ msgstr ""
 msgid "logfile '%s' will NOT rotated."
 msgstr ""
 
-#: LogRotate/Getopts.py:189
+#: LogRotate/Getopts.py:196
 msgid "set the verbosity level"
 msgstr ""
 
-#: LogRotate/Getopts.py:180
+#: LogRotate/Getopts.py:185
 msgid "set this do simulate commands"
 msgstr ""
 
