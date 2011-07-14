@@ -491,23 +491,30 @@ class LogrotateStatusFile(object):
                 i += 1
                 line = line.strip()
                 if self.verbose > 4:
-                    msg = _("Performing status file line '%(line)s' (file: '%(file)s', row: %(row)d)") \
-                            % {'line': line, 'file': self.file_name, 'row': i, }
+                    msg = _("Performing status file line '%s'.") \
+                            % (line)
+                    msg += " " + ( _("(file '%(file)s', line %(lnr)s)")
+                                        % {'file': self.file_name, 'lnr': i})
                     self.logger.debug(msg)
 
                 # check for file heading
                 if i == 1:
-                    match = re.search(r'^logrotate\s+state\s+-+\s+version\s+([23])$', line, re.IGNORECASE)
+                    match = re.search(
+                        r'^logrotate\s+state\s+-+\s+version\s+([23])$',
+                        line, re.IGNORECASE
+                    )
                     if match:
                         # Correct file header
                         self.status_version = int(match.group(1))
                         if self.verbose > 1:
-                            msg = _("Idendified version of status file: %d") % (self.status_version)
+                            msg = _("Idendified version of status file: %d") \
+                                    % (self.status_version)
                             self.logger.debug(msg)
                         continue
                     else:
                         # Wrong header
-                        msg = _("Incompatible version of status file '%(file)s': %(header)s") \
+                        msg = _("Incompatible version of status file "
+                                 + "'%(file)s': %(header)s") \
                                 % { 'file': self.file_name, 'header': line }
                         fd.close()
                         raise LogrotateStatusFileError(msg)
@@ -519,15 +526,18 @@ class LogrotateStatusFile(object):
                 logfile = parts[0]
                 rdate   = parts[1]
                 if self.verbose > 2:
-                    msg = _("Found logfile '%(file)s' with rotation date '%(date)s'.") \
+                    msg = _("Found logfile '%(file)s' with rotation "
+                             + "date '%(date)s'.") \
                             % { 'file': logfile, 'date': rdate }
                     self.logger.debug(msg)
 
                 if logfile and rdate:
                     match = re.search(r'\s*(\d+)[_\-](\d+)[_\-](\d+)(?:[\s\-_]+(\d+)[_\-:](\d+)[_\-:](\d+))?', rdate)
                     if not match:
-                        msg = _("Could not determine date format: '%(date)s' (file: '%(file)s', row: %(row)d)") \
-                                % {'date': rdate, 'file': logfile, 'row': i, }
+                        msg = _("Could not determine date format: '%s'.") \
+                                % (rdate)
+                        msg += " " + ( _("(file '%(file)s', line %(lnr)s)")
+                                            % {'file': logfile, 'lnr': i})
                         self.logger.warning(msg)
                         continue
                     d = {
@@ -547,10 +557,13 @@ class LogrotateStatusFile(object):
 
                     dt = None
                     try:
-                        dt = datetime(d['Y'], d['m'], d['d'], d['H'], d['M'], d['S'], tzinfo = utc)
+                        dt = datetime(d['Y'], d['m'], d['d'],
+                                      d['H'], d['M'], d['S'],
+                                      tzinfo = utc)
                     except ValueError, e:
-                        msg = _("Invalid date: '%(date)s' (file: '%(file)s', row: %(row)d)") \
-                                % {'date': rdate, 'file': logfile, 'row': i, }
+                        msg = _("Invalid date: '%s'.") % (rdate)
+                        msg += " " + ( _("(file '%(file)s', line %(lnr)s)")
+                                        % {'file': logfile, 'lnr': i})
                         self.logger.warning(msg)
                         continue
 
@@ -558,8 +571,10 @@ class LogrotateStatusFile(object):
 
                 else:
 
-                    msg = _("Neither a logfile nor a date found in line '%(line)s' (file: '%(file)s', row: %(row)d)") \
-                            % {'line': line, 'file': logfile, 'row': i, }
+                    msg = _("Neither a logfile nor a date found in line '%s'.") \
+                            % (line)
+                    msg += " " + ( _("(file '%(file)s', line %(lnr)s)")
+                                        % {'file': logfile, 'lnr': i})
                     self.logger.warning(msg)
 
         finally:

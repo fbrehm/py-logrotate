@@ -15,6 +15,7 @@
 
 import re
 import sys
+import os.path
 import gettext
 
 from optparse import OptionError
@@ -182,7 +183,7 @@ class LogrotateOptParser(object):
         if self.parser.has_option('--version'):
             self.parser.remove_option('--version')
 
-        msg = _('set this do simulate commands')
+        msg = _('Set this do simulate commands')
         self.parser.add_option(
             '--simulate',
             '--test',
@@ -193,7 +194,7 @@ class LogrotateOptParser(object):
             help    = to_unicode_or_bust(msg),
         )
 
-        msg = _('set the verbosity level')
+        msg = _('Set the verbosity level')
         self.parser.add_option(
             '--verbose',
             '-v',
@@ -251,7 +252,7 @@ class LogrotateOptParser(object):
             help    = to_unicode_or_bust(msg),
         )
 
-        msg = _('Command to send mail (instead of using the Phyton email package)')
+        msg = _('Command to send mail (instead of using SMTP or the predefined sendmail command).')
         self.parser.add_option(
             '--mail',
             '-m',

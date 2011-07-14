@@ -339,10 +339,10 @@ class LogrotateHandler(object):
             self.mailer.sendmail = mail_cmd
 
         # end of init properties
-        self.logger.debug( _("Logrotating initialised") )
+        self.logger.debug( _("Logrotating initialised.") )
 
         if not self.read_configuration():
-            self.logger.error( _('Could not read configuration') )
+            self.logger.error( _('Could not read configuration.') )
             sys.exit(1)
 
         if config_check:
@@ -354,7 +354,7 @@ class LogrotateHandler(object):
         if not self._write_pidfile():
             sys.exit(3)
 
-        self.logger.debug( _("Logrotating ready for work") )
+        self.logger.debug( _("Logrotating ready for work.") )
 
         # Create status file object
         self.state_file = LogrotateStatusFile(
@@ -710,9 +710,9 @@ class LogrotateHandler(object):
             should_rotate = self._should_rotate(logfile, cur_desc_index)
             if self.verbose > 1:
                 if should_rotate:
-                    msg = _("logfile '%s' WILL rotated.")
+                    msg = _("Logfile '%s' WILL rotated.")
                 else:
-                    msg = _("logfile '%s' will NOT rotated.")
+                    msg = _("Logfile '%s' will NOT rotated.")
                 self.logger.debug(msg % (logfile))
             if not should_rotate:
                 continue
@@ -976,15 +976,15 @@ class LogrotateHandler(object):
 
                 # Check and set permissions of new logfile
                 if new_mode != old_mode:
-                    msg = _("Setting permissions of '%(file)s' to %(mode)4o.") \
-                            % {'file': file_from, 'mode': new_mode}
+                    msg = _("Setting permissions of '%(target)s' to %(mode)4o.") \
+                            % {'target': file_from, 'mode': new_mode}
                     self.logger.info(msg)
                     if not self.test:
                         try:
                             os.chmod(file_from, new_mode)
                         except OSError, e:
-                            msg = _("Error on chmod of '%(file)s': %(err)s") \
-                                    % {'file': file_from, 'err': e.strerror}
+                            msg = _("Error on chmod of '%(target)s': %(err)s") \
+                                    % {'target': file_from, 'err': e.strerror}
                             self.logger.warning(msg)
 
                 # Check and set ownership of new logfile
@@ -1594,7 +1594,7 @@ class LogrotateHandler(object):
         olddir = os.path.normpath(olddir)
 
         if self.verbose > 1:
-            msg = _("Olddir name is now '%s'") % (olddir)
+            msg = _("Olddir name is now '%s'.") % (olddir)
             self.logger.debug(msg)
 
         # Check for Existence and Consistence
@@ -1624,7 +1624,7 @@ class LogrotateHandler(object):
             (dir_head, dir_tail) = os.path.split(dir_head)
             dirs.insert(0, dir_tail)
         if self.verbose > 2:
-            msg = _("Directory chain to create: '%s'") % (str(dirs))
+            msg = _("Directory chain to create: '%s'.") % (str(dirs))
             self.logger.debug(msg)
 
         # Create olddir recursive, if necessary
@@ -1726,7 +1726,7 @@ class LogrotateHandler(object):
 
         _ = self.t.lgettext
         if self.verbose > 3:
-            msg = _("Executing command: '%s'") % (command)
+            msg = _("Executing command: '%s'.") % (command)
             self.logger.debug(msg)
         if not force:
             if self.test:
@@ -1734,10 +1734,10 @@ class LogrotateHandler(object):
         try:
             retcode = subprocess.call(command, shell=True)
             if self.verbose > 3:
-                msg = _("Got returncode: '%s'") % (retcode)
+                msg = _("Got returncode: '%s'.") % (retcode)
                 self.logger.debug(msg)
             if retcode < 0:
-                msg = _("Child was terminated by signal %d") % (-retcode)
+                msg = _("Child was terminated by signal %d.") % (-retcode)
                 self.logger.error(msg)
                 return False
             if retcode != expected_retcode:
@@ -1777,7 +1777,7 @@ class LogrotateHandler(object):
             self.logger.debug(msg)
 
         if not os.path.exists(logfile):
-            msg = _("logfile '%s' doesn't exists, not rotated") % (logfile)
+            msg = _("Logfile '%s' doesn't exists, not rotated.") % (logfile)
             if not definition['missingok']:
                 self.logger.error(msg)
             else:
@@ -1786,19 +1786,19 @@ class LogrotateHandler(object):
             return False
 
         if not os.path.isfile(logfile):
-            msg = _("logfile '%s' is not a regular file, not rotated") % (logfile)
+            msg = _("Logfile '%s' is not a regular file, not rotated.") % (logfile)
             self.logger.warning(msg)
             return False
 
         filesize = os.path.getsize(logfile)
         if self.verbose > 2:
-            msg = _("Filesize of '%(file)s': %(size)d") % {'file': logfile, 'size': filesize}
+            msg = _("Filesize of '%(file)s': %(size)d.") % {'file': logfile, 'size': filesize}
             self.logger.debug(msg)
 
         if not filesize:
             if not definition['ifempty']:
                 if self.verbose > 1:
-                    msg = _("Logfile '%s' has a filesize of Zero, not rotated") % (logfile)
+                    msg = _("Logfile '%s' has a filesize of Zero, not rotated.") % (logfile)
                     self.logger.debug(msg)
                 return False
 
@@ -1814,11 +1814,11 @@ class LogrotateHandler(object):
 
         last_rotated = self.state_file.get_rotation_date(logfile)
         if self.verbose > 2:
-            msg = _("Date of last rotation: %s") %(last_rotated.isoformat(' '))
+            msg = _("Date of last rotation: %s.") % (last_rotated.isoformat(' '))
             self.logger.debug(msg)
         next_rotation = last_rotated + timedelta(days = definition['period'])
         if self.verbose > 2:
-            msg = _("Date of next rotation: %s") %(next_rotation.isoformat(' '))
+            msg = _("Date of next rotation: %s.") % (next_rotation.isoformat(' '))
             self.logger.debug(msg)
 
         if filesize < maxsize:
@@ -2182,8 +2182,8 @@ class LogrotateHandler(object):
         _ = self.t.lgettext
 
         if self.verbose > 1:
-            msg = _("Compressing source '%(source)s' to target'%(target)s' with module zipfile.") \
-                    % {'source': source, 'target': target}
+            msg = _("Compressing source '%(source)s' to target'%(target)s' with module '%(module)s'.") \
+                    % {'source': source, 'target': target, 'module': 'zipfile'}
             self.logger.debug(msg)
 
         if not self.test:
@@ -2245,8 +2245,8 @@ class LogrotateHandler(object):
         _ = self.t.lgettext
 
         if self.verbose > 1:
-            msg = _("Compressing source '%(source)s' to target'%(target)s' with module gzip.") \
-                    % {'source': source, 'target': target}
+            msg = _("Compressing source '%(source)s' to target'%(target)s' with module '%(module)s'.") \
+                    % {'source': source, 'target': target, 'module': 'gzip'}
             self.logger.debug(msg)
 
         if not self.test:
@@ -2316,8 +2316,8 @@ class LogrotateHandler(object):
         _ = self.t.lgettext
 
         if self.verbose > 1:
-            msg = _("Compressing source '%(source)s' to target'%(target)s' with module bz2.") \
-                    % {'source': source, 'target': target}
+            msg = _("Compressing source '%(source)s' to target'%(target)s' with module '%(module)s'.") \
+                    % {'source': source, 'target': target, 'module': 'bz2'}
             self.logger.debug(msg)
 
         if not self.test:

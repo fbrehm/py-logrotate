@@ -496,7 +496,7 @@ class LogRotateScript(object):
                         % {'name': self.name, 'retcode': retcode}
                 self.logger.debug(msg)
             if retcode < 0:
-                msg = _("Child in script '%(name)s' was terminated by signal %(retcode)d") \
+                msg = _("Child in script '%(name)s' was terminated by signal %(retcode)d.") \
                         % {'name': self.name, 'retcode': -retcode}
                 self.logger.error(msg)
                 return False

@@ -198,7 +198,7 @@ def human2bytes(value, si_conform = True, use_locale_radix = False, verbose = 0)
         radix = locale.RADIXCHAR
     radix = re.escape(radix)
     if verbose > 5:
-        msg = _("using radix '%s'.") % (radix)
+        msg = _("Using radix '%s'.") % (radix)
         logger.debug(msg)
 
     value_raw = ''
@@ -296,7 +296,7 @@ def period2days(period, use_locale_radix = False, verbose = 0):
 
     value = str(period).strip().lower()
     if period == '':
-        msg = _("Given period was empty")
+        msg = _("Given period was empty.")
         raise ValueError(msg)
 
     if verbose > 4:
