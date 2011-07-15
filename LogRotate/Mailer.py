@@ -38,6 +38,8 @@ from email.mime.multipart import MIMEMultipart
 from email.mime.nonmultipart import MIMENonMultipart
 from email.mime.text import MIMEText
 
+import smtplib
+
 from quopri import encodestring as _encodestring
 
 # Third party modules
@@ -162,6 +164,12 @@ class LogRotateMailer(object):
         @ivar: the hostname to use for SMTP (smarthost), if no
                sendmail binary was found
         @type: str
+        '''
+
+        self._smtp_timeout = 180
+        '''
+        @ivar: timeout for communication with the SMTP server
+        @type: int
         '''
 
         self._smtp_port = 25
@@ -359,6 +367,36 @@ class LogRotateMailer(object):
     )
 
     #------------------------------------------------------------
+    # Property 'smtp_timeout'
+    def _get_smtp_timeout(self):
+        '''
+        Getter method for property 'smtp_timeout'
+        '''
+        return self._smtp_timeout
+
+    def _set_smtp_timeout(self, value):
+        '''
+        Setter method for property 'smtp_timeout'
+        '''
+        _ = self.t.lgettext
+        if value:
+            timeout = 15
+            try:
+                timeout = int(value)
+            except ValueError, e:
+                return
+            if timeout < 1 or timeout >= 600:
+                return
+            self._smtp_timeout = timeout
+
+    smtp_timeout = property(
+            _get_smtp_timeout,
+            _set_smtp_timeout,
+            None,
+            "The timeout for communication with the SMTP server"
+    )
+
+    #------------------------------------------------------------
     # Property 'smtp_tls'
     def _get_smtp_tls(self):
         '''
@@ -445,6 +483,7 @@ class LogRotateMailer(object):
         res['sendmail']       = self.sendmail
         res['from']           = self.from_address
         res['smtp_host']      = self.smtp_host
+        res['smtp_timeout']   = self.smtp_timeout
         res['smtp_port']      = self.smtp_port
         res['smtp_tls']       = self.smtp_tls
         res['smtp_user']      = self.smtp_user
@@ -569,6 +608,10 @@ class LogRotateMailer(object):
         if not rotate_date:
             rotate_date = datetime.now()
 
+        to_list = []
+        for address in addresses:
+            to_list.append(address[1])
+
         msg = (_("Sending mail with attached file '%(file)s' to: %(rcpt)s")
                 % {'file': basename,
                    'rcpt': ', '.join(
@@ -582,13 +625,14 @@ class LogRotateMailer(object):
         self.logger.debug(msg)
 
         mail_container = MIMEMultipart()
-        mail_container['Subject'] = ( "Rotated logfile '%s'" % (filename) )
+        mail_container['Date'] = email.utils.formatdate()
         mail_container['X-Mailer'] = ( "pylogrotate version %s"
                         % (self.mailer_version) )
         mail_container['From'] = self.from_address
         mail_container['To'] = ', '.join(
             map(lambda x: email.utils.formataddr(x), addresses)
         )
+        mail_container['Subject'] = ( "Rotated logfile '%s'" % (filename) )
         mail_container.preamble = (
             'You will not see this in a MIME-aware mail reader.\n'
         )
@@ -655,11 +699,158 @@ class LogRotateMailer(object):
         if (not self.use_smtp) and self.sendmail:
             return self._send_per_sendmail(composed)
         else:
-            msg = _("Sending mails via SMTP currently not possible.")
-            self.logger.info(msg)
-            return False
+            return self._send_per_smtp(composed, to_list)
 
         return True
+
+    #-------------------------------------------------------
+    def _send_per_smtp(self, mail, to):
+        '''
+        Sending the given mail per SMTP to self.smtp_host
+
+        Raises a LogRotateMailerError on harder errors.
+
+        @param mail: the complete mail (header and body) as a string
+        @type mail:  str
+        @param to: a list with all addresses of recipients
+        @type to:  list
+
+        @return: success of sending
+        @rtype:  bool
+        '''
+
+        _ = self.t.lgettext
+
+        mta = None
+
+        msg = (_("Sending mail via SMTP to server '%s'.") % (self.smtp_host))
+        self.logger.debug(msg)
+
+        if self.test_mode:
+            return True
+
+        # Establishing connection to SMTP server
+        try:
+            mta = smtplib.SMTP(
+                self.smtp_host,
+                port=self.smtp_port,
+                timeout=self.smtp_timeout,
+            )
+        except smtplib.SMTPConnectError, e:
+            msg = (_("Could not connect to server '%(host)s': '%(err)s'.") %
+                    {'host': self.smtp_host, 'err': str(e)})
+            self.logger.error(msg)
+            return False
+        if self.verbose > 2:
+            mta.set_debuglevel(1)
+
+        # EHLO/HELO, looking for STARTTLS
+        has_tls = False
+        try:
+            mta.ehlo_or_helo_if_needed()
+        except smtplib.SMTPHeloError, e:
+            msg = (_("Error in reply to the EHLO/HELO command from " +
+                     "'%(host)s': '%(err)s'.") %
+                    {'host': self.smtp_host, 'err': str(e)})
+            self.logger.error(msg)
+            return False
+        except smtplib.SMTPServerDisconnected, e:
+            msg = (_("Connection to server '%(host)s' unexpected " +
+                     "disconnected: '%(err)s'.") %
+                    {'host': self.smtp_host, 'err': str(e)})
+            self.logger.error(msg)
+            return False
+        if mta.has_extn('STARTTLS'):
+            has_tls = True
+
+        # establishing TLS, if possible and necessary
+        if self.smtp_tls:
+            if has_tls:
+                try:
+                    mta.starttls()
+                except Exception, e:
+                    msg = (_("Error in establishing TLS:") +
+                            str(e))
+                    self.logger.error(msg)
+                    return False
+                except smtplib.SMTPServerDisconnected, e:
+                    msg = (_("Connection to server '%(host)s' unexpected " +
+                            "disconnected: '%(err)s'.") %
+                            {'host': self.smtp_host, 'err': str(e)})
+                    self.logger.error(msg)
+                    return False
+            else:
+                msg = (_("SMTP server '%s' doesn't support TLS.") %
+                        (self.smtp_host))
+                self.logger.warning(msg)
+
+        # Trying to login, if necessary
+        if self.smtp_user and self.smtp_passwd:
+            try:
+                mta.login(self.smtp_user, self.smtp_passwd)
+            except smtplib.SMTPAuthenticationError, e:
+                msg = (_("Login to '%(host)s' as user '%(user)s' was " +
+                         "not successful: '%(err)s'.") %
+                        {'host': self.smtp_host,
+                         'user': self.smtp_user,
+                         'err': str(e)})
+                self.logger.error(msg)
+            except smtplib.SMTPException, e:
+                msg = (_("No suitable authentication method to login " +
+                         "to '%s' found.") % (self.smtp_host))
+                self.logger.error(msg)
+            except smtplib.SMTPServerDisconnected, e:
+                msg = (_("Connection to server '%(host)s' unexpected " +
+                        "disconnected: '%(err)s'.") %
+                        {'host': self.smtp_host, 'err': str(e)})
+                self.logger.error(msg)
+                return False
+
+        # the underlaying sending of the mail
+        has_sent = True
+        rcpt = {}
+        try:
+            rcpt = mta.sendmail(self._from_address[1], to, mail)
+        except smtplib.SMTPSenderRefused, e:
+            msg = (_("Sender address <%(from)s> not accepted " +
+                     "by host '%(host)s': '%(err)s'.") %
+                    {'host': self.smtp_host,
+                     'from': self._from_address[1],
+                     'err': str(e)})
+            self.logger.error(msg)
+            has_sent = False
+        except smtplib.SMTPRecipientsRefused, e:
+            msg = ((_("All recipient addresses are rejected " +
+                      "by host '%s':") % (self.smtp_host)) +
+                    repr(e.recipients))
+            self.logger.error(msg)
+            has_sent = False
+        except smtplib.SMTPDataError, e:
+            msg = ((_("Mail rejected because of an unexpected error " +
+                      "by host '%s':") % (self.smtp_host)) +
+                    str(e))
+            self.logger.error(msg)
+            has_sent = False
+        except smtplib.SMTPServerDisconnected, e:
+            msg = (_("Connection to server '%(host)s' unexpected " +
+                     "disconnected: '%(err)s'.") %
+                    {'host': self.smtp_host, 'err': str(e)})
+            self.logger.error(msg)
+            return False
+
+        if self.verbose > 1:
+            msg = (_("Mail successful sent to host '%s'.") % (self.smtp_host))
+            self.logger.debug(msg)
+
+        if len(rcpt):
+            msg = ((_("One or more recipient addresses are rejected " +
+                      "by host '%s':") % (self.smtp_host)) +
+                    repr(rcpt))
+            self.logger.warning(msg)
+
+        # And bye ...
+        mta.quit()
+        return has_sent
 
     #-------------------------------------------------------
     def _send_per_sendmail(self, mail):

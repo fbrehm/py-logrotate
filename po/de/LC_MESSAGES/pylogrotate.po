@@ -11,8 +11,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: pylogrotate 0.6.0\n"
 "Report-Msgid-Bugs-To: frank@brehm-online.com\n"
-"POT-Creation-Date: 2011-07-15 17:29+0200\n"
-"PO-Revision-Date: 2011-07-15 17:30+0200\n"
+"POT-Creation-Date: 2011-07-15 22:00+0200\n"
+"PO-Revision-Date: 2011-07-15 22:20+0200\n"
 "Last-Translator: Frank Brehm <frank@brehm-online.com>\n"
 "Language-Team: de <LL@li.org>\n"
 "Plural-Forms: nplurals=2; plural=(n != 1)\n"
@@ -76,6 +76,11 @@ msgstr "Der absolute Pfad der Statusdatei ist jetzt »%s«."
 #, python-format
 msgid "Access to status file '%s' is OK."
 msgstr "Zugriff auf Statusdatei »%s« ist okay."
+
+#: LogRotate/Mailer.py:823
+#, python-format
+msgid "All recipient addresses are rejected by host '%s':"
+msgstr "Alle Empfängeradressen wurden von Host »%s« zurückgewiesen:"
 
 #: logrotate.py:83
 msgid "Arguments"
@@ -154,7 +159,7 @@ msgstr ""
 msgid "Child in script '%(name)s' was terminated by signal %(retcode)d."
 msgstr "Kindprozeß in Skript »%(name)s« wurde durch Signal %(retcode)d beendet."
 
-#: LogRotate/Handler.py:1867 LogRotate/Mailer.py:724
+#: LogRotate/Handler.py:1867 LogRotate/Mailer.py:915
 #, python-format
 msgid "Child was terminated by signal %d."
 msgstr "Kindprozess wurde durch Signal %d beendet."
@@ -222,6 +227,12 @@ msgstr "Nur Überprüfung der Konfiguration."
 msgid "Configuration reader object structure"
 msgstr "Objektstruktur des Konfigurtionslesers"
 
+#: LogRotate/Mailer.py:758 LogRotate/Mailer.py:777 LogRotate/Mailer.py:803
+#: LogRotate/Mailer.py:835
+#, python-format
+msgid "Connection to server '%(host)s' unexpected disconnected: '%(err)s'."
+msgstr "Die Verbindung zum Server »%(host)s« wurde unerwartet beendet: »'%(err)s«."
+
 #: LogRotate/Handler.py:2228
 #, python-format
 msgid "Copying all file metadata to target '%s' ..."
@@ -244,6 +255,11 @@ msgid ""
 msgstr ""
 "Kopiere Rechte und Zeitstempel von Quellobjekt »%(src)s« zu Zielojekt "
 "»%(target)s«."
+
+#: LogRotate/Mailer.py:740
+#, python-format
+msgid "Could not connect to server '%(host)s': '%(err)s'."
+msgstr "Konnte mich nicht mit Server »%(host)s« verbinden: »%(err)s«."
 
 #: LogRotate/Config.py:1040
 #, python-format
@@ -405,7 +421,18 @@ msgstr "Testmodus, Kommandos werden nur simuliert (beinhaltet -v und -T)"
 msgid "End of a logfile definition."
 msgstr "Ende einer Logdateidefinition."
 
-#: LogRotate/Mailer.py:715
+#: LogRotate/Mailer.py:772
+msgid "Error in establishing TLS:"
+msgstr "Fehler beim Aufbau einer TLS-Verbindung:"
+
+#: LogRotate/Mailer.py:752
+#, python-format
+msgid "Error in reply to the EHLO/HELO command from '%(host)s': '%(err)s'."
+msgstr ""
+"Fehler bei Antwort auf das EHLO- bzw. HELO-Kommando von »%(host)s«: "
+"»%(err)s«."
+
+#: LogRotate/Mailer.py:906
 #, python-format
 msgid "Error message of '%s':"
 msgstr "Fehlermeldung von »%s«:"
@@ -484,7 +511,7 @@ msgstr "Fehler beim Löschen der PID-Datei »%(file)s«: %(msg)"
 msgid "Error removing uncompressed file '%(file)s': %(msg)"
 msgstr "Fehler beim Löschen der unkomprimierten Datei »%(file)s«: %(msg)"
 
-#: LogRotate/Handler.py:1856 LogRotate/Mailer.py:689
+#: LogRotate/Handler.py:1856 LogRotate/Mailer.py:880
 #, python-format
 msgid "Executing command: '%s'."
 msgstr "Führe Kommando aus: »%s«."
@@ -514,7 +541,7 @@ msgstr "Führe Prerun-Skript »%s« aus ..."
 msgid "Executing script '%(name)s' with command: '%(cmd)s'"
 msgstr "Führe Skript »%(name)s« mit dem Kommando »%(cmd)s« aus."
 
-#: LogRotate/Handler.py:1874 LogRotate/Mailer.py:734
+#: LogRotate/Handler.py:1874 LogRotate/Mailer.py:925
 #, python-format
 msgid "Execution failed: %s"
 msgstr "Ausführung ging schief: %s"
@@ -528,7 +555,7 @@ msgstr "Die Ausführung des Skriptes »%(name)s« ging schief: %(error)s"
 msgid "Failing size definition."
 msgstr "Fehlende Größenangabe."
 
-#: LogRotate/Config.py:694 LogRotate/Config.py:721 LogRotate/Mailer.py:556
+#: LogRotate/Config.py:694 LogRotate/Config.py:721 LogRotate/Mailer.py:595
 #, python-format
 msgid "File '%s' doesn't exists."
 msgstr "Die Datei »%s« existiert nicht."
@@ -538,7 +565,7 @@ msgstr "Die Datei »%s« existiert nicht."
 msgid "File '%s' has a size of 0, skip compressing."
 msgstr "Die Datei »%s« hat die Größe Null, übergehe Komprimierung."
 
-#: LogRotate/Mailer.py:561
+#: LogRotate/Mailer.py:600
 #, python-format
 msgid "File '%s' is not a regular file."
 msgstr "Die Datei »%s« ist keine reguläre Datei."
@@ -677,7 +704,7 @@ msgstr ""
 "Wert »%(value)s« nach boolscher Option »%(option)s« gefunden, wird "
 "ignoriert."
 
-#: LogRotate/Mailer.py:652
+#: LogRotate/Mailer.py:696
 msgid "Generated E-mail:"
 msgstr "Generierte E-Mail:"
 
@@ -707,12 +734,12 @@ msgstr "Mailadress-Paar gefunden:"
 msgid "Got returncode for script '%(name)s': '%(retcode)s'"
 msgstr "Habe Rückggabewert »%(retcode)s« für Skript »%(name)s« erhalten."
 
-#: LogRotate/Handler.py:1864 LogRotate/Mailer.py:704
+#: LogRotate/Handler.py:1864 LogRotate/Mailer.py:895
 #, python-format
 msgid "Got returncode: '%s'."
 msgstr "Erhaltener Rückgabewert: »%s«."
 
-#: LogRotate/Mailer.py:615
+#: LogRotate/Mailer.py:659
 #, python-format
 msgid "Guessed content-type: '%(ctype)s' and encoding '%(encoding)s'."
 msgstr "Erratener Content-Type: »%(ctype)s«, und Encoding: »%(encoding)s«."
@@ -753,7 +780,7 @@ msgstr ""
 msgid "Incompatible version of status file '%(file)s': %(header)s"
 msgstr "Inkompatible Version der Statusdatei »%(file)s«: %(header)s"
 
-#: LogRotate/Mailer.py:489
+#: LogRotate/Mailer.py:528
 msgid "Initial search for the sendmail executable ..."
 msgstr "Initiale Suche nach dem »sendmail«-Programm ..."
 
@@ -797,7 +824,7 @@ msgstr "Ungültige Gruppe »%(group)s« in »%(what)s«."
 msgid "Invalid mail address for 'mailfrom' given: '%s'."
 msgstr "Ungültige Mailadresse »%s« für »mailfrom« angegeben."
 
-#: LogRotate/Mailer.py:229 LogRotate/Mailer.py:233
+#: LogRotate/Mailer.py:237 LogRotate/Mailer.py:241
 #, python-format
 msgid "Invalid mail address given: '%s'."
 msgstr "Ungültige Mailadresse übergeben: »%s«."
@@ -895,6 +922,13 @@ msgstr ""
 "Die Definition eines Logdateimusters ist innerhalb einer "
 "Logdateidefinition nicht erlaubt."
 
+#: LogRotate/Mailer.py:792
+#, python-format
+msgid "Login to '%(host)s' as user '%(user)s' was not successful: '%(err)s'."
+msgstr ""
+"Die Anmeldung an »%(host)s« als Nutzer »%(user)s« war nicht erfolgreich: "
+"»%(err)s«."
+
 #: LogRotate/Config.py:342
 msgid "Logrotate config reader initialised."
 msgstr "Logrotate-Konfigurationsleser initialisiert."
@@ -928,7 +962,19 @@ msgstr "Schaue nach, ob das Postrun-Skript ausgeführt werden soll."
 msgid "Looking, whether the prerun script should be executed."
 msgstr "Schaue nach, ob das Prerun-Skript ausgeführt werden soll."
 
-#: LogRotate/Mailer.py:414
+#: LogRotate/Mailer.py:829
+#, python-format
+msgid "Mail rejected because of an unexpected error by host '%s':"
+msgstr ""
+"Die Mail wurd auf Grund eines unerwarteten Fehlers von Host »%s« "
+"zurückgewiesen:"
+
+#: LogRotate/Mailer.py:842
+#, python-format
+msgid "Mail successful sent to host '%s'."
+msgstr "Die Mail wurde erfolgreich zu Host »%s« gesendet."
+
+#: LogRotate/Mailer.py:452
 msgid "Mailer object will destroyed."
 msgstr "Das Mailer-Objekt wird zerstört."
 
@@ -1015,7 +1061,7 @@ msgstr "Keine Konfigurationsdatei angegeben."
 msgid "No dirname directive for olddir given."
 msgstr "Kein Verzeichnis für olddir-Direktive angegeben."
 
-#: LogRotate/Mailer.py:281 LogRotate/Mailer.py:506
+#: LogRotate/Mailer.py:289 LogRotate/Mailer.py:545
 #, python-format
 msgid "No execute permissions to '%s'."
 msgstr "Keinw Ausführungsrechte auf »%s«."
@@ -1074,7 +1120,7 @@ msgstr "Keine alten Logdateien für Komprimierung gefunden."
 msgid "No old logfiles to delete found."
 msgstr "Keine Logdateien zum Löschen gefunden."
 
-#: LogRotate/Mailer.py:711 LogRotate/Mailer.py:720
+#: LogRotate/Mailer.py:902 LogRotate/Mailer.py:911
 #, python-format
 msgid "No output on %s."
 msgstr "Keine Ausgabe auf %s."
@@ -1087,6 +1133,13 @@ msgstr "Kein Recht, ein Signal an Prozeß %d zu senden ..."
 #: LogRotate/Config.py:1774
 msgid "No script name given in a script directive."
 msgstr "Kein Scriptname in Scriptdirektive angegeben."
+
+#: LogRotate/Mailer.py:799
+#, python-format
+msgid "No suitable authentication method to login to '%s' found."
+msgstr ""
+"Keine verwendungsfähige Authentifizierungsmethode zur Anmeldung an »%s« "
+"gefunden."
 
 #: LogRotate/Handler.py:598
 #, python-format
@@ -1127,7 +1180,12 @@ msgstr ""
 msgid "Olddir name is now '%s'."
 msgstr "Der Olddir-Name ist jetzt »%s«."
 
-#: LogRotate/Mailer.py:289
+#: LogRotate/Mailer.py:846
+#, python-format
+msgid "One or more recipient addresses are rejected by host '%s':"
+msgstr "Eine oder mehrere Empfängeradressen wurden von Host »%s« zurückgewiesen:"
+
+#: LogRotate/Mailer.py:297
 #, python-format
 msgid "Only absolute path allowed for a sendmail command: '%s'."
 msgstr "Für das »sendmail«-Kommando sind nur absolute Pfadangaben erlaubt: »%s«."
@@ -1219,7 +1277,7 @@ msgstr "Die Option »taboo%s« ist innerhalb einer Logfiledefinition nicht erlau
 msgid "Options"
 msgstr "Optionen"
 
-#: LogRotate/Mailer.py:709
+#: LogRotate/Mailer.py:900
 #, python-format
 msgid "Output on STDOUT: '%s'."
 msgstr "Ausgabe auf STDOUT: »%s«."
@@ -1394,6 +1452,11 @@ msgstr "Rotation von »%s« wegen Zwangs-Modus."
 msgid "Rotating of logfile definition:"
 msgstr "Rotation der Logdatei-Definition:"
 
+#: LogRotate/Mailer.py:783
+#, python-format
+msgid "SMTP server '%s' doesn't support TLS."
+msgstr "Der SMTP-Server »%s« unterstützt kein TLS."
+
 #: LogRotate/Config.py:1791
 #, python-format
 msgid "Script name '%s' is allready declared, it will be overwritten."
@@ -1409,16 +1472,24 @@ msgstr "Suche nach Muster »%s« ..."
 msgid "Search path '%s' doesn't exists or is not a directory."
 msgstr "Der Suchpfad »%s« existiert entweder nicht oder ist kein Verzeichnis."
 
-#: LogRotate/Mailer.py:572
+#: LogRotate/Mailer.py:815
+#, python-format
+msgid "Sender address <%(from)s> not accepted by host '%(host)s': '%(err)s'."
+msgstr ""
+"Die Absenderadresse <%(from)s> wurde von Host »%(host)s« nicht "
+"akzeptiert: »%(err)s«."
+
+#: LogRotate/Mailer.py:726
+#, python-format
+msgid "Sending mail via SMTP to server '%s'."
+msgstr "Verschicke Mail mittels SMTP an Server »%s«."
+
+#: LogRotate/Mailer.py:615
 #, python-format
 msgid "Sending mail with attached file '%(file)s' to: %(rcpt)s"
 msgstr "Verschicke Mail mit angehängter Datei »%(file)s« an: %(rcpt)s"
 
-#: LogRotate/Mailer.py:658
-msgid "Sending mails via SMTP currently not possible."
-msgstr "Der Mailversand über SMTP ist gegenwärtig noch nicht verfügbar."
-
-#: LogRotate/Mailer.py:285
+#: LogRotate/Mailer.py:293
 #, python-format
 msgid "Sendmail command '%s' not found."
 msgstr "Das »sendmail«-Kommando »%s« wurde nicht gefunden."
@@ -1428,7 +1499,7 @@ msgstr "Das »sendmail«-Kommando »%s« wurde nicht gefunden."
 msgid "Senseless option value '%(value)s' after '%(option)s'."
 msgstr "Sinnloser Optionswert »%(value)s« nach »%(option)s«."
 
-#: LogRotate/Mailer.py:239
+#: LogRotate/Mailer.py:247
 #, python-format
 msgid "Set sender mail address to: '%s'."
 msgstr "Setze Absender-Mailadresse auf: »%s«."
@@ -1642,7 +1713,7 @@ msgstr "Die Zieldatei der Komprimierung »%s« existiert bereits."
 msgid "Test mode is ON."
 msgstr "Testmodus ist AN."
 
-#: LogRotate/Mailer.py:495
+#: LogRotate/Mailer.py:534
 #, python-format
 msgid "Testing for '%s' ..."
 msgstr "Teste auf »%s« ..."
@@ -1657,11 +1728,11 @@ msgstr "Testmodus, übergehe Test der PID-Datei »%s«."
 msgid "Testmode, skip writing of PID file '%s'."
 msgstr "Testmodus, übergehe Schreiben der PID-Datei »%s«."
 
-#: LogRotate/Mailer.py:216
+#: LogRotate/Mailer.py:224
 msgid "The 'From' address may not set to None."
 msgstr "Die »From«-Adresse darf nicht auf »None« gesetzt werden."
 
-#: LogRotate/Mailer.py:681
+#: LogRotate/Mailer.py:872
 msgid "There is no sendmail executable available."
 msgstr "Das sendmail-Programm ist nicht verfügbar."
 
@@ -1747,12 +1818,12 @@ msgstr ""
 "Verwende »%(target)s« als Zieldatei der Rotation von Logdatei "
 "»%(logfile)s«."
 
-#: LogRotate/Mailer.py:276 LogRotate/Mailer.py:501
+#: LogRotate/Mailer.py:284 LogRotate/Mailer.py:540
 #, python-format
 msgid "Using '%s' as the sendmail command."
 msgstr "Verwende »%s« als »sendmail«-Kommando."
 
-#: LogRotate/Mailer.py:470
+#: LogRotate/Mailer.py:509
 #, python-format
 msgid "Using <%s> as the sender mail address."
 msgstr "Verwende <%s> als Absender-Mailadresse."
