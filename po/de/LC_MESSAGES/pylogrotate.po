@@ -1657,7 +1657,7 @@ msgstr "Statusdatei-Objekt wird zerstört."
 
 #: LogRotate/Handler.py:2547
 msgid "Struct files2send:"
-msgstr "Sruktur files2send:"
+msgstr "Struktur files2send:"
 
 #: LogRotate/Handler.py:2123 LogRotate/Handler.py:2133
 #, python-format
