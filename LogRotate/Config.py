@@ -247,7 +247,7 @@ class LogrotateConfigurationReader(object):
         @ivar: all global options
         @type: dict
         '''
-        self.global_option['smtphost'] = 'localhost'
+        self.global_option['smtphost'] = ''
 
         #############################################
         # the rest of instance variables:

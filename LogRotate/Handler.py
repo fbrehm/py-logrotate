@@ -515,8 +515,7 @@ class LogrotateHandler(object):
         if (('mailfrom' in config_reader.global_option) and
                 (config_reader.global_option['mailfrom'])):
             self.mailer.from_address = config_reader.global_option['mailfrom']
-        if ((config_reader.global_option['smtphost']) and
-                (config_reader.global_option['smtphost'] != 'localhost')):
+        if config_reader.global_option['smtphost']:
             self.mailer.smtp_host = config_reader.global_option['smtphost']
         if 'smtpport' in config_reader.global_option:
             self.mailer.smtp_port = config_reader.global_option['smtpport']

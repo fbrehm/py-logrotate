@@ -27,6 +27,7 @@ import socket
 import csv
 
 from datetime import datetime
+from subprocess import Popen, PIPE
 
 import mimetypes
 import email.utils
@@ -130,6 +131,12 @@ class LogRotateMailer(object):
         '''
         @ivar: logger object
         @type: logging.getLogger
+        '''
+
+        self._use_smtp = False
+        '''
+        @ivar: flag, whether SMTP should used
+        @type: bool
         '''
 
         self._sendmail = None
@@ -312,6 +319,7 @@ class LogRotateMailer(object):
         _ = self.t.lgettext
         if value:
             self._smtp_host = value
+            self.use_smtp = True
 
     smtp_host = property(
             _get_smtp_host,
@@ -372,6 +380,27 @@ class LogRotateMailer(object):
     )
 
     #------------------------------------------------------------
+    # Property 'use_smtp'
+    def _get_use_smtp(self):
+        '''
+        Getter method for property 'use_smtp'
+        '''
+        return self._use_smtp
+
+    def _set_use_smtp(self, value):
+        '''
+        Setter method for property 'use_smtp'
+        '''
+        self._use_smtp = bool(value)
+
+    use_smtp = property(
+            _get_use_smtp,
+            _set_use_smtp,
+            None,
+            "Use SMTP for sending mails instead of using sendmail"
+    )
+
+    #------------------------------------------------------------
     # Other Methods
 
     #-------------------------------------------------------
@@ -421,6 +450,7 @@ class LogRotateMailer(object):
         res['smtp_user']      = self.smtp_user
         res['smtp_passwd']    = self.smtp_passwd
         res['mailer_version'] = self.mailer_version
+        res['use_smtp']       = self.use_smtp
 
         return res
 
@@ -475,6 +505,9 @@ class LogRotateMailer(object):
                 else:
                     msg = _("No execute permissions to '%s'.") % (prog)
                     self.logger.warning(msg)
+
+        if not self.sendmail:
+            self.use_smtp = True
 
         return
 
@@ -619,7 +652,90 @@ class LogRotateMailer(object):
             msg = _("Generated E-mail:") + "\n" + composed
             self.logger.debug(msg)
 
+        if (not self.use_smtp) and self.sendmail:
+            return self._send_per_sendmail(composed)
+        else:
+            msg = _("Sending mails via SMTP currently not possible.")
+            self.logger.info(msg)
+            return False
+
         return True
+
+    #-------------------------------------------------------
+    def _send_per_sendmail(self, mail):
+        '''
+        Sending the given mail per sendmail executable.
+
+        Raises a LogRotateMailerError on harder errors.
+
+        @param mail: the complete mail (header and body) as a string
+        @type mail:  str
+
+        @return: success of sending
+        @rtype:  bool
+        '''
+
+        _ = self.t.lgettext
+
+        if not self.sendmail:
+            msg = _("There is no sendmail executable available.")
+            raise LogRotateMailerError(msg)
+            return False
+
+        args = []
+        args.append(self.sendmail)
+        args.append('-t')
+
+        msg = (_("Executing command: '%s'.") % (self.sendmail + " -t"))
+        self.logger.debug(msg)
+
+        if self.test_mode:
+            return True
+
+        try:
+            sm = Popen(args, stdin=PIPE, stdout=PIPE,
+                       stderr=PIPE, close_fds=False)
+            stdout_data = None
+            stderr_data = None
+            (stdout_data, stderr_data) = sm.communicate(mail)
+            returncode = sm.wait()
+
+            if self.verbose > 1:
+                msg = _("Got returncode: '%s'.") % (returncode)
+                self.logger.debug(msg)
+
+                msg = ''
+                if stdout_data:
+                    msg = _("Output on STDOUT: '%s'.") % (stdout_data)
+                else:
+                    msg = _("No output on %s.") % ('STDOUT')
+                self.logger.debug(msg)
+
+            if stderr_data:
+                msg = ((_("Error message of '%s':") % (self.sendmail)) +
+                        "\n" + stderr_data)
+                self.logger.warning(msg)
+            else:
+                if self.verbose > 1:
+                    msg = _("No output on %s.") % ('STDERR')
+                    self.logger.debug(msg)
+
+            if returncode < 0:
+                msg = _("Child was terminated by signal %d.") % (-returncode)
+                self.logger.error(msg)
+                return False
+
+            if returncode != 0:
+                return False
+
+            return True
+
+        except OSError, e:
+            msg = _("Execution failed: %s") % (str(e))
+            self.logger.error(msg)
+            return False
+
+        return False
 
 #========================================================================
 
