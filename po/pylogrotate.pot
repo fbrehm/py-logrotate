@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: pylogrotate 0.6.0\n"
 "Report-Msgid-Bugs-To: frank@brehm-online.com\n"
-"POT-Creation-Date: 2011-07-15 22:00+0200\n"
+"POT-Creation-Date: 2011-07-15 22:52+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -1168,7 +1168,7 @@ msgstr ""
 #: LogRotate/Config.py:1089 LogRotate/Config.py:1096 LogRotate/Config.py:1104
 #: LogRotate/Config.py:1111
 #, python-format
-msgid "Option '%(by)s' disables option '%(what)'."
+msgid "Option '%(by)s' disables option '%(what)s'."
 msgstr ""
 
 #: LogRotate/Config.py:1138

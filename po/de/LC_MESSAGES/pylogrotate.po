@@ -11,8 +11,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: pylogrotate 0.6.0\n"
 "Report-Msgid-Bugs-To: frank@brehm-online.com\n"
-"POT-Creation-Date: 2011-07-15 22:00+0200\n"
-"PO-Revision-Date: 2011-07-15 22:20+0200\n"
+"POT-Creation-Date: 2011-07-15 22:52+0200\n"
+"PO-Revision-Date: 2011-07-15 22:56+0200\n"
 "Last-Translator: Frank Brehm <frank@brehm-online.com>\n"
 "Language-Team: de <LL@li.org>\n"
 "Plural-Forms: nplurals=2; plural=(n != 1)\n"
@@ -1222,9 +1222,9 @@ msgstr "Öffne Statusdatei »%s« zum Schreiben ..."
 
 #: LogRotate/Config.py:1089 LogRotate/Config.py:1096 LogRotate/Config.py:1104
 #: LogRotate/Config.py:1111
-#, python-format
-msgid "Option '%(by)s' disables option '%(what)'."
-msgstr "Die Option »%(by)s« setzt Option »%(what)« außer Kraft."
+#,  python-format
+msgid "Option '%(by)s' disables option '%(what)s'."
+msgstr "Die Option »%(by)s« setzt Option »%(what)s« außer Kraft."
 
 #: LogRotate/Config.py:1138
 #, python-format

@@ -1086,14 +1086,14 @@ class LogrotateConfigurationReader(object):
             directive[key] = option_value
             if key == 'copy' and option_value:
                 if directive['copytruncate']:
-                    msg = (_("Option '%(by)s' disables option '%(what)'.")
+                    msg = (_("Option '%(by)s' disables option '%(what)s'.")
                             % {'by': 'copy', 'what': 'copytruncate'})
                     msg += " " + ( _("(file '%(file)s', line %(lnr)s)")
                                     % {'file': filename, 'lnr': linenr})
                     self.logger.warning(msg)
                     directive['copytruncate'] = False
                 if directive['create']['enabled']:
-                    msg = (_("Option '%(by)s' disables option '%(what)'.")
+                    msg = (_("Option '%(by)s' disables option '%(what)s'.")
                             % {'by': 'copy', 'what': 'create'})
                     msg += " " + ( _("(file '%(file)s', line %(lnr)s)")
                                     % {'file': filename, 'lnr': linenr})
@@ -1101,14 +1101,14 @@ class LogrotateConfigurationReader(object):
                     directive['create']['enabled'] = False
             elif key == 'copytruncate' and option_value:
                 if directive['copy']:
-                    msg = (_("Option '%(by)s' disables option '%(what)'.")
+                    msg = (_("Option '%(by)s' disables option '%(what)s'.")
                             % {'by': 'copytruncate', 'what': 'copy'})
                     msg += " " + ( _("(file '%(file)s', line %(lnr)s)")
                                     % {'file': filename, 'lnr': linenr})
                     self.logger.warning(msg)
                     directive['copy'] = False
                 if directive['create']['enabled']:
-                    msg = (_("Option '%(by)s' disables option '%(what)'.")
+                    msg = (_("Option '%(by)s' disables option '%(what)s'.")
                             % {'by': 'copytruncate', 'what': 'create'})
                     msg += " " + ( _("(file '%(file)s', line %(lnr)s)")
                                     % {'file': filename, 'lnr': linenr})
