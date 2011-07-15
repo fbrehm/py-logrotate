@@ -15,6 +15,7 @@
 
 # Für Terminal-Dinge: http://code.activestate.com/recipes/475116/
 
+# Standard modules
 import re
 import sys
 import gettext
@@ -33,6 +34,10 @@ import gzip
 import bz2
 import zipfile
 
+# Third party modules
+import pytz
+
+# Own modules
 try:
     import LogRotate.Common
 except ImportError:
@@ -44,7 +49,7 @@ from LogRotate.Config import LogrotateConfigurationReader
 
 from LogRotate.StatusFile import LogrotateStatusFileError
 from LogRotate.StatusFile import LogrotateStatusFile
-from LogRotate.StatusFile import utc
+#from LogRotate.StatusFile import utc
 
 from LogRotate.Mailer import LogRotateMailerError
 from LogRotate.Mailer import LogRotateMailer
@@ -60,6 +65,7 @@ __contact__    = 'frank@brehm-online.com'
 __version__    = '0.4.0 ' + revision
 __license__    = 'GPL3'
 
+utc = pytz.utc
 
 #========================================================================
 

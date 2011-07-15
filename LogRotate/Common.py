@@ -13,6 +13,7 @@
 @summary: Module for common used functions
 '''
 
+# Standard modules
 import re
 import sys
 import locale
@@ -21,6 +22,10 @@ import gettext
 import csv
 import pprint
 import email.utils
+
+# Third party modules
+
+# Own modules
 
 revision = '$Revision$'
 revision = re.sub( r'\$', '', revision )
@@ -159,7 +164,11 @@ def email_valid(address):
 
 #------------------------------------------------------------------------
 
-def human2bytes(value, si_conform = True, use_locale_radix = False, verbose = 0):
+def human2bytes(
+        value,
+        si_conform=True,
+        use_locale_radix=False,
+        verbose=0):
     '''
     Converts the given human readable byte value (e.g. 5MB, 8.4GiB etc.)
     with a prefix into an integer/long value (without a prefix).
@@ -246,7 +255,8 @@ def human2bytes(value, si_conform = True, use_locale_radix = False, verbose = 0)
     elif re.search(r'^\s*P(?:B(?:yte)?)?\s*$', prefix, re.IGNORECASE):
         factor = (factor_si * factor_si * factor_si * factor_si * factor_si)
     elif re.search(r'^\s*PiB(?:yte)?\s*$', prefix, re.IGNORECASE):
-        factor = (factor_bin * factor_bin * factor_bin * factor_bin * factor_bin)
+        factor = (factor_bin * factor_bin * factor_bin *
+                  factor_bin * factor_bin)
     else:
         msg = _("Couldn't detect prefix '%s'.") % (prefix)
         raise ValueError(msg)
@@ -456,7 +466,9 @@ def get_address_list(address_str, verbose = 0):
     addr_list = []
     addresses = []
 
-    for row in csv.reader([address_str], doublequote=False, skipinitialspace=True):
+    for row in csv.reader([address_str],
+                          doublequote=False,
+                          skipinitialspace=True):
         for address in row:
             addr_list.append(address)
 

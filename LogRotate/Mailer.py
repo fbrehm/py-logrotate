@@ -14,6 +14,7 @@
           rotated logfiles per mail to a reciepient
 '''
 
+# Standard modules
 import re
 import logging
 import pprint
@@ -38,6 +39,9 @@ from email.mime.text import MIMEText
 
 from quopri import encodestring as _encodestring
 
+# Third party modules
+
+# Own modules
 try:
     import LogRotate.Common
 except ImportError:

@@ -13,11 +13,17 @@
 @summary: module for a logrotate script object
 	  (for pre- and postrotate actions)
 '''
+
+# Standard modules
 import re
 import logging
 import subprocess
 import pprint
 import gettext
+
+# Third party modules
+
+# Own modules
 
 revision = '$Revision$'
 revision = re.sub( r'\$', '', revision )

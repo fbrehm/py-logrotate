@@ -13,6 +13,7 @@
 @summary: module for operations with the logrotate state file
 '''
 
+# Standard modules
 import re
 import sys
 import os
@@ -23,6 +24,10 @@ import pprint
 
 from datetime import tzinfo, timedelta, datetime, date, time
 
+# Third party modules
+import pytz
+
+# Own modules
 try:
     import LogRotate.Common
 except ImportError:
@@ -42,31 +47,14 @@ __contact__    = 'frank@brehm-online.com'
 __version__    = '0.1.0 ' + revision
 __license__    = 'GPL3'
 
+utc = pytz.utc
+
 #========================================================================
 
 class LogrotateStatusFileError(Exception):
     '''
     Base class for exceptions in this module.
     '''
-
-#========================================================================
-
-ZERO = timedelta(0)
-
-class UTC(tzinfo):
-    """UTC"""
-
-    def utcoffset(self, dt):
-        return ZERO
-
-    def tzname(self, dt):
-        return "UTC"
-
-    def dst(self, dt):
-        return ZERO
-
-utc = UTC()
-
 
 #========================================================================
 
@@ -230,7 +218,8 @@ class LogrotateStatusFile(object):
     def get_rotation_date(self, logfile):
         '''
         Gives back the date of the last rotation of a particular logfile.
-        If this logfile is not found in the state file, datetime.min() is given back.
+        If this logfile is not found in the state file,
+        datetime.min() is given back.
 
         @param logfile: the logfile to query
         @type logfile:  str
@@ -308,7 +297,8 @@ class LogrotateStatusFile(object):
         # Big try block for ensure closing open status file
         try:
 
-            msg = _("Open status file '%s' for writing ...") % (self.file_name)
+            msg = _("Open status file '%s' for writing ...") \
+                    % (self.file_name)
             self.logger.debug(msg)
 
             # open status file for writing
@@ -316,7 +306,8 @@ class LogrotateStatusFile(object):
                 try:
                     fd = open(self.file_name, 'w')
                 except IOError, e:
-                    msg = _("Could not open status file '%s' for write: ") % (self.file_name) + str(e)
+                    msg = _("Could not open status file '%s' for write: ") \
+                            % (self.file_name) + str(e)
                     raise LogrotateStatusFileError(msg)
 
             # write logrotate version line
@@ -331,14 +322,23 @@ class LogrotateStatusFile(object):
                 fd.write(line)
 
             # iterate over logfiles in self.file_state
-            for logfile in sorted(self.file_state.keys(), lambda x,y: cmp(x.lower(), y.lower())):
+            for logfile in sorted(
+                    self.file_state.keys(),
+                    lambda x,y: cmp(x.lower(), y.lower())):
                 rotate_date = self.file_state[logfile]
-                date_str = "%d-%d-%d" % (rotate_date.year, rotate_date.month, rotate_date.day)
+                date_str = ( "%d-%d-%d" 
+                    % (rotate_date.year, rotate_date.month, rotate_date.day))
                 if self.status_version == 3:
-                    date_str = ( "%d-%02d-%02d_%02d:%02d:%02d" %
-                                (rotate_date.year, rotate_date.month, rotate_date.day,
-                                 rotate_date.hour, rotate_date.minute, rotate_date.second))
-                line = '%-*s %s' % (max_length, ('"' + logfile + '"'), date_str)
+                    date_str = (
+                        "%d-%02d-%02d_%02d:%02d:%02d" % (
+                            rotate_date.year,
+                            rotate_date.month,
+                            rotate_date.day,
+                            rotate_date.hour,
+                            rotate_date.minute,
+                            rotate_date.second))
+                line = ('%-*s %s'
+                        % (max_length, ('"' + logfile + '"'), date_str))
                 if self.verbose > 2:
                     msg = _("Writing line '%s'.") % (line)
                     self.logger.debug(msg)
@@ -377,7 +377,8 @@ class LogrotateStatusFile(object):
         '''
 
         _ = self.t.lgettext
-        msg = _("Checking permissions of status file '%s' ...") % (self.file_name)
+        msg = (_("Checking permissions of status file '%s' ...")
+                % (self.file_name))
         self.logger.debug(msg)
 
         if os.path.exists(self.file_name):
@@ -387,7 +388,8 @@ class LogrotateStatusFile(object):
                 self.logger.debug(msg)
                 return True
             else:
-                msg = _("No write access to status file '%s'.") % (self.file_name)
+                msg = (_("No write access to status file '%s'.")
+                        % (self.file_name))
                 if self.test_mode:
                     self.logger.error(msg)
                 else:
@@ -395,7 +397,8 @@ class LogrotateStatusFile(object):
                 return False
 
         parent_dir = os.path.dirname(self.file_name)
-        msg = _("Checking permissions of parent directory '%s' ...") % (parent_dir)
+        msg = (_("Checking permissions of parent directory '%s' ...")
+                % (parent_dir))
         self.logger.debug(msg)
 
         # Check for existence of parent dir
@@ -409,8 +412,9 @@ class LogrotateStatusFile(object):
 
         # Check whether parent dir is a directory
         if not os.path.isdir(parent_dir):
-            msg = _("Parent directory '%(dir)s' of status file '%(file)s' is not a directory.") \
-                    % {'dir': parent_dir, 'file': self.file_name }
+            msg = (_("Parent directory '%(dir)s' of status file '%(file)s' "
+                     + "is not a directory.") 
+                    % {'dir': parent_dir, 'file': self.file_name })
             if self.test_mode:
                 self.logger.error(msg)
             else:
@@ -419,8 +423,9 @@ class LogrotateStatusFile(object):
 
         # Check for write access to parent dir
         if not os.access(parent_dir, os.W_OK):
-            msg = _("No write access to parent directory '%(dir)s' of status file '%(file)s'.") \
-                    % {'dir': parent_dir, 'file': self.file_name }
+            msg = (_("No write access to parent directory '%(dir)s' "
+                     + "of status file '%(file)s'.")
+                    % {'dir': parent_dir, 'file': self.file_name })
             if self.test_mode:
                 self.logger.error(msg)
             else:
@@ -435,7 +440,8 @@ class LogrotateStatusFile(object):
     def read(self, must_exists = True):
         '''
         Reads the status file and put the results in the dict self.file_state.
-        Puts back the absolute path of the status file in self.file_name on success.
+        Puts back the absolute path of the status file
+        in self.file_name on success.
 
         Throws a LogrotateStatusFileError on a error.
 
@@ -464,12 +470,14 @@ class LogrotateStatusFile(object):
             self.file_name = os.path.abspath(self.file_name)
             self.file_name_is_absolute = True
             if self.verbose > 2:
-                msg = _("Absolute path of status file is now '%s'.") % (self.file_name)
+                msg = (_("Absolute path of status file is now '%s'.")
+                        % (self.file_name))
                 self.logger.debug(msg)
 
         # Checks, that the status file is a regular file
         if not os.path.isfile(self.file_name):
-            msg = _("Status file '%s' is not a regular file.") % (self.file_name)
+            msg = (_("Status file '%s' is not a regular file.")
+                    % (self.file_name))
             raise LogrotateStatusFileError(msg)
             return False
 
@@ -480,7 +488,8 @@ class LogrotateStatusFile(object):
         try:
             fd = open(self.file_name, 'Ur')
         except IOError, e:
-            msg = _("Could not read status file '%s': ") % (self.file_name) + str(e)
+            msg = (_("Could not read status file '%s': ")
+                    % (self.file_name)) + str(e)
             raise LogrotateStatusFileError(msg)
         self.fd = fd
 
@@ -491,8 +500,7 @@ class LogrotateStatusFile(object):
                 i += 1
                 line = line.strip()
                 if self.verbose > 4:
-                    msg = _("Performing status file line '%s'.") \
-                            % (line)
+                    msg = _("Performing status file line '%s'.") % (line)
                     msg += " " + ( _("(file '%(file)s', line %(lnr)s)")
                                         % {'file': self.file_name, 'lnr': i})
                     self.logger.debug(msg)
@@ -507,15 +515,15 @@ class LogrotateStatusFile(object):
                         # Correct file header
                         self.status_version = int(match.group(1))
                         if self.verbose > 1:
-                            msg = _("Idendified version of status file: %d") \
-                                    % (self.status_version)
+                            msg = (_("Idendified version of status file: %d")
+                                    % (self.status_version))
                             self.logger.debug(msg)
                         continue
                     else:
                         # Wrong header
-                        msg = _("Incompatible version of status file "
-                                 + "'%(file)s': %(header)s") \
-                                % { 'file': self.file_name, 'header': line }
+                        msg = (_("Incompatible version of status file "
+                                 + "'%(file)s': %(header)s")
+                                % { 'file': self.file_name, 'header': line })
                         fd.close()
                         raise LogrotateStatusFileError(msg)
 
@@ -526,16 +534,18 @@ class LogrotateStatusFile(object):
                 logfile = parts[0]
                 rdate   = parts[1]
                 if self.verbose > 2:
-                    msg = _("Found logfile '%(file)s' with rotation "
-                             + "date '%(date)s'.") \
-                            % { 'file': logfile, 'date': rdate }
+                    msg = (_("Found logfile '%(file)s' with rotation "
+                             + "date '%(date)s'.")
+                            % { 'file': logfile, 'date': rdate })
                     self.logger.debug(msg)
 
                 if logfile and rdate:
-                    match = re.search(r'\s*(\d+)[_\-](\d+)[_\-](\d+)(?:[\s\-_]+(\d+)[_\-:](\d+)[_\-:](\d+))?', rdate)
+                    pat = (r'\s*(\d+)[_\-](\d+)[_\-](\d+)' +
+                           r'(?:[\s\-_]+(\d+)[_\-:](\d+)[_\-:](\d+))?')
+                    match = re.search(pat, rdate)
                     if not match:
-                        msg = _("Could not determine date format: '%s'.") \
-                                % (rdate)
+                        msg = (_("Could not determine date format: '%s'.")
+                                % (rdate))
                         msg += " " + ( _("(file '%(file)s', line %(lnr)s)")
                                             % {'file': logfile, 'lnr': i})
                         self.logger.warning(msg)
@@ -571,8 +581,8 @@ class LogrotateStatusFile(object):
 
                 else:
 
-                    msg = _("Neither a logfile nor a date found in line '%s'.") \
-                            % (line)
+                    msg = (_("Neither a logfile nor a date found " +
+                             "in line '%s'.") % (line))
                     msg += " " + ( _("(file '%(file)s', line %(lnr)s)")
                                         % {'file': logfile, 'lnr': i})
                     self.logger.warning(msg)

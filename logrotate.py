@@ -13,6 +13,7 @@
 @summary: rotates and compress system logs
 '''
 
+# Standard modules
 import re
 import sys
 import pprint
@@ -21,6 +22,9 @@ import os
 import os.path
 from datetime import datetime
 
+# Third party modules
+
+# Own modules
 from LogRotate.Getopts import LogrotateOptParser
 from LogRotate.Getopts import LogrotateOptParserError
 

@@ -13,6 +13,7 @@
 @summary: Option parser for Python logrotating
 '''
 
+# Standard modules
 import re
 import sys
 import os.path
@@ -23,6 +24,9 @@ from optparse import OptionParser
 from optparse import OptionGroup
 from optparse import OptionConflictError
 
+# Third party modules
+
+# Own modules
 try:
     import LogRotate.Common
 except ImportError:
