@@ -238,7 +238,12 @@ class LogRotateMailer(object):
         '''
         self._init_from_address()
 
-    from_address = property(_get_from_address, _set_from_address, _del_from_address, "The mail address of the sender")
+    from_address = property(
+            _get_from_address,
+            _set_from_address,
+            _del_from_address,
+            "The mail address of the sender"
+    )
 
     #------------------------------------------------------------
     # Property 'sendmail'
@@ -274,7 +279,8 @@ class LogRotateMailer(object):
                 self.logger.warning(msg)
                 return
         else:
-            msg = _("Only absolute path allowed for a sendmail command: '%s'.") % (value)
+            msg = (_("Only absolute path allowed for a " +
+                     "sendmail command: '%s'.") % (value))
             self.logger.warning(msg)
             return
 
@@ -284,7 +290,12 @@ class LogRotateMailer(object):
         '''
         self._sendmail = None
 
-    sendmail = property(_get_sendmail, _set_sendmail, _del_sendmail, "The sendmail executable for sending mails local")
+    sendmail = property(
+            _get_sendmail,
+            _set_sendmail,
+            _del_sendmail,
+            "The sendmail executable for sending mails local"
+    )
 
     #------------------------------------------------------------
     # Property 'smtp_host'
@@ -302,7 +313,12 @@ class LogRotateMailer(object):
         if value:
             self._smtp_host = value
 
-    smtp_host = property(_get_smtp_host, _set_smtp_host, None, "The hostname to use for sending mails via SMTP (smarthost)")
+    smtp_host = property(
+            _get_smtp_host,
+            _set_smtp_host,
+            None,
+            "The hostname to use for sending mails via SMTP (smarthost)"
+    )
 
     #------------------------------------------------------------
     # Property 'smtp_port'
@@ -327,7 +343,12 @@ class LogRotateMailer(object):
                 return
             self._smtp_port = port
 
-    smtp_port = property(_get_smtp_port, _set_smtp_port, None, "The port to use for sending mails via SMTP")
+    smtp_port = property(
+            _get_smtp_port,
+            _set_smtp_port,
+            None,
+            "The port to use for sending mails via SMTP"
+    )
 
     #------------------------------------------------------------
     # Property 'smtp_tls'
@@ -343,7 +364,12 @@ class LogRotateMailer(object):
         '''
         self._smtp_tls = bool(value)
 
-    smtp_tls = property(_get_smtp_tls, _set_smtp_tls, None, "Use TLS for sending mails via SMTP (smarthost)")
+    smtp_tls = property(
+            _get_smtp_tls,
+            _set_smtp_tls,
+            None,
+            "Use TLS for sending mails via SMTP (smarthost)"
+    )
 
     #------------------------------------------------------------
     # Other Methods
@@ -442,8 +468,8 @@ class LogRotateMailer(object):
             if os.path.exists(prog):
                 if os.access(prog, os.X_OK):
                     if self.verbose > 1:
-                            msg = _("Using '%s' as the sendmail command.") % (prog)
-                            self.logger.debug(msg)
+                        msg = _("Using '%s' as the sendmail command.") % (prog)
+                        self.logger.debug(msg)
                     self._sendmail = prog
                     break
                 else:
@@ -453,7 +479,8 @@ class LogRotateMailer(object):
         return
 
     #-------------------------------------------------------
-    def send_file(self,
+    def send_file(
+            self,
             filename,
             addresses,
             original=None,
@@ -509,17 +536,29 @@ class LogRotateMailer(object):
         if not rotate_date:
             rotate_date = datetime.now()
 
-        msg = _("Sending mail with attached file '%(file)s' to: %(rcpt)s") \
+        msg = (_("Sending mail with attached file '%(file)s' to: %(rcpt)s")
                 % {'file': basename,
-                   'rcpt': ', '.join(map(lambda x: '"' + email.utils.formataddr(x) + '"', addresses))}
+                   'rcpt': ', '.join(
+                                map(lambda x: ('"' +
+                                                email.utils.formataddr(x) +
+                                                '"'),
+                                    addresses
+                                )
+                            )
+                  })
         self.logger.debug(msg)
 
         mail_container = MIMEMultipart()
-        mail_container['Subject']  = ( "Rotated logfile '%s'" % (filename) )
-        mail_container['X-Mailer'] = ( "pylogrotate version %s" % (self.mailer_version) )
-        mail_container['From']     = self.from_address
-        mail_container['To']       = ', '.join(map(lambda x: email.utils.formataddr(x), addresses))
-        mail_container.preamble = 'You will not see this in a MIME-aware mail reader.\n'
+        mail_container['Subject'] = ( "Rotated logfile '%s'" % (filename) )
+        mail_container['X-Mailer'] = ( "pylogrotate version %s"
+                        % (self.mailer_version) )
+        mail_container['From'] = self.from_address
+        mail_container['To'] = ', '.join(
+            map(lambda x: email.utils.formataddr(x), addresses)
+        )
+        mail_container.preamble = (
+            'You will not see this in a MIME-aware mail reader.\n'
+        )
 
         # Generate Text of the first part of mail body
         mailtext = "Rotated Logfile:\n\n"
@@ -529,15 +568,20 @@ class LogRotateMailer(object):
         mailtext += "Date of rotation: " + rotate_date.isoformat(' ')
         mailtext += "\n"
         mailtext = _encodestring(mailtext, quotetabs=False)
-        mail_part = MIMENonMultipart('text', 'plain', charset=sys.getdefaultencoding())
+        mail_part = MIMENonMultipart(
+                'text',
+                'plain',
+                charset=sys.getdefaultencoding()
+        )
         mail_part.set_payload(mailtext)
         mail_part['Content-Transfer-Encoding'] = 'quoted-printable'
         mail_container.attach(mail_part)
 
         ctype, encoding = mimetypes.guess_type(filename)
         if self.verbose > 3:
-            msg = _("Guessed content-type: '%(ctype)s' and encoding '%(encoding)s'.") \
-                    % {'ctype': ctype, 'encoding': encoding }
+            msg = (_("Guessed content-type: '%(ctype)s' " +
+                     "and encoding '%(encoding)s'.")
+                    % {'ctype': ctype, 'encoding': encoding })
             self.logger.debug(msg)
 
         if encoding:
@@ -563,7 +607,11 @@ class LogRotateMailer(object):
             mail_part['Content-Transfer-Encoding'] = 'quoted-printable'
         else:
             encoders.encode_base64(mail_part)
-        mail_part.add_header('Content-Disposition', 'attachment', filename=basename)
+        mail_part.add_header(
+                'Content-Disposition',
+                'attachment',
+                filename=basename
+        )
         mail_container.attach(mail_part)
 
         composed = mail_container.as_string()

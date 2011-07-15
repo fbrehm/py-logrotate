@@ -7,12 +7,13 @@
 # $Id$
 # $URL$
 #
+#
 msgid ""
 msgstr ""
 "Project-Id-Version: pylogrotate 0.6.0\n"
 "Report-Msgid-Bugs-To: frank@brehm-online.com\n"
-"POT-Creation-Date: 2011-07-15 11:51+0200\n"
-"PO-Revision-Date: 2011-07-15 10:05+0200\n"
+"POT-Creation-Date: 2011-07-15 13:16+0200\n"
+"PO-Revision-Date: 2011-07-15 13:25+0200\n"
 "Last-Translator: Frank Brehm <frank@brehm-online.com>\n"
 "Language-Team: de <LL@li.org>\n"
 "Plural-Forms: nplurals=2; plural=(n != 1)\n"
@@ -86,12 +87,12 @@ msgstr "Argumente"
 msgid "Called with '%s'."
 msgstr "Aufgerufen mit »%s«."
 
-#: LogRotate/Handler.py:1805
+#: LogRotate/Handler.py:1904
 #, python-format
 msgid "Check, whether logfile '%s' should rotated."
 msgstr "Überprüfe, ob die Logdatei »%s« rotiert werden muß."
 
-#: LogRotate/Handler.py:1197
+#: LogRotate/Handler.py:1244
 #, python-format
 msgid "Checking file '%s' for deleting ..."
 msgstr "Überprüfe Datei »%s« für Löschen ..."
@@ -136,12 +137,12 @@ msgstr "Überprüfe Rechte auf übergeordnetes Verzeichnis »%s« ..."
 msgid "Checking permissions of status file '%s' ..."
 msgstr "Überprüfe Rechte auf Statusdatei »%s« ..."
 
-#: LogRotate/Script.py:537
+#: LogRotate/Script.py:549
 #, python-format
 msgid "Checking, whether the script '%s' should be executed."
 msgstr "Überprüfe, ob das Skript »%s« noch ausgeführt werden muß."
 
-#: LogRotate/Getopts.py:231
+#: LogRotate/Getopts.py:233
 msgid ""
 "Checks only the given configuration file and does nothing. Conflicts with"
 " -f."
@@ -149,17 +150,17 @@ msgstr ""
 "Überprüft nur die gegebene Konfigurationsdatei und führt nichts aus. "
 "Beißt sich mit -f."
 
-#: LogRotate/Script.py:505
+#: LogRotate/Script.py:516
 #, python-format
 msgid "Child in script '%(name)s' was terminated by signal %(retcode)d."
 msgstr "Kindprozeß in Skript »%(name)s« wurde durch Signal %(retcode)d beendet."
 
-#: LogRotate/Handler.py:1769
+#: LogRotate/Handler.py:1868
 #, python-format
 msgid "Child was terminated by signal %d."
 msgstr "Kindprozess wurde durch Signal %d beendet."
 
-#: LogRotate/Getopts.py:259
+#: LogRotate/Getopts.py:262
 msgid ""
 "Command to send mail (instead of using SMTP or the predefined sendmail "
 "command)."
@@ -167,7 +168,7 @@ msgstr ""
 "Befehl zum Mailversand (anstelle der Verwendung von SMTP oder des "
 "vordefinierten sendmail-Befehls)"
 
-#: LogRotate/Getopts.py:271
+#: LogRotate/Getopts.py:275
 msgid "Common options"
 msgstr "Allgemeine Optionen"
 
@@ -176,18 +177,27 @@ msgstr "Allgemeine Optionen"
 msgid "Compress command '%s' not found."
 msgstr "Das Komprimierungskommando »%s« wurde nicht gefunden."
 
-#: LogRotate/Handler.py:2024
+#: LogRotate/Handler.py:2143
 #, python-format
 msgid "Compress options: '%s'."
 msgstr "Komprimierungsoptionen: »%s«."
 
-#: LogRotate/Handler.py:1954
+#: LogRotate/Handler.py:2064
 #, python-format
 msgid "Compressing file '%(file)s' to '%(target)s' with '%(cmd)s' ..."
 msgstr "Komprimiere Datei »%(file)s« zu »%(target)s« mit »%(cmd)s« ..."
 
-#: LogRotate/Handler.py:2216 LogRotate/Handler.py:2283
-#: LogRotate/Handler.py:2358
+#: LogRotate/Handler.py:2112
+#, python-format
+msgid ""
+"Compressing source '%(source)s' to target '%(target)s' with command "
+"'%(cmd)s'."
+msgstr ""
+"Komprimiere Quelldatei »%(source)s« zu Zieldatei »%(target)s« mit "
+"Kommando »%(cmd)s«."
+
+#: LogRotate/Handler.py:2341 LogRotate/Handler.py:2408
+#: LogRotate/Handler.py:2483
 #, python-format
 msgid ""
 "Compressing source '%(source)s' to target '%(target)s' with module "
@@ -196,20 +206,11 @@ msgstr ""
 "Komprimiere Quelldatei »%(source)s« zu Zieldatei »%(target)s« mit Modul "
 "»%(module)s«."
 
-#: LogRotate/Handler.py:1996
-#, python-format
-msgid ""
-"Compressing source '%(source)s' to target'%(target)s' with command "
-"'%(cmd)s'."
-msgstr ""
-"Komprimiere Quelldatei »%(source)s« zu Zieldatei »%(target)s« mit "
-"Kommando »%(cmd)s«."
-
-#: LogRotate/Handler.py:1910
+#: LogRotate/Handler.py:2016
 msgid "Compression of all uncompressed logfiles ..."
 msgstr "Komprimierung aller unkomprimierten Logdateien ..."
 
-#: LogRotate/Handler.py:1124
+#: LogRotate/Handler.py:1168
 #, python-format
 msgid "Compression of file '%s' will be delayed."
 msgstr "Die Komprimierung der Datei »%s« wird verschoben."
@@ -222,21 +223,21 @@ msgstr "Nur Überprüfung der Konfiguration."
 msgid "Configuration reader object structure"
 msgstr "Objektstruktur des Konfigurtionslesers"
 
-#: LogRotate/Handler.py:2107
+#: LogRotate/Handler.py:2229
 #, python-format
 msgid "Copying all file metadata to target '%s' ..."
 msgstr "Kopiere alle Datei-Metadaten zu Zielobjekt »%s« ..."
 
-#: LogRotate/Handler.py:931
+#: LogRotate/Handler.py:943
 #, python-format
 msgid "Copying file '%(from)s' => '%(to)s'."
 msgstr "Kopiere Datei »%(from)s« => »%(to)s«."
 
-#: LogRotate/Handler.py:2174
+#: LogRotate/Handler.py:2299
 msgid "Copying ownership from source to target."
 msgstr "Kopiere Besitzerschaft von Quell- zu Zielobjekt."
 
-#: LogRotate/Handler.py:2123
+#: LogRotate/Handler.py:2245
 #, python-format
 msgid ""
 "Copying permissions and timestamps from source '%(src)s' to target "
@@ -289,75 +290,75 @@ msgstr "Konnte keinen Präfix in »%s« ermitteln."
 msgid "Couldn't open PID file '%(file)s' for reading: %(msg)s"
 msgstr "Konnte PID-Datei »%(file)s« nicht zum Lesen öffnen: %(msg)s"
 
-#: LogRotate/Handler.py:659
+#: LogRotate/Handler.py:661
 #, python-format
 msgid "Couldn't open PID file '%(file)s' for writing: %(msg)s"
 msgstr "Konnte PID-Datei »%(file)s« nicht zum Schreiben öffnen: %(msg)s"
 
-#: LogRotate/Handler.py:1702
+#: LogRotate/Handler.py:1796
 #, python-format
 msgid "Create permissions: %(mode)4o, Owner-UID: %(uid)d, Group-GID: %(gid)d"
 msgstr "Erstellungsrechte: %(mode)4o, Besitzer-UID: %(uid)d, Besitzer-GID: %(gid)d"
 
-#: LogRotate/Handler.py:1690
+#: LogRotate/Handler.py:1784
 #, python-format
 msgid "Creating directory '%s' ..."
 msgstr "Erstelle Verzeichnis »%s« ..."
 
-#: LogRotate/Handler.py:1660
+#: LogRotate/Handler.py:1752
 #, python-format
 msgid "Creating olddir '%s' recursive ..."
 msgstr "Erstelle Olddir-Verzeichnis »%s« rekursiv ..."
 
-#: LogRotate/Handler.py:1200
+#: LogRotate/Handler.py:1247
 #, python-format
 msgid "Current count: %(count)d, current age: %(age)d seconds"
 msgstr "Aktuelle Anzahl: %(count)d, aktuelles Alter: %(age)d Sekunden"
 
-#: LogRotate/Handler.py:1479
+#: LogRotate/Handler.py:1557
 #, python-format
 msgid "Cyclic rotation from '%(from)s' to '%(to)s'."
 msgstr "Zyklische Rotation von »%(from)s« zu »%(to)s«."
 
-#: LogRotate/Handler.py:1846
+#: LogRotate/Handler.py:1948
 #, python-format
 msgid "Date of last rotation: %s."
 msgstr "Zeitpunkt der letzten Rotation: %s."
 
-#: LogRotate/Handler.py:1863
+#: LogRotate/Handler.py:1968
 #, python-format
 msgid "Date of next rotation '%(next)s' is in future, rotation not necessary."
 msgstr ""
 "Der Zeitpunkt der nächsten Rotation »%(next)s« liegt in der Zukunft, eine"
 " Rotation ist deshalb nicht notwendig."
 
-#: LogRotate/Handler.py:1850
+#: LogRotate/Handler.py:1953
 #, python-format
 msgid "Date of next rotation: %s."
 msgstr "Zeitpunkt der nächsten Rotation: %s."
 
-#: LogRotate/Handler.py:1208
+#: LogRotate/Handler.py:1256
 #, python-format
 msgid "Deleting '%s' because of too much."
 msgstr "Lösche Datei »%s«, weil: zuviel."
 
-#: LogRotate/Handler.py:1217
+#: LogRotate/Handler.py:1266
 #, python-format
 msgid "Deleting '%s' because of too old."
 msgstr "Lösche Datei »%s«, weil: zu alt."
 
-#: LogRotate/Handler.py:1888
+#: LogRotate/Handler.py:1994
 #, python-format
 msgid "Deleting file '%s' ..."
 msgstr "Lösche Datei »%s« ..."
 
-#: LogRotate/Handler.py:2047 LogRotate/Handler.py:2248
-#: LogRotate/Handler.py:2323 LogRotate/Handler.py:2398
+#: LogRotate/Handler.py:2166 LogRotate/Handler.py:2373
+#: LogRotate/Handler.py:2448 LogRotate/Handler.py:2523
 #, python-format
 msgid "Deleting uncompressed file '%s' ..."
 msgstr "Lösche unkomprimierte Datei »%s« ..."
 
-#: LogRotate/Handler.py:1880
+#: LogRotate/Handler.py:1986
 msgid "Deletion of all superfluid logfiles ..."
 msgstr "Löschen aller überflüssigen Logdateien ..."
 
@@ -366,7 +367,7 @@ msgstr "Löschen aller überflüssigen Logdateien ..."
 msgid "Directive '%s' is not allowed outside of a logfile definition."
 msgstr "Die Direktive »%s« ist nicht außerhalb einer Logdateidefinition erlaubt."
 
-#: LogRotate/Handler.py:1679
+#: LogRotate/Handler.py:1771
 #, python-format
 msgid "Directory '%s' allready exists, not created."
 msgstr "Verzeichnis »%s« existiert bereits und wird nicht angelegt."
@@ -376,28 +377,28 @@ msgstr "Verzeichnis »%s« existiert bereits und wird nicht angelegt."
 msgid "Directory '%s' doesn't exists."
 msgstr "Verzeichnis »%s« existiert nicht."
 
-#: LogRotate/Handler.py:1687
+#: LogRotate/Handler.py:1780
 #, python-format
 msgid "Directory '%s' exists, but is not a valid directory."
 msgstr ""
 "Das Verzeichnis »%s« existiert bereits, ist aber kein gültiges "
 "Verzeichnis."
 
-#: LogRotate/Handler.py:1656
+#: LogRotate/Handler.py:1748
 #, python-format
 msgid "Directory chain to create: '%s'."
 msgstr "Verzeichniskette zum Erstellen: »%s«."
 
-#: LogRotate/Getopts.py:284
+#: LogRotate/Getopts.py:288
 msgid "Display brief usage message and exit."
 msgstr "Zeigt einen kurzen Text zur Verwendung und beendet sich."
 
-#: LogRotate/Handler.py:892
+#: LogRotate/Handler.py:901
 #, python-format
 msgid "Do rotate logfile '%s' ..."
 msgstr "Rotiere Logdatei »%s« ..."
 
-#: LogRotate/Getopts.py:211
+#: LogRotate/Getopts.py:213
 msgid "Don't do anything, just test (implies -v and -T)"
 msgstr "Testmodus, Kommandos werden nur simuliert (beinhaltet -v und -T)"
 
@@ -405,65 +406,65 @@ msgstr "Testmodus, Kommandos werden nur simuliert (beinhaltet -v und -T)"
 msgid "End of a logfile definition."
 msgstr "Ende einer Logdateidefinition."
 
-#: LogRotate/Handler.py:1015 LogRotate/Handler.py:2161
+#: LogRotate/Handler.py:1036 LogRotate/Handler.py:2286
 #, python-format
 msgid "Error on chmod of '%(target)s': %(err)s"
 msgstr "Fehler beim Setzen der Rechte von »%(target)s«: %(err)s"
 
-#: LogRotate/Handler.py:1036 LogRotate/Handler.py:2189
+#: LogRotate/Handler.py:1061 LogRotate/Handler.py:2314
 #, python-format
 msgid "Error on chown of '%(file)s': %(err)s"
 msgstr "Fehler beim Setzen der Besitzerschaft von »%(file)s«: %(err)s"
 
-#: LogRotate/Handler.py:1731
+#: LogRotate/Handler.py:1829
 #, python-format
 msgid "Error on chowning directory '%(dir)s': %(err)s"
 msgstr "Fehler beim Ändern der Besitzrechte von Verzeichnis »%(dir)s«: %(err)s"
 
-#: LogRotate/Handler.py:938
+#: LogRotate/Handler.py:950
 #, python-format
 msgid "Error on copying '%(from)s' => '%(to)s': %(err)s"
 msgstr "Fehler beim Kopieren von »%(from)s« => »%(to)s«: %(err)s"
 
-#: LogRotate/Handler.py:1712
+#: LogRotate/Handler.py:1809
 #, python-format
 msgid "Error on creating directory '%(dir)s': %(err)s"
 msgstr "Fehler beim Erstellen von Verzeichnis »%(dir)s«: %(err)s"
 
-#: LogRotate/Handler.py:984
+#: LogRotate/Handler.py:1003
 #, python-format
 msgid "Error on creating file '%(from)s': %(err)s"
 msgstr "Fehler beim Erstellen der Datei »%(from)s«: %(err)s"
 
-#: LogRotate/Handler.py:915 LogRotate/Handler.py:969
+#: LogRotate/Handler.py:924 LogRotate/Handler.py:985
 #, python-format
 msgid "Error on moving '%(from)s' => '%(to)s': %(err)s"
 msgstr ""
 "Fehler beim Umbenennen bzw. Verschieben von »%(from)s« => »%(to)s«: "
 "%(err)s"
 
-#: LogRotate/Handler.py:2297 LogRotate/Handler.py:2372
+#: LogRotate/Handler.py:2422 LogRotate/Handler.py:2497
 #, python-format
 msgid "Error on open file '%(file)s' on reading: %(err)s"
 msgstr "Fehler beim Öffnen der Datei »%(file)s« zum Schreiben: %(err)s"
 
-#: LogRotate/Handler.py:2235 LogRotate/Handler.py:2307
-#: LogRotate/Handler.py:2382
+#: LogRotate/Handler.py:2360 LogRotate/Handler.py:2432
+#: LogRotate/Handler.py:2507
 #, python-format
 msgid "Error on open file '%(file)s' on writing: %(err)s"
 msgstr "Fehler beim Öffnen der Datei »%(file)s« zum Schreiben: %(err)s"
 
-#: LogRotate/Handler.py:1894
+#: LogRotate/Handler.py:2000
 #, python-format
 msgid "Error on removing file '%(file)s': %(err)s"
 msgstr "Fehler beim Löschen der Datei »%(file)s«: %(err)s"
 
-#: LogRotate/Handler.py:2145
+#: LogRotate/Handler.py:2268
 #, python-format
 msgid "Error on setting times on target file '%(target)s': %(err)s"
 msgstr "Fehler beim Setzen der Zeitstempel von Zielojekt »%(target)s«: %(err)s"
 
-#: LogRotate/Handler.py:950
+#: LogRotate/Handler.py:965
 #, python-format
 msgid "Error on truncing file '%(from)s': %(err)s"
 msgstr "Fehler beim Abschneiden der Datei »%(from)s«: %(err)s"
@@ -473,48 +474,48 @@ msgstr "Fehler beim Abschneiden der Datei »%(from)s«: %(err)s"
 msgid "Error removing PID file '%(file)s': %(msg)"
 msgstr "Fehler beim Löschen der PID-Datei »%(file)s«: %(msg)"
 
-#: LogRotate/Handler.py:2054 LogRotate/Handler.py:2255
-#: LogRotate/Handler.py:2330 LogRotate/Handler.py:2405
+#: LogRotate/Handler.py:2173 LogRotate/Handler.py:2380
+#: LogRotate/Handler.py:2455 LogRotate/Handler.py:2530
 #, python-format
 msgid "Error removing uncompressed file '%(file)s': %(msg)"
 msgstr "Fehler beim Löschen der unkomprimierten Datei »%(file)s«: %(msg)"
 
-#: LogRotate/Handler.py:1758
+#: LogRotate/Handler.py:1857
 #, python-format
 msgid "Executing command: '%s'."
 msgstr "Führe Kommando aus: »%s«."
 
-#: LogRotate/Handler.py:788
+#: LogRotate/Handler.py:792
 #, python-format
 msgid "Executing firstaction script '%s' ..."
 msgstr "Führe Firstaction-Skript »%s« aus ..."
 
-#: LogRotate/Handler.py:855
+#: LogRotate/Handler.py:864
 #, python-format
 msgid "Executing lastaction script '%s' ..."
 msgstr "Führe Lastaction-Skript »%s« aus ..."
 
-#: LogRotate/Handler.py:834
+#: LogRotate/Handler.py:842
 #, python-format
 msgid "Executing postrun script '%s' ..."
 msgstr "Führe Postrun-Skript »%s« aus ..."
 
-#: LogRotate/Handler.py:806
+#: LogRotate/Handler.py:813
 #, python-format
 msgid "Executing prerun script '%s' ..."
 msgstr "Führe Prerun-Skript »%s« aus ..."
 
-#: LogRotate/Script.py:492
+#: LogRotate/Script.py:502
 #, python-format
 msgid "Executing script '%(name)s' with command: '%(cmd)s'"
 msgstr "Führe Skript »%(name)s« mit dem Kommando »%(cmd)s« aus."
 
-#: LogRotate/Handler.py:1776
+#: LogRotate/Handler.py:1875
 #, python-format
 msgid "Execution failed: %s"
 msgstr "Ausführung ging schief: %s"
 
-#: LogRotate/Script.py:513
+#: LogRotate/Script.py:525
 #, python-format
 msgid "Execution of script '%(name)s' failed: %(error)s"
 msgstr "Die Ausführung des Skriptes »%(name)s« ging schief: %(error)s"
@@ -523,44 +524,44 @@ msgstr "Die Ausführung des Skriptes »%(name)s« ging schief: %(error)s"
 msgid "Failing size definition."
 msgstr "Fehlende Größenangabe."
 
-#: LogRotate/Config.py:694 LogRotate/Config.py:721 LogRotate/Mailer.py:496
+#: LogRotate/Config.py:694 LogRotate/Config.py:721 LogRotate/Mailer.py:523
 #, python-format
 msgid "File '%s' doesn't exists."
 msgstr "Die Datei »%s« existiert nicht."
 
-#: LogRotate/Handler.py:1949
+#: LogRotate/Handler.py:2058
 #, python-format
 msgid "File '%s' has a size of 0, skip compressing."
 msgstr "Die Datei »%s« hat die Größe Null, übergehe Komprimierung."
 
-#: LogRotate/Mailer.py:501
+#: LogRotate/Mailer.py:528
 #, python-format
 msgid "File '%s' is not a regular file."
 msgstr "Die Datei »%s« ist keine reguläre Datei."
 
-#: LogRotate/Handler.py:1112
+#: LogRotate/Handler.py:1154
 #, python-format
 msgid "File '%s' seems to be compressed, skip it."
 msgstr "Datei »%s« scheint schon komprimiert zu sein, übergehe sie."
 
-#: LogRotate/Handler.py:1118
+#: LogRotate/Handler.py:1161
 #, python-format
 msgid "File '%s' will be deleted, compression unnecessary."
 msgstr "Die Datei »%s« wird gelöscht, keine Komprimierung notwendig."
 
-#: LogRotate/Handler.py:2097 LogRotate/Handler.py:2115
+#: LogRotate/Handler.py:2219 LogRotate/Handler.py:2237
 #, python-format
 msgid "File or directory '%s' doesn't exists."
 msgstr "Die Datei oder das Verzeichnis »%s« existiert nicht."
 
-#: LogRotate/Handler.py:1855
+#: LogRotate/Handler.py:1959
 #, python-format
 msgid "Filesize %(filesize)d is less than %(maxsize)d, rotation not necessary."
 msgstr ""
 "Die Dateigröße %(filesize)d ist geringer als %(maxsize)d, eine Rotation "
 "ist deshalb nicht notwendig."
 
-#: LogRotate/Handler.py:1824
+#: LogRotate/Handler.py:1924
 #, python-format
 msgid "Filesize of '%(file)s': %(size)d."
 msgstr "Dateigröße von »%(file)s«: %(size)d."
@@ -570,7 +571,7 @@ msgstr "Dateigröße von »%(file)s«: %(size)d."
 msgid "Find all logfiles for shell matching pattern '%s' ..."
 msgstr "Finde alle Logdateien für das Shell-Suchmuster »%s« ..."
 
-#: LogRotate/Getopts.py:221
+#: LogRotate/Getopts.py:223
 msgid "Force file rotation"
 msgstr "Erzwingt Logratation"
 
@@ -631,15 +632,15 @@ msgstr "Logdatei »%(file)s« zum Suchmuster »%(pattern)s« gefunden."
 msgid "Found logfile '%(file)s' with rotation date '%(date)s'."
 msgstr "Logdateidefinition für »%(file)s« mit Zeitpunkt »%(date)s« gefunden."
 
-#: LogRotate/Handler.py:1134
+#: LogRotate/Handler.py:1179
 msgid "Found logfiles to compress:"
 msgstr "Gefundene Logdateien für Komprimierung:"
 
-#: LogRotate/Handler.py:1224
+#: LogRotate/Handler.py:1274
 msgid "Found logfiles to delete:"
 msgstr "Gefundene Logdateien zum Löschen:"
 
-#: LogRotate/Handler.py:1379
+#: LogRotate/Handler.py:1449
 msgid "Found old logfiles:"
 msgstr "Gefundene alte Logdateien:"
 
@@ -648,7 +649,7 @@ msgstr "Gefundene alte Logdateien:"
 msgid "Found option '%(opt)s' with value '%(val)s'."
 msgstr "Option »%(opt)s« mit Wert »%(val)s« gefunden."
 
-#: LogRotate/Handler.py:1496
+#: LogRotate/Handler.py:1575
 msgid "Found rotations:"
 msgstr "Gefundene Rotationen:"
 
@@ -672,7 +673,7 @@ msgstr ""
 "Wert »%(value)s« nach boolscher Option »%(option)s« gefunden, wird "
 "ignoriert."
 
-#: LogRotate/Mailer.py:571
+#: LogRotate/Mailer.py:619
 msgid "Generated E-mail:"
 msgstr "Generierte E-Mail:"
 
@@ -697,17 +698,17 @@ msgstr "Erhaltene Rotationsgröße in »%(directive)s«: %(bytes)d Bytes."
 msgid "Got mail address pair:"
 msgstr "Mailadress-Paar gefunden:"
 
-#: LogRotate/Script.py:501
+#: LogRotate/Script.py:511
 #, python-format
 msgid "Got returncode for script '%(name)s': '%(retcode)s'"
 msgstr "Habe Rückggabewert »%(retcode)s« für Skript »%(name)s« erhalten."
 
-#: LogRotate/Handler.py:1766
+#: LogRotate/Handler.py:1865
 #, python-format
 msgid "Got returncode: '%s'."
 msgstr "Erhaltener Rückgabewert: »%s«."
 
-#: LogRotate/Mailer.py:539
+#: LogRotate/Mailer.py:582
 #, python-format
 msgid "Guessed content-type: '%(ctype)s' and encoding '%(encoding)s'."
 msgstr "Erratener Content-Type: »%(ctype)s«, und Encoding: »%(encoding)s«."
@@ -748,7 +749,7 @@ msgstr ""
 msgid "Incompatible version of status file '%(file)s': %(header)s"
 msgstr "Inkompatible Version der Statusdatei »%(file)s«: %(header)s"
 
-#: LogRotate/Mailer.py:433
+#: LogRotate/Mailer.py:459
 msgid "Initial search for the sendmail executable ..."
 msgstr "Initiale Suche nach dem »sendmail«-Programm ..."
 
@@ -817,11 +818,11 @@ msgstr "Ungültige Angabe einer Rotationsperiode: »%s«."
 msgid "Invalid taboo pattern type '%s' given."
 msgstr "Ungültiger Tabutyp »%s« angegeben."
 
-#: LogRotate/Getopts.py:324
+#: LogRotate/Getopts.py:328
 msgid "Invalid usage of --force and --config-check."
 msgstr "Ungültige Verwendung von --force und --config-check."
 
-#: LogRotate/Script.py:236 LogRotate/Script.py:262
+#: LogRotate/Script.py:241 LogRotate/Script.py:268
 #, python-format
 msgid "Invalid value for property '%s' given."
 msgstr "Ungültiger Wert für Eigenschaft »%s« übergeben."
@@ -850,31 +851,31 @@ msgstr ""
 "Die Logdatei »%(logfile)s« wurde bereits definiert (Datei »%(cfgfile)s«, "
 "Zeile %(rownum)d) und wird damit nicht noch einmal berücksichtigt."
 
-#: LogRotate/Handler.py:742
+#: LogRotate/Handler.py:745
 #, python-format
 msgid "Logfile '%s' WILL rotated."
 msgstr "Die Logdatei »%s« wird NICHT rotiert."
 
-#: LogRotate/Handler.py:1809
+#: LogRotate/Handler.py:1908
 #, python-format
 msgid "Logfile '%s' doesn't exists, not rotated."
 msgstr "Die Logdatei »%s« existiert nicht und wird demzufolge auch nicht rotiert."
 
-#: LogRotate/Handler.py:1830
+#: LogRotate/Handler.py:1931
 #, python-format
 msgid "Logfile '%s' has a filesize of Zero, not rotated."
 msgstr ""
 "Die Logdatei »%s« hate eine Dateigröße von Null und wird deshalb auch "
 "nicht rotiert."
 
-#: LogRotate/Handler.py:1818
+#: LogRotate/Handler.py:1917
 #, python-format
 msgid "Logfile '%s' is not a regular file, not rotated."
 msgstr ""
 "Die Logdatei »%s« ist keine reguläre Datei und wird deshalb auch nicht "
 "rotiert."
 
-#: LogRotate/Handler.py:744
+#: LogRotate/Handler.py:747
 #, python-format
 msgid "Logfile '%s' will NOT rotated."
 msgstr "Die Logdatei »%s« wird NICHT rotiert."
@@ -894,7 +895,7 @@ msgstr ""
 msgid "Logrotate config reader initialised."
 msgstr "Logrotate-Konfigurationsleser initialisiert."
 
-#: LogRotate/Script.py:411
+#: LogRotate/Script.py:419
 #, python-format
 msgid "Logrotate script object '%s' will destroyed."
 msgstr "Das Logrotate-Script-Objekt »%s« wird zerstört."
@@ -907,37 +908,37 @@ msgstr "Logrotation initialisiert."
 msgid "Logrotating ready for work."
 msgstr "Logrotation ist bereit zur Arbeit."
 
-#: LogRotate/Handler.py:785
+#: LogRotate/Handler.py:788
 msgid "Looking, whether the firstaction script should be executed."
 msgstr "Schaue nach, ob das Firstaction-Skript ausgeführt werden soll."
 
-#: LogRotate/Handler.py:843
+#: LogRotate/Handler.py:851
 msgid "Looking, whether the lastaction script should be executed."
 msgstr "Schaue nach, ob das Lastaction-Skript ausgeführt werden soll."
 
-#: LogRotate/Handler.py:822
+#: LogRotate/Handler.py:829
 msgid "Looking, whether the postrun script should be executed."
 msgstr "Schaue nach, ob das Postrun-Skript ausgeführt werden soll."
 
-#: LogRotate/Handler.py:797
+#: LogRotate/Handler.py:803
 msgid "Looking, whether the prerun script should be executed."
 msgstr "Schaue nach, ob das Prerun-Skript ausgeführt werden soll."
 
-#: LogRotate/Mailer.py:359
+#: LogRotate/Mailer.py:385
 msgid "Mailer object will destroyed."
 msgstr "Das Mailer-Objekt wird zerstört."
 
-#: LogRotate/Handler.py:1189
+#: LogRotate/Handler.py:1236
 #, python-format
 msgid "Max. count rotations: %d"
 msgstr "Maximale Anzahl von Rotationen: %d"
 
-#: LogRotate/Handler.py:1181
+#: LogRotate/Handler.py:1228
 #, python-format
 msgid "Maxage: %d seconds"
 msgstr "Maximalalter: %d Sekunden"
 
-#: LogRotate/Handler.py:908 LogRotate/Handler.py:958
+#: LogRotate/Handler.py:917 LogRotate/Handler.py:974
 #, python-format
 msgid "Moving file '%(from)s' => '%(to)s'."
 msgstr "Benenne bzw. verschiebe Datei »%(from)s« => »%(to)s«."
@@ -957,7 +958,7 @@ msgstr "Nutzloser Inhalt am Ende einer Logdateidefinition gefunden: »%s«."
 msgid "Negative value %(value)s for option '%(option)s' is not allowed."
 msgstr "Der negative Wert %(value)s für die Option »%(option)s« ist nicht erlaubt."
 
-#: LogRotate/Handler.py:2092
+#: LogRotate/Handler.py:2213
 msgid ""
 "Neither 'target' nor 'statinfo' was given on calling "
 "_copy_file_metadata()."
@@ -993,24 +994,24 @@ msgstr "Neue Logdateidefinition:"
 msgid "New taboo pattern: '%s'."
 msgstr "Neues Tabu-Muster: »%s«."
 
-#: LogRotate/Script.py:488
+#: LogRotate/Script.py:497
 #, python-format
 msgid "No command to execute defined in script '%s'."
 msgstr "Kein Kommando zu Ausführung in Skript »%s« definiert."
 
-#: LogRotate/Handler.py:1092
+#: LogRotate/Handler.py:1132
 msgid "No compression defined."
 msgstr "Keine Komprimierung definiert."
 
-#: LogRotate/Getopts.py:328
+#: LogRotate/Getopts.py:332
 msgid "No configuration file given."
 msgstr "Keine Konfigurationsdatei angegeben."
 
-#: LogRotate/Handler.py:1577
+#: LogRotate/Handler.py:1659
 msgid "No dirname directive for olddir given."
 msgstr "Kein Verzeichnis für olddir-Direktive angegeben."
 
-#: LogRotate/Mailer.py:269 LogRotate/Mailer.py:450
+#: LogRotate/Mailer.py:274 LogRotate/Mailer.py:476
 #, python-format
 msgid "No execute permissions to '%s'."
 msgstr "Keinw Ausführungsrechte auf »%s«."
@@ -1028,7 +1029,7 @@ msgstr ""
 msgid "No file or directory given in a include directive."
 msgstr "Keine Datei oder Verzeichnis in »include«-Direktive angegeben."
 
-#: LogRotate/Handler.py:678
+#: LogRotate/Handler.py:681
 msgid "No logfile definitions found."
 msgstr "Keine Logdatei-Definitionen gefunden."
 
@@ -1045,31 +1046,31 @@ msgstr "Kein Logdateimuster am Beginn einer Logdateidefinition angegeben."
 msgid "No logfile pattern defined."
 msgstr "Keine Logdatei bzw. Dateisuchmuster definiert."
 
-#: LogRotate/Handler.py:1914
+#: LogRotate/Handler.py:2020
 msgid "No logfiles to compress found."
 msgstr "Keine Logdateien zum Komprimieren gefunden."
 
-#: LogRotate/Handler.py:1884
+#: LogRotate/Handler.py:1990
 msgid "No logfiles to delete found."
 msgstr "Keine Logdateien zum Löschen gefunden."
 
-#: LogRotate/Handler.py:1176
+#: LogRotate/Handler.py:1223
 msgid "No maxage given."
 msgstr "Kein Maximalalter angegeben."
 
-#: LogRotate/Handler.py:1098 LogRotate/Handler.py:1168
+#: LogRotate/Handler.py:1138 LogRotate/Handler.py:1215
 msgid "No old logfiles available."
 msgstr "Keine alten Logdateien ermittelt."
 
-#: LogRotate/Handler.py:1137
+#: LogRotate/Handler.py:1183
 msgid "No old logfiles to compress found."
 msgstr "Keine alten Logdateien für Komprimierung gefunden."
 
-#: LogRotate/Handler.py:1227
+#: LogRotate/Handler.py:1278
 msgid "No old logfiles to delete found."
 msgstr "Keine Logdateien zum Löschen gefunden."
 
-#: LogRotate/Handler.py:614
+#: LogRotate/Handler.py:616
 #, python-format
 msgid "No permission to signal the process %d ..."
 msgstr "Kein Recht, ein Signal an Prozeß %d zu senden ..."
@@ -1078,7 +1079,7 @@ msgstr "Kein Recht, ein Signal an Prozeß %d zu senden ..."
 msgid "No script name given in a script directive."
 msgstr "Kein Scriptname in Scriptdirektive angegeben."
 
-#: LogRotate/Handler.py:598
+#: LogRotate/Handler.py:599
 #, python-format
 msgid "No useful information found in PID file '%(file)s': '%(line)s'"
 msgstr "Keine sinnvolle Information in PID-Datei »%(file)s« gefunden: »%(line)s«"
@@ -1095,34 +1096,34 @@ msgstr ""
 msgid "No write access to status file '%s'."
 msgstr "Kein Schreibzugriff auf Statusdatei »%s«."
 
-#: LogRotate/Handler.py:1639
+#: LogRotate/Handler.py:1729
 #, python-format
 msgid "No write and execute access to olddir '%s'."
 msgstr "Keine Schreib- und Ausführungsrechte auf das Olddir-Verzeichnis »%s«."
 
-#: LogRotate/Handler.py:1634
+#: LogRotate/Handler.py:1723
 #, python-format
 msgid "Olddir '%s' allready exists, not created."
 msgstr "Das Olddir-Verzeichnis »%s« existiert bereits und wird nicht angelegt."
 
-#: LogRotate/Handler.py:1646
+#: LogRotate/Handler.py:1737
 #, python-format
 msgid "Olddir '%s' exists, but is not a valid directory."
 msgstr ""
 "Das Olddir-Verzeichnis »%s« existiert bereits, ist aber kein gültiges "
 "Verzeichnis."
 
-#: LogRotate/Handler.py:1626
+#: LogRotate/Handler.py:1715
 #, python-format
 msgid "Olddir name is now '%s'."
 msgstr "Der Olddir-Name ist jetzt »%s«."
 
-#: LogRotate/Mailer.py:277
+#: LogRotate/Mailer.py:282
 #, python-format
 msgid "Only absolute path allowed for a sendmail command: '%s'."
 msgstr "Für das »sendmail«-Kommando sind nur absolute Pfadangaben erlaubt: »%s«."
 
-#: LogRotate/Getopts.py:332
+#: LogRotate/Getopts.py:336
 msgid "Only one configuration file is allowed."
 msgstr "Es ist nur die Angabe einer Konfigurationsdatei erlaubt."
 
@@ -1142,8 +1143,8 @@ msgstr ""
 "Nur ein Scriptname in einer Scriptdirektive erlaubt, der erste wird "
 "verwendet."
 
-#: LogRotate/Handler.py:1023 LogRotate/Handler.py:1719
-#: LogRotate/Handler.py:2178
+#: LogRotate/Handler.py:1045 LogRotate/Handler.py:1816
+#: LogRotate/Handler.py:2303
 msgid "Only root may execute chown()."
 msgstr "Nur root darf Besitzrechte ändern."
 
@@ -1226,11 +1227,11 @@ msgstr ""
 "Das übergeordnetes Verzeichnis »%(dir)s« der Statusdatei »%(file)s« ist "
 "kein Verzeichnis."
 
-#: LogRotate/Getopts.py:250
+#: LogRotate/Getopts.py:253
 msgid "Path of PID file (different to configuration)"
 msgstr "Pfad zur PID-Datei (im Unterschied zur Konfiguration)"
 
-#: LogRotate/Getopts.py:241
+#: LogRotate/Getopts.py:244
 msgid "Path of state file (different to configuration)"
 msgstr "Pfad zur Statusdatei (im Unterschied zur Konfiguration)"
 
@@ -1240,7 +1241,7 @@ msgstr "Pfad zur Statusdatei (im Unterschied zur Konfiguration)"
 msgid "Pattern '%s'."
 msgstr "Suchmuster »%s«."
 
-#: LogRotate/Handler.py:737
+#: LogRotate/Handler.py:740
 #, python-format
 msgid "Performing logfile '%s' ..."
 msgstr "Verarbeite Logdatei »%s« ..."
@@ -1260,12 +1261,12 @@ msgstr "Die Rechte auf das Verzeichnis »%s« sind okay."
 msgid "Postrotate script '%s' not found."
 msgstr "Das Postrotate-Skript »%s« wurde nicht gefunden."
 
-#: LogRotate/Handler.py:610
+#: LogRotate/Handler.py:612
 #, python-format
 msgid "Process with PID %d anonymous died."
 msgstr "Prozeß mit der PID %d ist unbekannterweise gestorben."
 
-#: LogRotate/Handler.py:622
+#: LogRotate/Handler.py:624
 #, python-format
 msgid "Process with PID %d is allready running."
 msgstr "Prozeß mit der PID %d läuft noch."
@@ -1285,7 +1286,7 @@ msgstr "Lese Konfiguration aus »%s« ..."
 msgid "Reading status file '%s' ..."
 msgstr "Lese Statusdatei »%s« ..."
 
-#: LogRotate/Handler.py:977
+#: LogRotate/Handler.py:996
 #, python-format
 msgid "Recreating file '%s'."
 msgstr "Erstelle Datei »%s«."
@@ -1334,12 +1335,12 @@ msgstr "Rest nach Wochenermittlung: »%s«."
 msgid "Rest after years: '%s'."
 msgstr "Rest nach Jahresermittlung: »%s«."
 
-#: LogRotate/Handler.py:1469
+#: LogRotate/Handler.py:1546
 #, python-format
 msgid "Resulting target '%s' exists, retrieve cyclic rotation ..."
 msgstr "Resultierende Zieldatei »%s« existiert, ermittle zyklische Rotation ..."
 
-#: LogRotate/Handler.py:1422
+#: LogRotate/Handler.py:1498
 #, python-format
 msgid ""
 "Retrieving all movings and rotations for logfile '%(file)s' to target "
@@ -1348,20 +1349,20 @@ msgstr ""
 "Ermittle alle Umbenennungen und Rotationen für Logdatei »%(file)s« zu "
 "Zieldatei »%(target)s« ..."
 
-#: LogRotate/Handler.py:1257
+#: LogRotate/Handler.py:1312
 #, python-format
 msgid "Retrieving all old logfiles for file '%s' ..."
 msgstr "Ermittle alle alten Laogdateien zu Datei »%s« ..."
 
-#: LogRotate/Handler.py:1085
+#: LogRotate/Handler.py:1125
 msgid "Retrieving logfiles to compress ..."
 msgstr "Ermittle zu komprimierende Logdateien ..."
 
-#: LogRotate/Handler.py:1161
+#: LogRotate/Handler.py:1208
 msgid "Retrieving logfiles to delete ..."
 msgstr "Ermittle zu löschende Logdateien ..."
 
-#: LogRotate/Handler.py:1524
+#: LogRotate/Handler.py:1603
 #, python-format
 msgid "Retrieving the name of the rotated file of '%s' ..."
 msgstr "Ermittle den Namen der Rotierten Datei von »%s« ..."
@@ -1370,12 +1371,12 @@ msgstr "Ermittle den Namen der Rotierten Datei von »%s« ..."
 msgid "Rotates, compresses and mails system logs."
 msgstr "Rotiert, komprimiert und versended Systemlogdateien per Mail."
 
-#: LogRotate/Handler.py:1836
+#: LogRotate/Handler.py:1938
 #, python-format
 msgid "Rotating of '%s' because of force mode."
 msgstr "Rotation von »%s« wegen Zwangs-Modus."
 
-#: LogRotate/Handler.py:726
+#: LogRotate/Handler.py:729
 msgid "Rotating of logfile definition:"
 msgstr "Rotation der Logdatei-Definition:"
 
@@ -1384,7 +1385,7 @@ msgstr "Rotation der Logdatei-Definition:"
 msgid "Script name '%s' is allready declared, it will be overwritten."
 msgstr "Der Scriptname »%s« wurde bereits deklariert und wird überschrieben."
 
-#: LogRotate/Handler.py:1367
+#: LogRotate/Handler.py:1437
 #, python-format
 msgid "Search for pattern '%s' ..."
 msgstr "Suche nach Muster »%s« ..."
@@ -1394,12 +1395,12 @@ msgstr "Suche nach Muster »%s« ..."
 msgid "Search path '%s' doesn't exists or is not a directory."
 msgstr "Der Suchpfad »%s« existiert entweder nicht oder ist kein Verzeichnis."
 
-#: LogRotate/Mailer.py:512
+#: LogRotate/Mailer.py:539
 #, python-format
 msgid "Sending mail with attached file '%(file)s' to: %(rcpt)s"
 msgstr "Verschicke Mail mit angehängter Datei »%(file)s« an: %(rcpt)s"
 
-#: LogRotate/Mailer.py:273
+#: LogRotate/Mailer.py:278
 #, python-format
 msgid "Sendmail command '%s' not found."
 msgstr "Das »sendmail«-Kommando »%s« wurde nicht gefunden."
@@ -1414,11 +1415,11 @@ msgstr "Sinnloser Optionswert »%(value)s« nach »%(option)s«."
 msgid "Set sender mail address to: '%s'."
 msgstr "Setze Absender-Mailadresse auf: »%s«."
 
-#: LogRotate/Getopts.py:201
+#: LogRotate/Getopts.py:203
 msgid "Set the verbosity level"
 msgstr "Setzt das Ausführlichkeits-Niveau"
 
-#: LogRotate/Getopts.py:190
+#: LogRotate/Getopts.py:192
 msgid "Set this do simulate commands"
 msgstr "Testmodus, Kommandos werden nur simuliert"
 
@@ -1432,7 +1433,7 @@ msgstr "Setze »%(what)s« in »%(directive)s« auf %(to)f Tage."
 msgid "Setting '%(what)s' in '%(directive)s' to %(to)s."
 msgstr "Setze »%(what)s« in »%(directive)s« auf %(to)s."
 
-#: LogRotate/Handler.py:2139
+#: LogRotate/Handler.py:2262
 #, python-format
 msgid "Setting atime and mtime of target '%s'."
 msgstr "Setze Atime und Mtime von Zielobjekt »%s«."
@@ -1462,12 +1463,12 @@ msgstr "Setze Mailadresse in »%(directive)s« auf »%(addr)s«."
 msgid "Setting mailfirst in '%(directive)s' to '%(value)s'."
 msgstr "Setze mailfirst in »%(directive)s« auf »%(value)s«."
 
-#: LogRotate/Handler.py:1029
+#: LogRotate/Handler.py:1051
 #, python-format
 msgid "Setting ownership of '%(file)s' to uid %(uid)d and gid %(gid)d."
 msgstr "Setze Besitzerschaft von »%(file)s« auf UID %(uid)d und GID %(gid)d."
 
-#: LogRotate/Handler.py:1008 LogRotate/Handler.py:2154
+#: LogRotate/Handler.py:1028 LogRotate/Handler.py:2278
 #, python-format
 msgid "Setting permissions of '%(target)s' to %(mode)4o."
 msgstr "Setze Rechte von »%(target)s« auf %(mode)4o."
@@ -1477,11 +1478,11 @@ msgstr "Setze Rechte von »%(target)s« auf %(mode)4o."
 msgid "Setting rotation date of '%(file)s' to '%(date)s' ..."
 msgstr "Setze Rotationszeitpunkt von »%(file)s« auf »%(date)s« ..."
 
-#: LogRotate/Getopts.py:273
+#: LogRotate/Getopts.py:277
 msgid "Shows a help message and exit."
 msgstr "Zeigt einen Hilfetext und beendet sich."
 
-#: LogRotate/Getopts.py:293
+#: LogRotate/Getopts.py:297
 msgid "Shows the version number of the program and exit."
 msgstr "Zeigt die Versionsnummer des Programms und beendet sich."
 
@@ -1499,12 +1500,12 @@ msgstr "Shred Befehl nicht gefunden, shred wird deaktiviert."
 msgid "Skip subdirectory '%s' in including."
 msgstr "Übergehe Unterverzeichnis »%s« bei Einbindung."
 
-#: LogRotate/Handler.py:1939
+#: LogRotate/Handler.py:2046
 #, python-format
 msgid "Source file '%(source)s' and target file '%(target)s' are the same file."
 msgstr "Die Quelldatei »%(source)s« und die Zieldatei »%(target)s« sind identisch."
 
-#: LogRotate/Handler.py:1932
+#: LogRotate/Handler.py:2038
 #, python-format
 msgid "Source file '%s' for compression doesn't exists."
 msgstr "Die Quelldatei »%s« für Komprimierung existiert nicht."
@@ -1542,11 +1543,11 @@ msgstr "Beginn einer Logdatei-Definition."
 msgid "Starting a new log directive with default values."
 msgstr "Beginn einer neuen Logdateidefinition mit Vorgabewerten."
 
-#: LogRotate/Handler.py:682
+#: LogRotate/Handler.py:685
 msgid "Starting underlying rotation ..."
 msgstr "Starte eigentliche Rotation ..."
 
-#: LogRotate/Handler.py:697
+#: LogRotate/Handler.py:700
 #, python-format
 msgid "State of script '%s':"
 msgstr "Status des Skripts »%s«:"
@@ -1565,11 +1566,11 @@ msgstr "Die Statusdatei »%s« is keine reguläre Datei."
 msgid "Status file object will destroyed."
 msgstr "Statusdatei-Objekt wird zerstört."
 
-#: LogRotate/Handler.py:2423
+#: LogRotate/Handler.py:2548
 msgid "Struct files2send:"
 msgstr "Sruktur files2send:"
 
-#: LogRotate/Handler.py:2007 LogRotate/Handler.py:2016
+#: LogRotate/Handler.py:2124 LogRotate/Handler.py:2134
 #, python-format
 msgid "Substituting '%(what)s' in compressoptions with '%(by)s'."
 msgstr "Ersetze »%(what)s« in den Komprimierungsoptionen durch »%(by)s«."
@@ -1605,7 +1606,7 @@ msgstr ""
 "Syntaxfehler: unausgeglichene Zahl von öffnenden und schließenden "
 "Klammern."
 
-#: LogRotate/Handler.py:2036
+#: LogRotate/Handler.py:2155
 #, python-format
 msgid ""
 "Target '%s' of compression doesn't exists after executing compression "
@@ -1614,7 +1615,7 @@ msgstr ""
 "Die Zieldatei »%s« der Komprimierung existiert nicht nach Ausführung des "
 "Komprimierungskommandos."
 
-#: LogRotate/Handler.py:1943
+#: LogRotate/Handler.py:2051
 #, python-format
 msgid "Target file '%s' for compression allready exists."
 msgstr "Die Zieldatei der Komprimierung »%s« existiert bereits."
@@ -1623,7 +1624,7 @@ msgstr "Die Zieldatei der Komprimierung »%s« existiert bereits."
 msgid "Test mode is ON."
 msgstr "Testmodus ist AN."
 
-#: LogRotate/Mailer.py:439
+#: LogRotate/Mailer.py:465
 #, python-format
 msgid "Testing for '%s' ..."
 msgstr "Teste auf »%s« ..."
@@ -1633,7 +1634,7 @@ msgstr "Teste auf »%s« ..."
 msgid "Testmode, skip test of PID file '%s'."
 msgstr "Testmodus, übergehe Test der PID-Datei »%s«."
 
-#: LogRotate/Handler.py:645
+#: LogRotate/Handler.py:647
 #, python-format
 msgid "Testmode, skip writing of PID file '%s'."
 msgstr "Testmodus, übergehe Schreiben der PID-Datei »%s«."
@@ -1647,7 +1648,7 @@ msgstr "Die »From«-Adresse darf nicht auf »None« gesetzt werden."
 msgid "Total %f days found."
 msgstr "Insgesamt %f Tage gefunden."
 
-#: LogRotate/Handler.py:943
+#: LogRotate/Handler.py:958
 #, python-format
 msgid "Truncating file '%s'."
 msgstr "Schneide Datei »%s« ab."
@@ -1657,12 +1658,12 @@ msgstr "Schneide Datei »%s« ab."
 msgid "Try reading configuration from '%s' ..."
 msgstr "Versuche, die Konfiguration aus »%s« zu lesen ..."
 
-#: LogRotate/Handler.py:1674
+#: LogRotate/Handler.py:1766
 #, python-format
 msgid "Try to create directory '%s' ..."
 msgstr "Versuche, Verzeichnis »%s« zu erstellen ..."
 
-#: LogRotate/Handler.py:605
+#: LogRotate/Handler.py:606
 #, python-format
 msgid "Trying check for process with PID %d ..."
 msgstr "Versuche, Prozeß mit der PID %d zu überprüfen ..."
@@ -1702,7 +1703,7 @@ msgstr "Versuche, »olddir«-Erstellungsnutzer »%s« festzustellen ..."
 msgid "Trying to include object '%s' ..."
 msgstr "Versuche, Objekt »%s« einzubinden ..."
 
-#: LogRotate/Handler.py:618
+#: LogRotate/Handler.py:620
 #, python-format
 msgid "Unknown error: '%s'."
 msgstr "Unbekannter Fehler: »%s«."
@@ -1717,24 +1718,24 @@ msgstr "Unbekannte Option »%s«."
 msgid "Unsupported option '%s'."
 msgstr "Nicht unterstützte Option »%s«."
 
-#: LogRotate/Handler.py:1544
+#: LogRotate/Handler.py:1625
 #, python-format
 msgid "Using '%(target)s' as target for rotation of logfile '%(logfile)s'."
 msgstr ""
 "Verwende »%(target)s« als Zieldatei der Rotation von Logdatei "
 "»%(logfile)s«."
 
-#: LogRotate/Mailer.py:264 LogRotate/Mailer.py:445
+#: LogRotate/Mailer.py:269 LogRotate/Mailer.py:471
 #, python-format
 msgid "Using '%s' as the sendmail command."
 msgstr "Verwende »%s« als »sendmail«-Kommando."
 
-#: LogRotate/Mailer.py:414
+#: LogRotate/Mailer.py:440
 #, python-format
 msgid "Using <%s> as the sender mail address."
 msgstr "Verwende <%s> als Absender-Mailadresse."
 
-#: LogRotate/Handler.py:1538
+#: LogRotate/Handler.py:1618
 #, python-format
 msgid "Using date extension '.%(ext)s' from pattern '%(pattern)s'."
 msgstr "Verwende Datumserweiterung ».%(ext)s« aus Muster »%(pattern)s«."
@@ -1761,7 +1762,7 @@ msgstr "Ausführlichkeitmodus is AN auf Level: %d"
 msgid "What the hell is this: '%s'."
 msgstr "Was zum Teufel ist das denn: »%s«?!"
 
-#: LogRotate/Handler.py:650
+#: LogRotate/Handler.py:652
 #, python-format
 msgid "Writing PID file '%s' ..."
 msgstr "Schreibe PID-Datei »%s« ..."

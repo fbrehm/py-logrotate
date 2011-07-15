@@ -309,14 +309,14 @@ class LogrotateHandler(object):
             format_str = '%(levelname)-8s - %(message)s'
         if verbose:
             if verbose > 1:
-                format_str = '[%(asctime)s]: %(name)s %(funcName)s() ' \
-                                '%(levelname)-8s - %(message)s'
+                format_str = ('[%(asctime)s]: %(name)s %(funcName)s() ' +
+                              '%(levelname)-8s - %(message)s')
                 if test:
-                    format_str = '%(name)s %(funcName)s() %(levelname)-8s ' \
-                                    '- %(message)s'
+                    format_str = ('%(name)s %(funcName)s() %(levelname)-8s ' +
+                                  '- %(message)s')
             else:
-                format_str = '[%(asctime)s]: %(name)s %(levelname)-8s ' \
-                                '- %(message)s'
+                format_str = ('[%(asctime)s]: %(name)s %(levelname)-8s ' +
+                              '- %(message)s')
                 if test:
                     format_str = '%(name)s %(levelname)-8s - %(message)s'
         formatter = logging.Formatter(format_str)
@@ -447,8 +447,8 @@ class LogrotateHandler(object):
                 try:
                     os.remove(self.pid_file)
                 except OSError, e:
-                    msg = _("Error removing PID file '%(file)s': %(msg)") \
-                            % { 'file': self.pid_file, 'msg': str(e) }
+                    msg = (_("Error removing PID file '%(file)s': %(msg)")
+                            % { 'file': self.pid_file, 'msg': str(e) })
                     self.logger.error(msg)
 
     #------------------------------------------------------------
@@ -494,8 +494,8 @@ class LogrotateHandler(object):
         )
 
         if self.verbose > 2:
-            msg = _("Configuration reader object structure") \
-                    + ':\n' + str(config_reader)
+            msg = (_("Configuration reader object structure")
+                    + ':\n' + str(config_reader))
             self.logger.debug(msg)
 
         try:
@@ -507,16 +507,16 @@ class LogrotateHandler(object):
 
         if self.verbose > 2:
             pp = pprint.PrettyPrinter(indent=4)
-            msg = _("Found global options:") \
-                    + "\n" + pp.pformat(config_reader.global_option)
+            msg = (_("Found global options:")
+                    + "\n" + pp.pformat(config_reader.global_option))
             self.logger.debug(msg)
 
         # Get and set mailer options
-        if 'mailfrom' in config_reader.global_option and \
-                config_reader.global_option['mailfrom']:
+        if (('mailfrom' in config_reader.global_option) and
+                (config_reader.global_option['mailfrom'])):
             self.mailer.from_address = config_reader.global_option['mailfrom']
-        if config_reader.global_option['smtphost'] and \
-                config_reader.global_option['smtphost'] != 'localhost':
+        if ((config_reader.global_option['smtphost']) and
+                (config_reader.global_option['smtphost'] != 'localhost')):
             self.mailer.smtp_host = config_reader.global_option['smtphost']
         if 'smtpport' in config_reader.global_option:
             self.mailer.smtp_port = config_reader.global_option['smtpport']
@@ -528,22 +528,22 @@ class LogrotateHandler(object):
             self.mailer.smtp_passwd = config_reader.global_option['smtppasswd']
 
         if self.state_file_name is None:
-            if 'statusfile' in config_reader.global_option and \
-                    config_reader.global_option['statusfile'] is not None:
+            if (('statusfile' in config_reader.global_option) and
+                    (config_reader.global_option['statusfile'] is not None)):
                 self.state_file_name = config_reader.global_option['statusfile']
             else:
-                self.state_file_name = os.sep \
-                        + os.path.join('var', 'lib', 'py-logrotate.status')
+                self.state_file_name = (os.sep +
+                        os.path.join('var', 'lib', 'py-logrotate.status'))
         msg = _("Name of state file: '%s'") % (self.state_file_name)
         self.logger.debug(msg)
 
         if self.pid_file is None:
-            if 'pidfile' in config_reader.global_option and \
-                    config_reader.global_option['pidfile'] is not None:
+            if (('pidfile' in config_reader.global_option) and
+                    (config_reader.global_option['pidfile'] is not None)):
                 self.pid_file = config_reader.global_option['pidfile']
             else:
-                self.pid_file = os.sep \
-                        + os.path.join('var', 'run', 'py-logrotate.pid')
+                self.pid_file = (os.sep +
+                        os.path.join('var', 'run', 'py-logrotate.pid'))
         msg = _("PID file: '%s'") % (self.pid_file)
         self.logger.debug(msg)
 
@@ -582,8 +582,9 @@ class LogrotateHandler(object):
         try:
             f = open(self.pid_file, 'r')
         except IOError, e:
-            msg =  _("Couldn't open PID file '%(file)s' for reading: %(msg)s") \
-                    % { 'file': self.pid_file, 'msg': str(e) }
+            msg =  (_("Couldn't open PID file '%(file)s' " +
+                      "for reading: %(msg)s")
+                    % { 'file': self.pid_file, 'msg': str(e) })
             raise LogrotateHandlerError(msg)
 
         line = f.readline()
@@ -595,14 +596,15 @@ class LogrotateHandler(object):
         if match:
             pid = int(match.group(1))
         else:
-            msg = _("No useful information found in PID file "
-                     + "'%(file)s': '%(line)s'") \
-                    % { 'file': self.pid_file, 'line': line }
+            msg = (_("No useful information found in PID file " +
+                     "'%(file)s': '%(line)s'")
+                    % { 'file': self.pid_file, 'line': line })
             self.logger.warn(msg)
             return False
 
         if self.verbose > 1:
-            self.logger.debug( _("Trying check for process with PID %d ...") % (pid) )
+            msg = _("Trying check for process with PID %d ...") % (pid)
+            self.logger.debug(msg)
         try:
             os.kill(pid, 0)
         except OSError, err:
@@ -642,8 +644,8 @@ class LogrotateHandler(object):
         _ = self.t.lgettext
 
         if self.test:
-            msg = _("Testmode, skip writing of PID file '%s'.") \
-                        % (self.pid_file)
+            msg = (_("Testmode, skip writing of PID file '%s'.")
+                        % (self.pid_file))
             self.logger.info(msg)
             return True
 
@@ -656,8 +658,9 @@ class LogrotateHandler(object):
             f.write(str(os.getppid()) + "\n")
             f.close()
         except IOError, e:
-            msg = _("Couldn't open PID file '%(file)s' for writing: %(msg)s") \
-                        % { 'file': self.pid_file, 'msg': str(e) }
+            msg = (_("Couldn't open PID file '%(file)s' " +
+                     "for writing: %(msg)s")
+                        % {'file': self.pid_file, 'msg': str(e)})
             raise LogrotateHandlerError(msg)
 
         self.pidfile_created = True
@@ -694,8 +697,8 @@ class LogrotateHandler(object):
         # Check for left over scripts to execute
         for scriptname in self.scripts.keys():
             if self.verbose >= 4:
-                msg = ( _("State of script '%s':") % (scriptname) ) \
-                        + "\n" + str(self.scripts[scriptname])
+                msg = ((_("State of script '%s':") % (scriptname)) +
+                       "\n" + str(self.scripts[scriptname]))
                 self.logger.debug(msg)
             del self.scripts[scriptname]
 
@@ -723,8 +726,8 @@ class LogrotateHandler(object):
 
         if self.verbose >= 4:
             pp = pprint.PrettyPrinter(indent=4)
-            msg = _("Rotating of logfile definition:") + \
-                    "\n" + pp.pformat(definition)
+            msg = (_("Rotating of logfile definition:") +
+                   "\n" + pp.pformat(definition))
             self.logger.debug(msg)
 
         # re-reading of status file
@@ -782,19 +785,23 @@ class LogrotateHandler(object):
         # Executing of the firstaction script, if it wasn't executed
         if firstscript:
             if self.verbose > 2:
-                msg = _("Looking, whether the firstaction script should be executed.")
+                msg = _("Looking, whether the firstaction script " +
+                        "should be executed.")
                 self.logger.debug(msg)
             if not self.scripts[firstscript].done_firstrun:
-                msg = _("Executing firstaction script '%s' ...") % (firstscript)
+                msg = (_("Executing firstaction script '%s' ...")
+                        % (firstscript))
                 self.logger.info(msg)
                 if not self.scripts[firstscript].execute():
                     return
                 self.scripts[firstscript].done_firstrun = True
 
-        # Executing prerotate scripts, if not sharedscripts or even not executed
+        # Executing prerotate scripts, if not sharedscripts
+        # or even not executed
         if prescript:
             if self.verbose > 2:
-                msg = _("Looking, whether the prerun script should be executed.")
+                msg = _("Looking, whether the prerun script " +
+                        "should be executed.")
                 self.logger.debug(msg)
             do_it = False
             if sharedscripts:
@@ -819,7 +826,8 @@ class LogrotateHandler(object):
         # Looking for postrotate script in a similar way like for the prerotate
         if postscript:
             if self.verbose > 2:
-                msg = _("Looking, whether the postrun script should be executed.")
+                msg = _("Looking, whether the postrun script " +
+                        "should be executed.")
                 self.logger.debug(msg)
             do_it = False
             self.scripts[postscript].post_files -= 1
@@ -840,7 +848,8 @@ class LogrotateHandler(object):
         # Looking for lastaction script
         if lastscript:
             if self.verbose > 2:
-                msg = _("Looking, whether the lastaction script should be executed.")
+                msg = _("Looking, whether the lastaction script " +
+                        "should be executed.")
                 self.logger.debug(msg)
             do_it = False
             self.scripts[lastscript].last_files -= 1
@@ -905,15 +914,18 @@ class LogrotateHandler(object):
             if pair['compressed']:
                 file_from += compress_extension
                 file_to += compress_extension
-            msg = _("Moving file '%(from)s' => '%(to)s'.") \
-                    % {'from': file_from, 'to': file_to }
+            msg = (_("Moving file '%(from)s' => '%(to)s'.")
+                    % {'from': file_from, 'to': file_to })
             self.logger.info(msg)
             if not self.test:
                 try:
                     shutil.move(file_from, file_to)
                 except OSError:
-                    msg = _("Error on moving '%(from)s' => '%(to)s': %(err)s") \
-                            % {'from': file_from, 'to': file_to, 'err': e.strerror}
+                    msg = (_("Error on moving '%(from)s' => '%(to)s': " +
+                             "%(err)s")
+                            % {'from': file_from,
+                               'to': file_to,
+                               'err': e.strerror})
                     self.logger.error(msg)
                     return False
 
@@ -928,15 +940,18 @@ class LogrotateHandler(object):
         # separate between copy(truncate) and move (and create)
         if definition['copytruncate'] or definition['copy']:
             # Copying logfile to target
-            msg = _("Copying file '%(from)s' => '%(to)s'.") \
-                    % {'from': file_from, 'to': file_to }
+            msg = (_("Copying file '%(from)s' => '%(to)s'.")
+                    % {'from': file_from, 'to': file_to })
             self.logger.info(msg)
             if not self.test:
                 try:
                     shutil.copy2(file_from, file_to)
                 except OSError:
-                    msg = _("Error on copying '%(from)s' => '%(to)s': %(err)s") \
-                            % {'from': file_from, 'to': file_to, 'err': e.strerror}
+                    msg = (_("Error on copying '%(from)s' => '%(to)s': " +
+                             "%(err)s")
+                            % {'from': file_from,
+                               'to': file_to,
+                               'err': e.strerror})
                     self.logger.error(msg)
                     return False
             if definition['copytruncate']: 
@@ -947,16 +962,17 @@ class LogrotateHandler(object):
                         fd = open(file_from, 'w')
                         fd.close()
                     except IOError, e:
-                        msg = _("Error on truncing file '%(from)s': %(err)s") \
-                                % {'from': file_from, 'err': str(e)}
+                        msg = (_("Error on truncing file '%(from)s': " +
+                                 "%(err)s")
+                                % {'from': file_from, 'err': str(e)})
                         self.logger.error(msg)
                         return False
 
         else:
 
             # Moving logfile to target
-            msg = _("Moving file '%(from)s' => '%(to)s'.") \
-                    % {'from': file_from, 'to': file_to }
+            msg = (_("Moving file '%(from)s' => '%(to)s'.")
+                    % {'from': file_from, 'to': file_to })
             self.logger.info(msg)
 
             # get old permissions of logfile
@@ -966,8 +982,11 @@ class LogrotateHandler(object):
                 try:
                     shutil.move(file_from, file_to)
                 except OSError:
-                    msg = _("Error on moving '%(from)s' => '%(to)s': %(err)s") \
-                            % {'from': file_from, 'to': file_to, 'err': e.strerror}
+                    msg = (_("Error on moving '%(from)s' => '%(to)s': " +
+                             "%(err)s")
+                            % {'from': file_from,
+                               'to': file_to,
+                               'err': e.strerror})
                     self.logger.error(msg)
                     return False
     
@@ -981,8 +1000,9 @@ class LogrotateHandler(object):
                         fd = open(file_from, 'w')
                         fd.close()
                     except IOError, e:
-                        msg = _("Error on creating file '%(from)s': %(err)s") \
-                                % {'from': file_from, 'err': str(e)}
+                        msg = (_("Error on creating file '%(from)s': " +
+                                 "%(err)s")
+                                % {'from': file_from, 'err': str(e)})
                         self.logger.error(msg)
                         return False
 
@@ -1005,15 +1025,17 @@ class LogrotateHandler(object):
 
                 # Check and set permissions of new logfile
                 if new_mode != old_mode:
-                    msg = _("Setting permissions of '%(target)s' to %(mode)4o.") \
-                            % {'target': file_from, 'mode': new_mode}
+                    msg = (_("Setting permissions of '%(target)s' " +
+                             "to %(mode)4o.")
+                            % {'target': file_from, 'mode': new_mode})
                     self.logger.info(msg)
                     if not self.test:
                         try:
                             os.chmod(file_from, new_mode)
                         except OSError, e:
-                            msg = _("Error on chmod of '%(target)s': %(err)s") \
-                                    % {'target': file_from, 'err': e.strerror}
+                            msg = (_("Error on chmod of '%(target)s': " +
+                                     "%(err)s")
+                                    % {'target': file_from, 'err': e.strerror})
                             self.logger.warning(msg)
 
                 # Check and set ownership of new logfile
@@ -1026,18 +1048,26 @@ class LogrotateHandler(object):
                         else:
                             self.logger.warning(msg)
                     else:
-                        msg = _("Setting ownership of '%(file)s' to uid %(uid)d and gid %(gid)d.") \
-                                % {'file': file_from, 'uid': new_uid, 'gid': new_gid}
+                        msg = (_("Setting ownership of '%(file)s' " +
+                                 "to uid %(uid)d and gid %(gid)d.")
+                                % {'file': file_from,
+                                   'uid': new_uid,
+                                   'gid': new_gid})
                         self.logger.info(msg)
                         if not self.test:
                             try:
                                 os.chown(file_from, new_uid, new_gid)
                             except OSError, e:
-                                msg = _("Error on chown of '%(file)s': %(err)s") \
-                                        % {'file': file_from, 'err': e.strerror}
+                                msg = (_("Error on chown of '%(file)s': " +
+                                         "%(err)s")
+                                        % {'file': file_from,
+                                           'err': e.strerror})
                                 self.logger.warning(msg)
 
-        oldfiles = self._collect_old_logfiles(logfile, extension, compress_extension, cur_desc_index)
+        oldfiles = self._collect_old_logfiles(
+                logfile, extension,
+                compress_extension, cur_desc_index
+        )
 
         # get files to delete and save them back in self.files_delete
         files_delete = self._collect_files_delete(oldfiles, cur_desc_index)
@@ -1045,10 +1075,17 @@ class LogrotateHandler(object):
             for oldfile in files_delete:
                 self.files_delete[oldfile] = True
                 if definition['mailaddress'] and not definition['mailfirst']:
-                    self.files2send[oldfile] = (definition['mailaddress'], logfile)
+                    self.files2send[oldfile] = (
+                            definition['mailaddress'],
+                            logfile
+                    )
 
         # get files to compress save them back in self.files_compress
-        files_compress = self._collect_files_compress(oldfiles, compress_extension, cur_desc_index)
+        files_compress = self._collect_files_compress(
+                oldfiles,
+                compress_extension,
+                cur_desc_index
+        )
         if len(files_compress):
             for oldfile in files_compress:
                 self.files_compress[oldfile] = cur_desc_index
@@ -1060,7 +1097,10 @@ class LogrotateHandler(object):
         return True
 
     #------------------------------------------------------------
-    def _collect_files_compress(self, oldfiles, compress_extension, cur_desc_index):
+    def _collect_files_compress(self,
+                                oldfiles,
+                                compress_extension,
+                                cur_desc_index):
         '''
         Collects a list with all old logfiles, they have to compress.
 
@@ -1104,24 +1144,29 @@ class LogrotateHandler(object):
             no_compress = 0
 
         ce = re.escape(compress_extension)
-        for oldfile in sorted(oldfiles.keys(), key=lambda x: oldfiles[x], reverse=True):
+        for oldfile in sorted(
+                    oldfiles.keys(),
+                    key=lambda x: oldfiles[x], reverse=True):
 
             match = re.search(ce + r'$', oldfile)
             if match:
                 if self.verbose > 2:
-                    msg = _("File '%s' seems to be compressed, skip it.") % (oldfile)
+                    msg = (_("File '%s' seems to be compressed, skip it.")
+                            % (oldfile))
                     self.logger.debug(msg)
                 continue
 
             if oldfile in self.files_delete:
                 if self.verbose > 2:
-                    msg = _("File '%s' will be deleted, compression unnecessary.") % (oldfile)
+                    msg = (_("File '%s' will be deleted, " +
+                             "compression unnecessary.") % (oldfile))
                     self.logger.debug(msg)
                 continue
 
             if no_compress:
                 if self.verbose > 2:
-                    msg = _("Compression of file '%s' will be delayed.") % (oldfile)
+                    msg = (_("Compression of file '%s' will be delayed.")
+                            % (oldfile))
                     self.logger.debug(msg)
                 no_compress -= 1
                 continue
@@ -1131,7 +1176,8 @@ class LogrotateHandler(object):
         if self.verbose > 3:
             if len(result):
                 pp = pprint.PrettyPrinter(indent=4)
-                msg = _("Found logfiles to compress:") + "\n" + pp.pformat(result)
+                msg = (_("Found logfiles to compress:") +
+                       "\n" + pp.pformat(result))
                 self.logger.debug(msg)
             else:
                 msg = _("No old logfiles to compress found.")
@@ -1141,7 +1187,8 @@ class LogrotateHandler(object):
     #------------------------------------------------------------
     def _collect_files_delete(self, oldfiles, cur_desc_index):
         '''
-        Collects a list with all old (and compressed) logfiles, they have to delete.
+        Collects a list with all old (and compressed) logfiles,
+        they have to delete.
 
         @param oldfiles: a dict whith all found old logfiles as keys and
                         their modification time as values
@@ -1197,15 +1244,17 @@ class LogrotateHandler(object):
                 msg = _("Checking file '%s' for deleting ...") % (oldfile)
                 self.logger.debug(msg)
             if self.verbose >= 4:
-                msg = _("Current count: %(count)d, current age: %(age)d seconds") \
-                        % {'count': count, 'age': age}
+                msg = (_("Current count: %(count)d, " +
+                         "current age: %(age)d seconds")
+                        % {'count': count, 'age': age})
                 self.logger.debug(msg)
 
             # Delete all files, their count is more than the rotate option
             if rotate:
                 if count >= rotate:
                     if self.verbose >= 3:
-                        msg = _("Deleting '%s' because of too much.") % (oldfile)
+                        msg = (_("Deleting '%s' because of too much.")
+                                % (oldfile))
                         self.logger.debug(msg)
                     result.append(oldfile)
                     continue
@@ -1214,14 +1263,16 @@ class LogrotateHandler(object):
             if maxage:
                 if age >= maxage:
                     if self.verbose >= 3:
-                        msg = _("Deleting '%s' because of too old.") % (oldfile)
+                        msg = (_("Deleting '%s' because of too old.")
+                                % (oldfile))
                         self.logger.debug(msg)
                     result.append(oldfile)
 
         if self.verbose > 3:
             if len(result):
                 pp = pprint.PrettyPrinter(indent=4)
-                msg = _("Found logfiles to delete:") + "\n" + pp.pformat(result)
+                msg = (_("Found logfiles to delete:") +
+                       "\n" + pp.pformat(result))
                 self.logger.debug(msg)
             else:
                 msg = _("No old logfiles to delete found.")
@@ -1229,7 +1280,11 @@ class LogrotateHandler(object):
         return result
 
     #------------------------------------------------------------
-    def _collect_old_logfiles(self, logfile, extension, compress_extension, cur_desc_index):
+    def _collect_old_logfiles(self,
+                              logfile,
+                              extension,
+                              compress_extension,
+                              cur_desc_index):
         '''
         Collect all rotated versions of this logfile and gives back the
         information about.
@@ -1254,7 +1309,8 @@ class LogrotateHandler(object):
         _ = self.t.lgettext
 
         if self.verbose > 2:
-            msg = _("Retrieving all old logfiles for file '%s' ...") % (logfile)
+            msg = (_("Retrieving all old logfiles for file '%s' ...")
+                        % (logfile))
             self.logger.debug(msg)
 
         result = {}
@@ -1271,25 +1327,32 @@ class LogrotateHandler(object):
             olddir = definition['olddir']['dirname']
 
             # Substitution of $dirname
-            olddir = re.sub(r'(?:\${dirname}|\$dirname(?![a-zA-Z0-9_]))', dirname, olddir)
+            pat = r'(?:\${dirname}|\$dirname(?![a-zA-Z0-9_]))'
+            olddir = re.sub(pat, dirname, olddir)
 
             # Substitution of $basename
-            olddir = re.sub(r'(?:\${basename}|\$basename(?![a-zA-Z0-9_]))', basename, olddir)
+            pat = r'(?:\${basename}|\$basename(?![a-zA-Z0-9_]))'
+            olddir = re.sub(pat, basename, olddir)
 
             # Substitution of $nodename
-            olddir = re.sub(r'(?:\${nodename}|\$nodename(?![a-zA-Z0-9_]))', self.template['nodename'], olddir)
+            pat = r'(?:\${nodename}|\$nodename(?![a-zA-Z0-9_]))'
+            olddir = re.sub(pat, self.template['nodename'], olddir)
 
             # Substitution of $domain
-            olddir = re.sub(r'(?:\${domain}|\$domain(?![a-zA-Z0-9_]))', self.template['domain'], olddir)
+            pat = r'(?:\${domain}|\$domain(?![a-zA-Z0-9_]))'
+            olddir = re.sub(pat, self.template['domain'], olddir)
 
             # Substitution of $machine
-            olddir = re.sub(r'(?:\${machine}|\$machine(?![a-zA-Z0-9_]))', self.template['machine'], olddir)
+            pat = r'(?:\${machine}|\$machine(?![a-zA-Z0-9_]))'
+            olddir = re.sub(pat, self.template['machine'], olddir)
 
             # Substitution of $release
-            olddir = re.sub(r'(?:\${release}|\$release(?![a-zA-Z0-9_]))', self.template['release'], olddir)
+            pat = r'(?:\${release}|\$release(?![a-zA-Z0-9_]))'
+            olddir = re.sub(pat, self.template['release'], olddir)
 
             # Substitution of $sysname
-            olddir = re.sub(r'(?:\${sysname}|\$sysname(?![a-zA-Z0-9_]))', self.template['sysname'], olddir)
+            pat = r'(?:\${sysname}|\$sysname(?![a-zA-Z0-9_]))'
+            olddir = re.sub(pat, self.template['sysname'], olddir)
 
             if not os.path.isabs(olddir):
                 olddir = os.path.join(dirname, olddir)
@@ -1309,7 +1372,8 @@ class LogrotateHandler(object):
             # day of month
             olddir = re.sub(r'%d', '[0-9][0-9]', olddir)
             # date as %m/%d/%y
-            olddir = re.sub(r'%[Dx]', '[0-9][0-9]/[0-9][0-9]/[0-9][0-9]', olddir)
+            subst = '[0-9][0-9]/[0-9][0-9]/[0-9][0-9]'
+            olddir = re.sub(r'%[Dx]', subst, olddir)
             # Hour in 24-hours format
             olddir = re.sub(r'%H', '[012][0-9]', olddir)
             # Hour in 12-hours format
@@ -1321,13 +1385,15 @@ class LogrotateHandler(object):
             # AM/PM
             olddir = re.sub(r'%p', '[AP]M', olddir)
             # complete time in 12-hours format with AM/PM
-            olddir = re.sub(r'%r', '[01][0-9]:[0-5][0-9]:[0-5][0-9] [AP]M', olddir)
+            subst = '[01][0-9]:[0-5][0-9]:[0-5][0-9] [AP]M'
+            olddir = re.sub(r'%r', subst, olddir)
             # time in format %H:%M
             olddir = re.sub(r'%R', '[012][0-9]:[0-5][0-9]', olddir)
             # seconds
             olddir = re.sub(r'%S', '[0-5][0-9]', olddir)
             # complete time in 24-hours format
-            olddir = re.sub(r'%[TX]', '[012][0-9]:[0-5][0-9]:[0-5][0-9]', olddir)
+            subst = '[012][0-9]:[0-5][0-9]:[0-5][0-9]'
+            olddir = re.sub(r'%[TX]', subst, olddir)
             # weekday as a number (0-7)
             olddir = re.sub(r'%[uw]', '[0-7]', olddir)
             # number of week in year (00-53)
@@ -1350,8 +1416,10 @@ class LogrotateHandler(object):
         pattern_list.append(file_pattern + '.[0-9]' + extension)
         pattern_list.append(file_pattern + '.[0-9][0-9]' + extension)
         pattern_list.append(file_pattern + '.[0-9][0-9][0-9]' + extension)
-        pattern_list.append(file_pattern + '.[0-9][0-9][0-9][0-9]' + extension)
-        pattern_list.append(file_pattern + '.[0-9][0-9][0-9][0-9][0-9]' + extension)
+        pattern_list.append(file_pattern +
+                            '.[0-9][0-9][0-9][0-9]' + extension)
+        pattern_list.append(file_pattern +
+                            '.[0-9][0-9][0-9][0-9][0-9]' + extension)
 
         if definition['compress']:
             ext = extension + compress_extension
@@ -1359,8 +1427,10 @@ class LogrotateHandler(object):
             pattern_list.append(file_pattern + '.[0-9]' + ext)
             pattern_list.append(file_pattern + '.[0-9][0-9]' + ext)
             pattern_list.append(file_pattern + '.[0-9][0-9][0-9]' + ext)
-            pattern_list.append(file_pattern + '.[0-9][0-9][0-9][0-9]' + ext)
-            pattern_list.append(file_pattern + '.[0-9][0-9][0-9][0-9][0-9]' + ext)
+            pattern_list.append(file_pattern +
+                                '.[0-9][0-9][0-9][0-9]' + ext)
+            pattern_list.append(file_pattern +
+                                '.[0-9][0-9][0-9][0-9][0-9]' + ext)
 
         for pattern in pattern_list:
             if self.verbose > 2:
@@ -1404,9 +1474,15 @@ class LogrotateHandler(object):
                         },
                         'move': [
                             ...
-                            { 'from': <file2>, 'to': <file3>, 'compressed': True},
-                            { 'from': <file1>, 'to': <file2>, 'compressed': True},
-                            { 'from': <file0>, 'to': <file1>, 'compressed': False},
+                            { 'from': <file2>,
+                              'to': <file3>,
+                              'compressed': True},
+                            { 'from': <file1>,
+                              'to': <file2>,
+                              'compressed': True},
+                            { 'from': <file0>,
+                              'to': <file1>,
+                              'compressed': False},
                         ],
                     }
 
@@ -1419,8 +1495,9 @@ class LogrotateHandler(object):
         _ = self.t.lgettext
 
         if self.verbose > 2:
-            msg = _("Retrieving all movings and rotations for logfile '%(file)s' to target '%(target)s' ...") \
-                    % {'file': logfile, 'target': target}
+            msg = (_("Retrieving all movings and rotations " +
+                     "for logfile '%(file)s' to target '%(target)s' ...")
+                    % {'file': logfile, 'target': target})
             self.logger.debug(msg)
 
         result = { 'rotate': {}, 'move': [] }
@@ -1466,18 +1543,20 @@ class LogrotateHandler(object):
         # resulting target exists, retrieve cyclic rotation
         if os.path.exists(resulting_target):
             if self.verbose > 3:
-                msg = _("Resulting target '%s' exists, retrieve cyclic rotation ...") \
-                        % (resulting_target)
+                msg = (_("Resulting target '%s' exists, retrieve " +
+                         "cyclic rotation ...") % (resulting_target))
                 self.logger.debug(msg)
             target_wo_cext_old = target_wo_number + "." + str(i)
             target_with_cext_old = target_wo_cext_old + compress_extension
-            while os.path.exists(target_wo_cext_old) or os.path.exists(target_with_cext_old):
+            while (os.path.exists(target_wo_cext_old) or
+                   os.path.exists(target_with_cext_old)):
                 i += 1
                 target_wo_cext_new = target_wo_number + "." + str(i)
                 target_with_cext_new = target_wo_cext_new + compress_extension
                 if self.verbose > 4:
-                    msg = _("Cyclic rotation from '%(from)s' to '%(to)s'.") \
-                            % {'from': target_wo_cext_old, 'to': target_wo_cext_new}
+                    msg = (_("Cyclic rotation from '%(from)s' to '%(to)s'.")
+                            % {'from': target_wo_cext_old,
+                               'to': target_wo_cext_new})
                     self.logger.debug(msg)
                 pair = {
                     'from': target_wo_cext_old,
@@ -1521,7 +1600,8 @@ class LogrotateHandler(object):
         _ = self.t.lgettext
 
         if self.verbose > 2:
-            msg = _("Retrieving the name of the rotated file of '%s' ...") % (logfile)
+            msg = (_("Retrieving the name of the rotated file of '%s' ...")
+                    % (logfile))
             self.logger.debug(msg)
 
         target = logfile
@@ -1535,14 +1615,16 @@ class LogrotateHandler(object):
                 pattern = '%Y-%m-%d'
             dateext = datetime.utcnow().strftime(pattern)
             if self.verbose > 3:
-                msg = _("Using date extension '.%(ext)s' from pattern '%(pattern)s'.") \
-                        % {'ext': dateext, 'pattern': pattern}
+                msg = (_("Using date extension '.%(ext)s' from " +
+                         "pattern '%(pattern)s'.")
+                        % {'ext': dateext, 'pattern': pattern})
                 self.logger.debug(msg)
             target += "." + dateext
 
         if self.verbose > 1:
-            msg = _("Using '%(target)s' as target for rotation of logfile '%(logfile)s'.") \
-                    % {'target': target, 'logfile': logfile}
+            msg = (_("Using '%(target)s' as target for rotation " +
+                     "of logfile '%(logfile)s'.")
+                    % {'target': target, 'logfile': logfile})
             self.logger.debug(msg)
         return target
 
@@ -1598,25 +1680,32 @@ class LogrotateHandler(object):
             olddir = datetime.utcnow().strftime(olddir)
 
         # Substitution of $dirname
-        olddir = re.sub(r'(?:\${dirname}|\$dirname(?![a-zA-Z0-9_]))', dirname, olddir)
+        pat = r'(?:\${dirname}|\$dirname(?![a-zA-Z0-9_]))'
+        olddir = re.sub(pat, dirname, olddir)
 
         # Substitution of $basename
-        olddir = re.sub(r'(?:\${basename}|\$basename(?![a-zA-Z0-9_]))', basename, olddir)
+        pat = r'(?:\${basename}|\$basename(?![a-zA-Z0-9_]))'
+        olddir = re.sub(pat, basename, olddir)
 
         # Substitution of $nodename
-        olddir = re.sub(r'(?:\${nodename}|\$nodename(?![a-zA-Z0-9_]))', self.template['nodename'], olddir)
+        pat = r'(?:\${nodename}|\$nodename(?![a-zA-Z0-9_]))'
+        olddir = re.sub(pat, self.template['nodename'], olddir)
 
         # Substitution of $domain
-        olddir = re.sub(r'(?:\${domain}|\$domain(?![a-zA-Z0-9_]))', self.template['domain'], olddir)
+        pat = r'(?:\${domain}|\$domain(?![a-zA-Z0-9_]))'
+        olddir = re.sub(pat, self.template['domain'], olddir)
 
         # Substitution of $machine
-        olddir = re.sub(r'(?:\${machine}|\$machine(?![a-zA-Z0-9_]))', self.template['machine'], olddir)
+        pat = r'(?:\${machine}|\$machine(?![a-zA-Z0-9_]))'
+        olddir = re.sub(pat, self.template['machine'], olddir)
 
         # Substitution of $release
-        olddir = re.sub(r'(?:\${release}|\$release(?![a-zA-Z0-9_]))', self.template['release'], olddir)
+        pat = r'(?:\${release}|\$release(?![a-zA-Z0-9_]))'
+        olddir = re.sub(pat, self.template['release'], olddir)
 
         # Substitution of $sysname
-        olddir = re.sub(r'(?:\${sysname}|\$sysname(?![a-zA-Z0-9_]))', self.template['sysname'], olddir)
+        pat = r'(?:\${sysname}|\$sysname(?![a-zA-Z0-9_]))'
+        olddir = re.sub(pat, self.template['sysname'], olddir)
 
         if not os.path.isabs(olddir):
             olddir = os.path.join(dirname, olddir)
@@ -1631,19 +1720,22 @@ class LogrotateHandler(object):
             if os.path.isdir(olddir):
                 if os.access(olddir, (os.W_OK | os.X_OK)):
                     if self.verbose > 2:
-                        msg = _("Olddir '%s' allready exists, not created.") % (olddir)
+                        msg = (_("Olddir '%s' allready exists, not created.")
+                                % (olddir))
                         self.logger.debug(msg)
                     olddir = os.path.realpath(olddir)
                     return olddir
                 else:
-                    msg = _("No write and execute access to olddir '%s'.") % (olddir)
+                    msg = (_("No write and execute access to olddir '%s'.")
+                            % (olddir))
                     if self.test:
                         self.logger.warning(msg)
                         return olddir
                     raise LogrotateHandlerError(msg)
                     return None
             else:
-                msg = _("Olddir '%s' exists, but is not a valid directory.") % (olddir)
+                msg = (_("Olddir '%s' exists, but is not a valid directory.")
+                        % (olddir))
                 raise LogrotateHandlerError(msg)
                 return None
 
@@ -1676,7 +1768,8 @@ class LogrotateHandler(object):
             if os.path.exists(create_dir):
                 if os.path.isdir(create_dir):
                     if self.verbose > 3:
-                        msg = _("Directory '%s' allready exists, not created.") % (create_dir)
+                        msg = (_("Directory '%s' allready exists, " +
+                                 "not created.") % (create_dir))
                         self.logger.debug(msg)
                     parent_statinfo = os.stat(create_dir)
                     parent_mode = parent_statinfo.st_mode
@@ -1684,7 +1777,8 @@ class LogrotateHandler(object):
                     parent_gid  = parent_statinfo.st_gid
                     continue
                 else:
-                    msg = _("Directory '%s' exists, but is not a valid directory.") % (create_dir)
+                    msg = (_("Directory '%s' exists, but is not a " +
+                             "valid directory.") % (create_dir))
                     self.logger.error(msg)
                     return None
             msg = _("Creating directory '%s' ...") % (create_dir)
@@ -1699,8 +1793,11 @@ class LogrotateHandler(object):
             if o['group'] is not None:
                 create_gid = o['group']
             if self.verbose > 1:
-                msg = _("Create permissions: %(mode)4o, Owner-UID: %(uid)d, Group-GID: %(gid)d") \
-                        % {'mode': create_mode, 'uid': create_uid, 'gid': create_gid}
+                msg = (_("Create permissions: %(mode)4o, " +
+                         "Owner-UID: %(uid)d, Group-GID: %(gid)d")
+                        % {'mode': create_mode,
+                           'uid': create_uid,
+                           'gid': create_gid})
                 self.logger.debug(msg)
             if not self.test:
                 if self.verbose > 2:
@@ -1709,8 +1806,8 @@ class LogrotateHandler(object):
                 try:
                     os.mkdir(create_dir, create_mode)
                 except OSError, e:
-                    msg = _("Error on creating directory '%(dir)s': %(err)s") \
-                            % {'dir': create_dir, 'err': e.strerror}
+                    msg = (_("Error on creating directory '%(dir)s': %(err)s")
+                            % {'dir': create_dir, 'err': e.strerror})
                     self.logger.error(msg)
                     return None
                 if (create_uid != uid) or (create_gid != gid):
@@ -1723,13 +1820,15 @@ class LogrotateHandler(object):
                             self.logger.warning(msg)
                     else:
                         if self.verbose > 2:
-                            msg = "os.chown('%s', %d, %d)" % (create_dir, create_uid, create_gid)
+                            msg = ("os.chown('%s', %d, %d)"
+                                    % (create_dir, create_uid, create_gid))
                             self.logger.debug(msg)
                         try:
                             os.chown(create_dir, create_uid, create_gid)
                         except OSError, e:
-                            msg = _("Error on chowning directory '%(dir)s': %(err)s") \
-                                    % {'dir': create_dir, 'err': e.strerror}
+                            msg = (_("Error on chowning directory " +
+                                     "'%(dir)s': %(err)s")
+                                    % {'dir': create_dir, 'err': e.strerror})
                             self.logger.error(msg)
                             return None
 
@@ -1815,19 +1914,22 @@ class LogrotateHandler(object):
             return False
 
         if not os.path.isfile(logfile):
-            msg = _("Logfile '%s' is not a regular file, not rotated.") % (logfile)
+            msg = (_("Logfile '%s' is not a regular file, not rotated.")
+                    % (logfile))
             self.logger.warning(msg)
             return False
 
         filesize = os.path.getsize(logfile)
         if self.verbose > 2:
-            msg = _("Filesize of '%(file)s': %(size)d.") % {'file': logfile, 'size': filesize}
+            msg = (_("Filesize of '%(file)s': %(size)d.")
+                    % {'file': logfile, 'size': filesize})
             self.logger.debug(msg)
 
         if not filesize:
             if not definition['ifempty']:
                 if self.verbose > 1:
-                    msg = _("Logfile '%s' has a filesize of Zero, not rotated.") % (logfile)
+                    msg = (_("Logfile '%s' has a filesize of Zero, " +
+                             "not rotated.") % (logfile))
                     self.logger.debug(msg)
                 return False
 
@@ -1843,25 +1945,29 @@ class LogrotateHandler(object):
 
         last_rotated = self.state_file.get_rotation_date(logfile)
         if self.verbose > 2:
-            msg = _("Date of last rotation: %s.") % (last_rotated.isoformat(' '))
+            msg = (_("Date of last rotation: %s.")
+                    % (last_rotated.isoformat(' ')))
             self.logger.debug(msg)
         next_rotation = last_rotated + timedelta(days = definition['period'])
         if self.verbose > 2:
-            msg = _("Date of next rotation: %s.") % (next_rotation.isoformat(' '))
+            msg = (_("Date of next rotation: %s.")
+                    % (next_rotation.isoformat(' ')))
             self.logger.debug(msg)
 
         if filesize < maxsize:
             if self.verbose > 1:
-                msg = _("Filesize %(filesize)d is less than %(maxsize)d, rotation not necessary.") \
-                        % {'filesize': filesize, 'maxsize': maxsize}
+                msg = (_("Filesize %(filesize)d is less than %(maxsize)d, " +
+                         "rotation not necessary.")
+                        % {'filesize': filesize, 'maxsize': maxsize})
                 self.logger.debug(msg)
             return False
 
         curdate = datetime.utcnow().replace(tzinfo = utc)
         if next_rotation > curdate:
             if self.verbose > 1:
-                msg = _("Date of next rotation '%(next)s' is in future, rotation not necessary.") \
-                        % {'next': next_rotation.isoformat(' ')}
+                msg = (_("Date of next rotation '%(next)s' is in future, " +
+                         "rotation not necessary.")
+                        % {'next': next_rotation.isoformat(' ')})
                 self.logger.debug(msg)
             return False
 
@@ -1891,8 +1997,8 @@ class LogrotateHandler(object):
                 try:
                     os.remove(logfile)
                 except OSError, e:
-                    msg = _("Error on removing file '%(file)s': %(err)s") \
-                            % {'file': logfile, 'err': e.strerror}
+                    msg = (_("Error on removing file '%(file)s': %(err)s")
+                            % {'file': logfile, 'err': e.strerror})
                     self.logger.error(msg)
 
         return
@@ -1929,30 +2035,35 @@ class LogrotateHandler(object):
 
             # Check existence source logfile
             if not os.path.exists(logfile):
-                msg = _("Source file '%s' for compression doesn't exists.") % (logfile)
+                msg = (_("Source file '%s' for compression doesn't exists.")
+                        % (logfile))
                 raise LogrotateHandlerError(msg)
                 return
 
             # Check existence target (compressed file)
             if os.path.exists(target):
                 if os.path.samefile(logfile, target):
-                    msg = _("Source file '%(source)s' and target file '%(target)s' are the same file.") \
-                            % {'source': logfile, 'target': target}
+                    msg = (_("Source file '%(source)s' and target file " +
+                             "'%(target)s' are the same file.")
+                            % {'source': logfile, 'target': target})
                     raise LogrotateHandlerError(msg)
                     return
-                msg = _("Target file '%s' for compression allready exists.") %(target)
+                msg = (_("Target file '%s' for compression allready exists.")
+                        % (target))
                 self.logger.warning(msg)
 
             # Check for filesize Zero => not compressed
             filesize = os.path.getsize(logfile)
             if filesize <= 0:
-                msg = _("File '%s' has a size of 0, skip compressing.") % (logfile)
+                msg = (_("File '%s' has a size of 0, skip compressing.")
+                        % (logfile))
                 self.logger.info(msg)
                 continue
 
             # Execute compressing ...
-            msg = _("Compressing file '%(file)s' to '%(target)s' with '%(cmd)s' ...") \
-                    % {'file': logfile, 'target': target, 'cmd': command}
+            msg = (_("Compressing file '%(file)s' to '%(target)s' " +
+                     "with '%(cmd)s' ...")
+                    % {'file': logfile, 'target': target, 'cmd': command})
             self.logger.info(msg)
 
             if command == 'internal_gzip':
@@ -1962,7 +2073,12 @@ class LogrotateHandler(object):
             elif command == 'internal_zip':
                 self._compress_internal_zip(logfile, target)
             else:
-                self._compress_external(logfile, target, command, compress_opts)
+                self._compress_external(
+                        logfile,
+                        target,
+                        command,
+                        compress_opts
+                )
 
         return
 
@@ -1993,8 +2109,9 @@ class LogrotateHandler(object):
         _ = self.t.lgettext
 
         if self.verbose > 1:
-            msg = _("Compressing source '%(source)s' to target'%(target)s' with command '%(cmd)s'.") \
-                    % {'source': source, 'target': target, 'cmd': command}
+            msg = (_("Compressing source '%(source)s' to target " +
+                     "'%(target)s' with command '%(cmd)s'.")
+                    % {'source': source, 'target': target, 'cmd': command})
             self.logger.debug(msg)
 
         if options is None:
@@ -2004,8 +2121,9 @@ class LogrotateHandler(object):
         match = re.search(r'\[\]', options)
         if match:
             if self.verbose > 3:
-                msg = _("Substituting '%(what)s' in compressoptions with '%(by)s'.") \
-                        % {'what': '[]', 'by': target}
+                msg = (_("Substituting '%(what)s' in compressoptions " +
+                         "with '%(by)s'.")
+                        % {'what': '[]', 'by': target})
                 self.logger.debug(msg)
             options = re.sub(r'\[\]', '"' + target + '"', options)
 
@@ -2013,8 +2131,9 @@ class LogrotateHandler(object):
         match = re.search(r'\{\}', options)
         if match:
             if self.verbose > 3:
-                msg = _("Substituting '%(what)s' in compressoptions with '%(by)s'.") \
-                        % {'what': '{}', 'by': source}
+                msg = (_("Substituting '%(what)s' in compressoptions " +
+                         "with '%(by)s'.")
+                        % {'what': '{}', 'by': source})
                 self.logger.debug(msg)
             options = re.sub(r'\{\}', '"' + source + '"', options)
         else:
@@ -2033,8 +2152,8 @@ class LogrotateHandler(object):
 
         if not self.test:
             if not os.path.exists(target):
-                msg = _("Target '%s' of compression doesn't exists after executing compression command.") \
-                        % (target)
+                msg = (_("Target '%s' of compression doesn't exists " +
+                         "after executing compression command.") % (target))
                 self.logger.error(msg)
                 return False
 
@@ -2051,8 +2170,9 @@ class LogrotateHandler(object):
                 try:
                     os.remove(source)
                 except OSError, e:
-                    msg = _("Error removing uncompressed file '%(file)s': %(msg)") \
-                            % {'file': source, 'msg': str(e) }
+                    msg = (_("Error removing uncompressed file " +
+                             "'%(file)s': %(msg)")
+                            % {'file': source, 'msg': str(e) })
                     self.logger.error(msg)
                     return False
 
@@ -2079,7 +2199,8 @@ class LogrotateHandler(object):
                        or None, if statinfo was given,
                        has precedence before a given statinfo
         @type source:  str or None
-        @param statinfo: stat object from os.stat() or None, if source was given
+        @param statinfo: stat object from os.stat() or None, if
+                         source was given
         @type statinfo:  stat-object or None
 
         @return: success or not
@@ -2089,7 +2210,8 @@ class LogrotateHandler(object):
         _ = self.t.lgettext
 
         if source is None and statinfo is None:
-            msg = _("Neither 'target' nor 'statinfo' was given on calling _copy_file_metadata().")
+            msg = _("Neither 'target' nor 'statinfo' was given " +
+                    "on calling _copy_file_metadata().")
             raise LogrotateHandlerError(msg)
             return False
 
@@ -2120,8 +2242,9 @@ class LogrotateHandler(object):
 
             # Copying permissions and timestamps from source to target
             if self.verbose > 1:
-                msg = _("Copying permissions and timestamps from source '%(src)s' to target '%(target)s'.") \
-                        % {'src': source, 'target': target}
+                msg = (_("Copying permissions and timestamps from source " +
+                         "'%(src)s' to target '%(target)s'.")
+                        % {'src': source, 'target': target})
                 self.logger.debug(msg)
             if not self.test:
                 shutil.copystat(source, target)
@@ -2142,8 +2265,9 @@ class LogrotateHandler(object):
                 try:
                     os.utime(target, (atime, mtime))
                 except OSError, e:
-                    msg = _("Error on setting times on target file '%(target)s': %(err)s") \
-                            % {'target': target, 'err': e.strerror}
+                    msg = (_("Error on setting times on target file " +
+                             "'%(target)s': %(err)s")
+                            % {'target': target, 'err': e.strerror})
                     self.logger.warning(msg)
                     return False
 
@@ -2151,15 +2275,16 @@ class LogrotateHandler(object):
             old_mode = old_statinfo.st_mode
             if mode != old_mode:
                 if self.verbose > 1:
-                    msg = _("Setting permissions of '%(target)s' to %(mode)4o.") \
-                            % {'target': target, 'mode': new_mode}
+                    msg = (_("Setting permissions of '%(target)s' " +
+                             "to %(mode)4o.")
+                            % {'target': target, 'mode': new_mode})
                     self.logger.info(msg)
                 if not self.test:
                     try:
                         os.chmod(target, mode)
                     except OSError, e:
-                        msg = _("Error on chmod of '%(target)s': %(err)s") \
-                                % {'target': target, 'err': e.strerror}
+                        msg = (_("Error on chmod of '%(target)s': %(err)s")
+                                % {'target': target, 'err': e.strerror})
                         self.logger.warning(msg)
                         return False
 
@@ -2186,8 +2311,8 @@ class LogrotateHandler(object):
                 try:
                     os.chown(target, old_uid, old_gid)
                 except OSError, e:
-                    msg = _("Error on chown of '%(file)s': %(err)s") \
-                            % {'file': target, 'err': e.strerror}
+                    msg = (_("Error on chown of '%(file)s': %(err)s")
+                            % {'file': target, 'err': e.strerror})
                     self.logger.warning(msg)
                     return False
 
@@ -2213,12 +2338,12 @@ class LogrotateHandler(object):
         _ = self.t.lgettext
 
         if self.verbose > 1:
-            msg = _("Compressing source '%(source)s' to target "
-                     + "'%(target)s' with module '%(module)s'.") \
+            msg = (_("Compressing source '%(source)s' to target " +
+                     "'%(target)s' with module '%(module)s'.")
                     % { 'source': source,
                         'target': target,
                         'module': 'zipfile'
-                      }
+                      })
             self.logger.debug(msg)
 
         if not self.test:
@@ -2232,8 +2357,8 @@ class LogrotateHandler(object):
                             compression=zipfile.ZIP_DEFLATED
                 )
             except IOError, e:
-                msg = _("Error on open file '%(file)s' on writing: %(err)s") \
-                        % {'file': target, 'err': str(e)}
+                msg = (_("Error on open file '%(file)s' on writing: %(err)s")
+                        % {'file': target, 'err': str(e)})
                 self.logger.error(msg)
                 return False
 
@@ -2252,8 +2377,8 @@ class LogrotateHandler(object):
             try:
                 os.remove(source)
             except OSError, e:
-                msg = _("Error removing uncompressed file '%(file)s': %(msg)") \
-                        % {'file': source, 'msg': str(e) }
+                msg = (_("Error removing uncompressed file '%(file)s': %(msg)")
+                        % {'file': source, 'msg': str(e) })
                 self.logger.error(msg)
                 return False
 
@@ -2280,12 +2405,12 @@ class LogrotateHandler(object):
         _ = self.t.lgettext
 
         if self.verbose > 1:
-            msg = _("Compressing source '%(source)s' to target "
-                     + "'%(target)s' with module '%(module)s'.") \
+            msg = (_("Compressing source '%(source)s' to target " +
+                     "'%(target)s' with module '%(module)s'.")
                     % { 'source': source,
                         'target': target,
                         'module': 'gzip'
-                      }
+                      })
             self.logger.debug(msg)
 
         if not self.test:
@@ -2294,8 +2419,8 @@ class LogrotateHandler(object):
             try:
                 f_in = open(source, 'rb')
             except IOError, e:
-                msg = _("Error on open file '%(file)s' on reading: %(err)s") \
-                        % {'file': source, 'err': str(e)}
+                msg = (_("Error on open file '%(file)s' on reading: %(err)s")
+                        % {'file': source, 'err': str(e)})
                 self.logger.error(msg)
                 return False
 
@@ -2304,8 +2429,8 @@ class LogrotateHandler(object):
             try:
                 f_out = gzip.open(target, 'wb')
             except IOError, e:
-                msg = _("Error on open file '%(file)s' on writing: %(err)s") \
-                        % {'file': target, 'err': str(e)}
+                msg = (_("Error on open file '%(file)s' on writing: %(err)s")
+                        % {'file': target, 'err': str(e)})
                 self.logger.error(msg)
                 f_in.close()
                 return False
@@ -2327,8 +2452,8 @@ class LogrotateHandler(object):
             try:
                 os.remove(source)
             except OSError, e:
-                msg = _("Error removing uncompressed file '%(file)s': %(msg)") \
-                        % {'file': source, 'msg': str(e) }
+                msg = (_("Error removing uncompressed file '%(file)s': %(msg)")
+                        % {'file': source, 'msg': str(e) })
                 self.logger.error(msg)
                 return False
 
@@ -2355,12 +2480,12 @@ class LogrotateHandler(object):
         _ = self.t.lgettext
 
         if self.verbose > 1:
-            msg = _("Compressing source '%(source)s' to target "
-                     + "'%(target)s' with module '%(module)s'.") \
+            msg = (_("Compressing source '%(source)s' to target " +
+                     "'%(target)s' with module '%(module)s'.")
                     % { 'source': source,
                         'target': target,
                         'module': 'bz2'
-                      }
+                      })
             self.logger.debug(msg)
 
         if not self.test:
@@ -2369,8 +2494,8 @@ class LogrotateHandler(object):
             try:
                 f_in = open(source, 'rb')
             except IOError, e:
-                msg = _("Error on open file '%(file)s' on reading: %(err)s") \
-                        % {'file': source, 'err': str(e)}
+                msg = (_("Error on open file '%(file)s' on reading: %(err)s")
+                        % {'file': source, 'err': str(e)})
                 self.logger.error(msg)
                 return False
 
@@ -2379,8 +2504,8 @@ class LogrotateHandler(object):
             try:
                 f_out = bz2.BZ2File(target, 'w')
             except IOError, e:
-                msg = _("Error on open file '%(file)s' on writing: %(err)s") \
-                        % {'file': target, 'err': str(e)}
+                msg = (_("Error on open file '%(file)s' on writing: %(err)s")
+                        % {'file': target, 'err': str(e)})
                 self.logger.error(msg)
                 f_in.close()
                 return False
@@ -2402,8 +2527,8 @@ class LogrotateHandler(object):
             try:
                 os.remove(source)
             except OSError, e:
-                msg = _("Error removing uncompressed file '%(file)s': %(msg)") \
-                        % {'file': source, 'msg': str(e) }
+                msg = (_("Error removing uncompressed file '%(file)s': %(msg)")
+                        % {'file': source, 'msg': str(e) })
                 self.logger.error(msg)
                 return False
 
@@ -2424,7 +2549,11 @@ class LogrotateHandler(object):
             self.logger.debug(msg)
 
         for filename in self.files2send.keys():
-            self.mailer.send_file(filename, self.files2send[filename][0], self.files2send[filename][1])
+            self.mailer.send_file(
+                    filename,
+                    self.files2send[filename][0],
+                    self.files2send[filename][1]
+            )
 
         return
 

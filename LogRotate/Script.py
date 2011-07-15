@@ -184,7 +184,12 @@ class LogRotateScript(object):
         '''
         return self._name
 
-    name = property(_get_name, None, None, "Name of the script as an identifier")
+    name = property(
+            _get_name,
+            None,
+            None,
+            "Name of the script as an identifier"
+    )
 
     #------------------------------------------------------------
     # Property 'cmd'
@@ -237,10 +242,11 @@ class LogRotateScript(object):
             raise LogRotateScriptError(msg)
 
     post_files = property(
-                    _get_post_files,
-                    _set_post_files,
-                    None,
-                    "Number of logfiles referencing to this script as a postrotate script."
+            _get_post_files,
+            _set_post_files,
+            None,
+            "Number of logfiles referencing to this script " +
+                "as a postrotate script."
     )
 
     #------------------------------------------------------------
@@ -263,10 +269,11 @@ class LogRotateScript(object):
             raise LogRotateScriptError(msg)
 
     last_files = property(
-                    _get_last_files,
-                    _set_last_files,
-                    None,
-                    "Number of logfiles referencing to this script as a lastaction script."
+            _get_last_files,
+            _set_last_files,
+            None,
+            "Number of logfiles referencing to this script " +
+                "as a lastaction script."
     )
 
     #------------------------------------------------------------
@@ -284,10 +291,10 @@ class LogRotateScript(object):
         self._done_firstrun = bool(value)
 
     done_firstrun = property(
-                    _get_done_firstrun,
-                    _set_done_firstrun,
-                    None,
-                    "Flag, whether the script was executed as a firstaction script."
+            _get_done_firstrun,
+            _set_done_firstrun,
+            None,
+            "Flag, whether the script was executed as a firstaction script."
     )
 
     #------------------------------------------------------------
@@ -305,10 +312,10 @@ class LogRotateScript(object):
         self._done_prerun = bool(value)
 
     done_prerun = property(
-                    _get_done_prerun,
-                    _set_done_prerun,
-                    None,
-                    "Flag, whether the script was executed as a prerun script."
+            _get_done_prerun,
+            _set_done_prerun,
+            None,
+            "Flag, whether the script was executed as a prerun script."
     )
 
     #------------------------------------------------------------
@@ -326,10 +333,10 @@ class LogRotateScript(object):
         self._done_postrun = bool(value)
 
     done_postrun = property(
-                    _get_done_postrun,
-                    _set_done_postrun,
-                    None,
-                    "Flag, whether the script was executed as a postrun script."
+            _get_done_postrun,
+            _set_done_postrun,
+            None,
+            "Flag, whether the script was executed as a postrun script."
     )
 
     #------------------------------------------------------------
@@ -347,10 +354,10 @@ class LogRotateScript(object):
         self._done_lastrun = bool(value)
 
     done_lastrun = property(
-                    _get_done_lastrun,
-                    _set_done_lastrun,
-                    None,
-                    "Flag, whether the script was executed as a lastaction script."
+            _get_done_lastrun,
+            _set_done_lastrun,
+            None,
+            "Flag, whether the script was executed as a lastaction script."
     )
 
     #------------------------------------------------------------
@@ -368,10 +375,10 @@ class LogRotateScript(object):
         self._do_post = bool(value)
 
     do_post = property(
-                    _get_do_post,
-                    _set_do_post,
-                    None,
-                    "Flag, whether the script should be executed as a postrun script."
+            _get_do_post,
+            _set_do_post,
+            None,
+            "Flag, whether the script should be executed as a postrun script."
     )
 
     #------------------------------------------------------------
@@ -389,10 +396,11 @@ class LogRotateScript(object):
         self._do_last = bool(value)
 
     do_last = property(
-                    _get_do_last,
-                    _set_do_last,
-                    None,
-                    "Flag, whether the script should be executed as a lastaction script."
+            _get_do_last,
+            _set_do_last,
+            None,
+            "Flag, whether the script should be executed " +
+                "as a lastaction script."
     )
 
     #------------------------------------------------------------
@@ -408,7 +416,8 @@ class LogRotateScript(object):
 
         _ = self.t.lgettext
         if self.verbose > 2:
-            msg = _("Logrotate script object '%s' will destroyed.") % (self.name)
+            msg = (_("Logrotate script object '%s' will destroyed.")
+                    % (self.name))
             self.logger.debug(msg)
 
         self.check_for_execute()
@@ -485,12 +494,13 @@ class LogRotateScript(object):
         _ = self.t.lgettext
         cmd = self.cmd
         if cmd is None:
-            msg = _("No command to execute defined in script '%s'.") % (self.name)
+            msg = (_("No command to execute defined in script '%s'.") %
+                        (self.name))
             raise LogRotateScriptError(msg)
             return False
         if self.verbose > 3:
-            msg = _("Executing script '%(name)s' with command: '%(cmd)s'") \
-                    % {'name': self.name, 'cmd': cmd}
+            msg = (_("Executing script '%(name)s' with command: '%(cmd)s'") %
+                    {'name': self.name, 'cmd': cmd})
             self.logger.debug(msg)
         if not force:
             if self.test_mode:
@@ -498,20 +508,22 @@ class LogRotateScript(object):
         try:
             retcode = subprocess.call(command, shell=True)
             if self.verbose > 3:
-                msg = _("Got returncode for script '%(name)s': '%(retcode)s'") \
-                        % {'name': self.name, 'retcode': retcode}
+                msg = (_("Got returncode for script '%(name)s': " +
+                         "'%(retcode)s'") %
+                        {'name': self.name, 'retcode': retcode})
                 self.logger.debug(msg)
             if retcode < 0:
-                msg = _("Child in script '%(name)s' was terminated by signal %(retcode)d.") \
-                        % {'name': self.name, 'retcode': -retcode}
+                msg = (_("Child in script '%(name)s' was terminated " +
+                         "by signal %(retcode)d.") %
+                        {'name': self.name, 'retcode': -retcode})
                 self.logger.error(msg)
                 return False
             if retcode != expected_retcode:
                 return False
             return True
         except OSError, e:
-            msg = _("Execution of script '%(name)s' failed: %(error)s") \
-                    % {'name': self.name, 'error': str(e)}
+            msg = (_("Execution of script '%(name)s' failed: %(error)s") %
+                    {'name': self.name, 'error': str(e)})
             self.logger.error(msg)
             return False
 
@@ -534,11 +546,15 @@ class LogRotateScript(object):
         '''
 
         _ = self.t.lgettext
-        msg = _("Checking, whether the script '%s' should be executed.") % (self.name)
+        msg = (_("Checking, whether the script '%s' should be executed.") %
+                (self.name))
         self.logger.debug(msg)
 
         if self.do_post or self.do_last:
-            result = self.execute(force=force, expected_retcode=expected_retcode)
+            result = self.execute(
+                    force=force,
+                    expected_retcode=expected_retcode
+            )
             self.do_post = False
             self.do_last = False
             return result

@@ -257,8 +257,8 @@ class LogrotateStatusFile(object):
             date_utc = rotate_date.astimezone(utc)
 
         _ = self.t.lgettext
-        msg = _("Setting rotation date of '%(file)s' to '%(date)s' ...") \
-                % {'file': logfile, 'date': date_utc.isoformat(' ') }
+        msg = (_("Setting rotation date of '%(file)s' to '%(date)s' ...") %
+                {'file': logfile, 'date': date_utc.isoformat(' ') })
         self.logger.debug(msg)
 
         #self.read(must_exists = False)
@@ -297,8 +297,8 @@ class LogrotateStatusFile(object):
         # Big try block for ensure closing open status file
         try:
 
-            msg = _("Open status file '%s' for writing ...") \
-                    % (self.file_name)
+            msg = (_("Open status file '%s' for writing ...") %
+                    (self.file_name))
             self.logger.debug(msg)
 
             # open status file for writing
@@ -306,8 +306,8 @@ class LogrotateStatusFile(object):
                 try:
                     fd = open(self.file_name, 'w')
                 except IOError, e:
-                    msg = _("Could not open status file '%s' for write: ") \
-                            % (self.file_name) + str(e)
+                    msg = (_("Could not open status file '%s' for write: ") %
+                            (self.file_name) + str(e))
                     raise LogrotateStatusFileError(msg)
 
             # write logrotate version line

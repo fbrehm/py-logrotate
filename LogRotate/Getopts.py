@@ -175,8 +175,10 @@ class LogrotateOptParser(object):
         '''
 
         #print ""
-        #print "Default system encoding:     »%s«." % (sys.getdefaultencoding())
-        #print "Default filesystem encoding: »%s«." % (sys.getfilesystemencoding())
+        #print "Default system encoding:     »%s«." \
+        #   % (sys.getdefaultencoding())
+        #print "Default filesystem encoding: »%s«." \
+        #   % (sys.getfilesystemencoding())
         #print ""
 
         _ = self.t.lgettext
@@ -228,7 +230,8 @@ class LogrotateOptParser(object):
             help    = to_unicode_or_bust(msg),
         )
 
-        msg = _("Checks only the given configuration file and does nothing. Conflicts with -f.")
+        msg = _("Checks only the given configuration file and does " +
+                "nothing. Conflicts with -f.")
         self.parser.add_option(
             '--config-check',
             '-c',
@@ -256,7 +259,8 @@ class LogrotateOptParser(object):
             help    = to_unicode_or_bust(msg),
         )
 
-        msg = _('Command to send mail (instead of using SMTP or the predefined sendmail command).')
+        msg = _("Command to send mail (instead of using SMTP or " +
+                "the predefined sendmail command).")
         self.parser.add_option(
             '--mail',
             '-m',
