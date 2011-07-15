@@ -1998,7 +1998,8 @@ class LogrotateHandler(object):
         match = re.search(r'\[\]', options)
         if match:
             if self.verbose > 3:
-                msg = _("Substituting '[]' in compressoptions with '%s'.") % ('"' + target + '"')
+                msg = _("Substituting '%(what)s' in compressoptions with '%(by)s'.") \
+                        % {'what': '[]', 'by': target}
                 self.logger.debug(msg)
             options = re.sub(r'\[\]', '"' + target + '"', options)
 
@@ -2006,7 +2007,8 @@ class LogrotateHandler(object):
         match = re.search(r'\{\}', options)
         if match:
             if self.verbose > 3:
-                msg = _("Substituting '{}' in compressoptions with '%s'.") % ('"' + source + '"')
+                msg = _("Substituting '%(what)s' in compressoptions with '%(by)s'.") \
+                        % {'what': '{}', 'by': source}
                 self.logger.debug(msg)
             options = re.sub(r'\{\}', '"' + source + '"', options)
         else:

@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: pylogrotate 0.6.0\n"
 "Report-Msgid-Bugs-To: frank@brehm-online.com\n"
-"POT-Creation-Date: 2011-07-15 00:55+0200\n"
+"POT-Creation-Date: 2011-07-15 09:46+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -169,7 +169,7 @@ msgstr ""
 msgid "Compress command '%s' not found."
 msgstr ""
 
-#: LogRotate/Handler.py:2016
+#: LogRotate/Handler.py:2018
 #, python-format
 msgid "Compress options: '%s'."
 msgstr ""
@@ -179,8 +179,8 @@ msgstr ""
 msgid "Compressing file '%(file)s' to '%(target)s' with '%(cmd)s' ..."
 msgstr ""
 
-#: LogRotate/Handler.py:2208 LogRotate/Handler.py:2275
-#: LogRotate/Handler.py:2350
+#: LogRotate/Handler.py:2210 LogRotate/Handler.py:2277
+#: LogRotate/Handler.py:2352
 #, python-format
 msgid ""
 "Compressing source '%(source)s' to target '%(target)s' with module "
@@ -211,7 +211,7 @@ msgstr ""
 msgid "Configuration reader object structure"
 msgstr ""
 
-#: LogRotate/Handler.py:2099
+#: LogRotate/Handler.py:2101
 #, python-format
 msgid "Copying all file metadata to target '%s' ..."
 msgstr ""
@@ -221,11 +221,11 @@ msgstr ""
 msgid "Copying file '%(from)s' => '%(to)s'."
 msgstr ""
 
-#: LogRotate/Handler.py:2166
+#: LogRotate/Handler.py:2168
 msgid "Copying ownership from source to target."
 msgstr ""
 
-#: LogRotate/Handler.py:2115
+#: LogRotate/Handler.py:2117
 #, python-format
 msgid ""
 "Copying permissions and timestamps from source '%(src)s' to target "
@@ -336,8 +336,8 @@ msgstr ""
 msgid "Deleting file '%s' ..."
 msgstr ""
 
-#: LogRotate/Handler.py:2039 LogRotate/Handler.py:2240
-#: LogRotate/Handler.py:2315 LogRotate/Handler.py:2390
+#: LogRotate/Handler.py:2041 LogRotate/Handler.py:2242
+#: LogRotate/Handler.py:2317 LogRotate/Handler.py:2392
 #, python-format
 msgid "Deleting uncompressed file '%s' ..."
 msgstr ""
@@ -388,12 +388,12 @@ msgstr ""
 msgid "End of a logfile definition."
 msgstr ""
 
-#: LogRotate/Handler.py:1009 LogRotate/Handler.py:2153
+#: LogRotate/Handler.py:1009 LogRotate/Handler.py:2155
 #, python-format
 msgid "Error on chmod of '%(target)s': %(err)s"
 msgstr ""
 
-#: LogRotate/Handler.py:1030 LogRotate/Handler.py:2181
+#: LogRotate/Handler.py:1030 LogRotate/Handler.py:2183
 #, python-format
 msgid "Error on chown of '%(file)s': %(err)s"
 msgstr ""
@@ -423,13 +423,13 @@ msgstr ""
 msgid "Error on moving '%(from)s' => '%(to)s': %(err)s"
 msgstr ""
 
-#: LogRotate/Handler.py:2289 LogRotate/Handler.py:2364
+#: LogRotate/Handler.py:2291 LogRotate/Handler.py:2366
 #, python-format
 msgid "Error on open file '%(file)s' on reading: %(err)s"
 msgstr ""
 
-#: LogRotate/Handler.py:2227 LogRotate/Handler.py:2299
-#: LogRotate/Handler.py:2374
+#: LogRotate/Handler.py:2229 LogRotate/Handler.py:2301
+#: LogRotate/Handler.py:2376
 #, python-format
 msgid "Error on open file '%(file)s' on writing: %(err)s"
 msgstr ""
@@ -439,7 +439,7 @@ msgstr ""
 msgid "Error on removing file '%(file)s': %(err)s"
 msgstr ""
 
-#: LogRotate/Handler.py:2137
+#: LogRotate/Handler.py:2139
 #, python-format
 msgid "Error on setting times on target file '%(target)s': %(err)s"
 msgstr ""
@@ -454,8 +454,8 @@ msgstr ""
 msgid "Error removing PID file '%(file)s': %(msg)"
 msgstr ""
 
-#: LogRotate/Handler.py:2046 LogRotate/Handler.py:2247
-#: LogRotate/Handler.py:2322 LogRotate/Handler.py:2397
+#: LogRotate/Handler.py:2048 LogRotate/Handler.py:2249
+#: LogRotate/Handler.py:2324 LogRotate/Handler.py:2399
 #, python-format
 msgid "Error removing uncompressed file '%(file)s': %(msg)"
 msgstr ""
@@ -529,7 +529,7 @@ msgstr ""
 msgid "File '%s' will be deleted, compression unnecessary."
 msgstr ""
 
-#: LogRotate/Handler.py:2089 LogRotate/Handler.py:2107
+#: LogRotate/Handler.py:2091 LogRotate/Handler.py:2109
 #, python-format
 msgid "File or directory '%s' doesn't exists."
 msgstr ""
@@ -922,7 +922,7 @@ msgstr ""
 msgid "Negative value %(value)s for option '%(option)s' is not allowed."
 msgstr ""
 
-#: LogRotate/Handler.py:2084
+#: LogRotate/Handler.py:2086
 msgid ""
 "Neither 'target' nor 'statinfo' was given on calling "
 "_copy_file_metadata()."
@@ -1096,7 +1096,7 @@ msgid ""
 msgstr ""
 
 #: LogRotate/Handler.py:1017 LogRotate/Handler.py:1713
-#: LogRotate/Handler.py:2170
+#: LogRotate/Handler.py:2172
 msgid "Only root may execute chown()."
 msgstr ""
 
@@ -1379,7 +1379,7 @@ msgstr ""
 msgid "Setting '%(what)s' in '%(directive)s' to %(to)s."
 msgstr ""
 
-#: LogRotate/Handler.py:2131
+#: LogRotate/Handler.py:2133
 #, python-format
 msgid "Setting atime and mtime of target '%s'."
 msgstr ""
@@ -1414,7 +1414,7 @@ msgstr ""
 msgid "Setting ownership of '%(file)s' to uid %(uid)d and gid %(gid)d."
 msgstr ""
 
-#: LogRotate/Handler.py:1002 LogRotate/Handler.py:2146
+#: LogRotate/Handler.py:1002 LogRotate/Handler.py:2148
 #, python-format
 msgid "Setting permissions of '%(target)s' to %(mode)4o."
 msgstr ""
@@ -1512,18 +1512,13 @@ msgstr ""
 msgid "Status file object will destroyed."
 msgstr ""
 
-#: LogRotate/Handler.py:2415
+#: LogRotate/Handler.py:2417
 msgid "Struct files2send:"
 msgstr ""
 
-#: LogRotate/Handler.py:2001
+#: LogRotate/Handler.py:2001 LogRotate/Handler.py:2010
 #, python-format
-msgid "Substituting '[]' in compressoptions with '%s'."
-msgstr ""
-
-#: LogRotate/Handler.py:2009
-#, python-format
-msgid "Substituting '{}' in compressoptions with '%s'."
+msgid "Substituting '%(what)s' in compressoptions with '%(by)s'."
 msgstr ""
 
 #: LogRotate/Config.py:965
@@ -1549,7 +1544,7 @@ msgstr ""
 msgid "Syntax error: unbalanced closing curly bracket found."
 msgstr ""
 
-#: LogRotate/Handler.py:2028
+#: LogRotate/Handler.py:2030
 #, python-format
 msgid ""
 "Target '%s' of compression doesn't exists after executing compression "

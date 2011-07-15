@@ -5,16 +5,14 @@
 # Frank Brehm <frank@brehm-online.com>, 2011.
 #
 # $Id$
-# $URL:
+# $URL$
 #
-# http://svn.brehm-online.com/svn/my-stuff/python/PyLogrotate/trunk/po/LogRotateHandler.pot
-# $
 msgid ""
 msgstr ""
 "Project-Id-Version: pylogrotate 0.6.0\n"
 "Report-Msgid-Bugs-To: frank@brehm-online.com\n"
-"POT-Creation-Date: 2011-07-15 00:55+0200\n"
-"PO-Revision-Date: 2011-07-15 00:01+0200\n"
+"POT-Creation-Date: 2011-07-15 09:46+0200\n"
+"PO-Revision-Date: 2011-07-15 10:05+0200\n"
 "Last-Translator: Frank Brehm <frank@brehm-online.com>\n"
 "Language-Team: de <LL@li.org>\n"
 "Plural-Forms: nplurals=2; plural=(n != 1)\n"
@@ -178,7 +176,7 @@ msgstr "Allgemeine Optionen"
 msgid "Compress command '%s' not found."
 msgstr "Das Komprimierungskommando »%s« wurde nicht gefunden."
 
-#: LogRotate/Handler.py:2016
+#: LogRotate/Handler.py:2018
 #, python-format
 msgid "Compress options: '%s'."
 msgstr "Komprimierungsoptionen: »%s«."
@@ -188,8 +186,8 @@ msgstr "Komprimierungsoptionen: »%s«."
 msgid "Compressing file '%(file)s' to '%(target)s' with '%(cmd)s' ..."
 msgstr "Komprimiere Datei »%(file)s« zu »%(target)s« mit »%(cmd)s« ..."
 
-#: LogRotate/Handler.py:2208 LogRotate/Handler.py:2275
-#: LogRotate/Handler.py:2350
+#: LogRotate/Handler.py:2210 LogRotate/Handler.py:2277
+#: LogRotate/Handler.py:2352
 #, python-format
 msgid ""
 "Compressing source '%(source)s' to target '%(target)s' with module "
@@ -224,7 +222,7 @@ msgstr "Nur Überprüfung der Konfiguration."
 msgid "Configuration reader object structure"
 msgstr "Objektstruktur des Konfigurtionslesers"
 
-#: LogRotate/Handler.py:2099
+#: LogRotate/Handler.py:2101
 #, python-format
 msgid "Copying all file metadata to target '%s' ..."
 msgstr "Kopiere alle Datei-Metadaten zu Zielobjekt »%s« ..."
@@ -234,11 +232,11 @@ msgstr "Kopiere alle Datei-Metadaten zu Zielobjekt »%s« ..."
 msgid "Copying file '%(from)s' => '%(to)s'."
 msgstr "Kopiere Datei »%(from)s« => »%(to)s«."
 
-#: LogRotate/Handler.py:2166
+#: LogRotate/Handler.py:2168
 msgid "Copying ownership from source to target."
 msgstr "Kopiere Besitzerschaft von Quell- zu Zielobjekt."
 
-#: LogRotate/Handler.py:2115
+#: LogRotate/Handler.py:2117
 #, python-format
 msgid ""
 "Copying permissions and timestamps from source '%(src)s' to target "
@@ -353,8 +351,8 @@ msgstr "Lösche Datei »%s«, weil: zu alt."
 msgid "Deleting file '%s' ..."
 msgstr "Lösche Datei »%s« ..."
 
-#: LogRotate/Handler.py:2039 LogRotate/Handler.py:2240
-#: LogRotate/Handler.py:2315 LogRotate/Handler.py:2390
+#: LogRotate/Handler.py:2041 LogRotate/Handler.py:2242
+#: LogRotate/Handler.py:2317 LogRotate/Handler.py:2392
 #, python-format
 msgid "Deleting uncompressed file '%s' ..."
 msgstr "Lösche unkomprimierte Datei »%s« ..."
@@ -407,12 +405,12 @@ msgstr "Testmodus, Kommandos werden nur simuliert (beinhaltet -v und -T)"
 msgid "End of a logfile definition."
 msgstr "Ende einer Logdateidefinition."
 
-#: LogRotate/Handler.py:1009 LogRotate/Handler.py:2153
+#: LogRotate/Handler.py:1009 LogRotate/Handler.py:2155
 #, python-format
 msgid "Error on chmod of '%(target)s': %(err)s"
 msgstr "Fehler beim Setzen der Rechte von »%(target)s«: %(err)s"
 
-#: LogRotate/Handler.py:1030 LogRotate/Handler.py:2181
+#: LogRotate/Handler.py:1030 LogRotate/Handler.py:2183
 #, python-format
 msgid "Error on chown of '%(file)s': %(err)s"
 msgstr "Fehler beim Setzen der Besitzerschaft von »%(file)s«: %(err)s"
@@ -444,13 +442,13 @@ msgstr ""
 "Fehler beim Umbenennen bzw. Verschieben von »%(from)s« => »%(to)s«: "
 "%(err)s"
 
-#: LogRotate/Handler.py:2289 LogRotate/Handler.py:2364
+#: LogRotate/Handler.py:2291 LogRotate/Handler.py:2366
 #, python-format
 msgid "Error on open file '%(file)s' on reading: %(err)s"
 msgstr "Fehler beim Öffnen der Datei »%(file)s« zum Schreiben: %(err)s"
 
-#: LogRotate/Handler.py:2227 LogRotate/Handler.py:2299
-#: LogRotate/Handler.py:2374
+#: LogRotate/Handler.py:2229 LogRotate/Handler.py:2301
+#: LogRotate/Handler.py:2376
 #, python-format
 msgid "Error on open file '%(file)s' on writing: %(err)s"
 msgstr "Fehler beim Öffnen der Datei »%(file)s« zum Schreiben: %(err)s"
@@ -460,7 +458,7 @@ msgstr "Fehler beim Öffnen der Datei »%(file)s« zum Schreiben: %(err)s"
 msgid "Error on removing file '%(file)s': %(err)s"
 msgstr "Fehler beim Löschen der Datei »%(file)s«: %(err)s"
 
-#: LogRotate/Handler.py:2137
+#: LogRotate/Handler.py:2139
 #, python-format
 msgid "Error on setting times on target file '%(target)s': %(err)s"
 msgstr "Fehler beim Setzen der Zeitstempel von Zielojekt »%(target)s«: %(err)s"
@@ -475,8 +473,8 @@ msgstr "Fehler beim Abschneiden der Datei »%(from)s«: %(err)s"
 msgid "Error removing PID file '%(file)s': %(msg)"
 msgstr "Fehler beim Löschen der PID-Datei »%(file)s«: %(msg)"
 
-#: LogRotate/Handler.py:2046 LogRotate/Handler.py:2247
-#: LogRotate/Handler.py:2322 LogRotate/Handler.py:2397
+#: LogRotate/Handler.py:2048 LogRotate/Handler.py:2249
+#: LogRotate/Handler.py:2324 LogRotate/Handler.py:2399
 #, python-format
 msgid "Error removing uncompressed file '%(file)s': %(msg)"
 msgstr "Fehler beim Löschen der unkomprimierten Datei »%(file)s«: %(msg)"
@@ -550,7 +548,7 @@ msgstr "Datei »%s« scheint schon komprimiert zu sein, übergehe sie."
 msgid "File '%s' will be deleted, compression unnecessary."
 msgstr "Die Datei »%s« wird gelöscht, keine Komprimierung notwendig."
 
-#: LogRotate/Handler.py:2089 LogRotate/Handler.py:2107
+#: LogRotate/Handler.py:2091 LogRotate/Handler.py:2109
 #, python-format
 msgid "File or directory '%s' doesn't exists."
 msgstr "Die Datei oder das Verzeichnis »%s« existiert nicht."
@@ -959,7 +957,7 @@ msgstr "Nutzloser Inhalt am Ende einer Logdateidefinition gefunden: »%s«."
 msgid "Negative value %(value)s for option '%(option)s' is not allowed."
 msgstr "Der negative Wert %(value)s für die Option »%(option)s« ist nicht erlaubt."
 
-#: LogRotate/Handler.py:2084
+#: LogRotate/Handler.py:2086
 msgid ""
 "Neither 'target' nor 'statinfo' was given on calling "
 "_copy_file_metadata()."
@@ -1145,7 +1143,7 @@ msgstr ""
 "verwendet."
 
 #: LogRotate/Handler.py:1017 LogRotate/Handler.py:1713
-#: LogRotate/Handler.py:2170
+#: LogRotate/Handler.py:2172
 msgid "Only root may execute chown()."
 msgstr "Nur root darf Besitzrechte ändern."
 
@@ -1361,7 +1359,7 @@ msgstr "Ermittle zu komprimierende Logdateien ..."
 
 #: LogRotate/Handler.py:1155
 msgid "Retrieving logfiles to delete ..."
-msgstr "Ermittle Logdateien zum Löschen ..."
+msgstr "Ermittle zu löschende Logdateien ..."
 
 #: LogRotate/Handler.py:1518
 #, python-format
@@ -1427,16 +1425,14 @@ msgstr "Testmodus, Kommandos werden nur simuliert"
 #: LogRotate/Config.py:1300 LogRotate/Config.py:1328
 #, python-format
 msgid "Setting '%(what)s' in '%(directive)s' to %(to)f days."
-msgstr ""
-"Setze »%(what)s« in »%(directive)s« auf %(to)f Tage."
+msgstr "Setze »%(what)s« in »%(directive)s« auf %(to)f Tage."
 
 #: LogRotate/Config.py:1380 LogRotate/Config.py:1392
 #, python-format
 msgid "Setting '%(what)s' in '%(directive)s' to %(to)s."
-msgstr ""
-"Setze »%(what)s« in »%(directive)s« auf %(to)s."
+msgstr "Setze »%(what)s« in »%(directive)s« auf %(to)s."
 
-#: LogRotate/Handler.py:2131
+#: LogRotate/Handler.py:2133
 #, python-format
 msgid "Setting atime and mtime of target '%s'."
 msgstr "Setze Atime und Mtime von Zielobjekt »%s«."
@@ -1444,39 +1440,34 @@ msgstr "Setze Atime und Mtime von Zielobjekt »%s«."
 #: LogRotate/Config.py:1049
 #, python-format
 msgid "Setting boolean option '%(option)s' in '%(directive)s' to '%(value)s'."
-msgstr ""
-"Setze boolsche Option »%(option)s« in »%(directive)s« auf »%(value)s«."
+msgstr "Setze boolsche Option »%(option)s« in »%(directive)s« auf »%(value)s«."
 
 #: LogRotate/Config.py:1267
 #, python-format
 msgid "Setting global option '%(option)s' to '%(value)s'."
-msgstr ""
-"Setze globale Option »%(option)s auf »%(value)s«."
+msgstr "Setze globale Option »%(option)s auf »%(value)s«."
 
 #: LogRotate/Config.py:1122
 #, python-format
 msgid "Setting integer option '%(option)s' in '%(directive)s' to '%(value)s'."
-msgstr ""
-"Setze die Integer-Option '%(option)s' in '%(directive)s' auf '%(value)s'."
+msgstr "Setze die Integer-Option '%(option)s' in '%(directive)s' auf '%(value)s'."
 
 #: LogRotate/Config.py:1154
 #, python-format
 msgid "Setting mail address in '%(directive)s' to '%(addr)s'."
-msgstr ""
-"Seze Mailadresse in »%(directive)s« auf »%(addr)s«."
+msgstr "Setze Mailadresse in »%(directive)s« auf »%(addr)s«."
 
 #: LogRotate/Config.py:1174
 #, python-format
 msgid "Setting mailfirst in '%(directive)s' to '%(value)s'."
-msgstr ""
-"Setze mailfirst in »%(directive)s« auf »%(value)s«."
+msgstr "Setze mailfirst in »%(directive)s« auf »%(value)s«."
 
 #: LogRotate/Handler.py:1023
 #, python-format
 msgid "Setting ownership of '%(file)s' to uid %(uid)d and gid %(gid)d."
 msgstr "Setze Besitzerschaft von »%(file)s« auf UID %(uid)d und GID %(gid)d."
 
-#: LogRotate/Handler.py:1002 LogRotate/Handler.py:2146
+#: LogRotate/Handler.py:1002 LogRotate/Handler.py:2148
 #, python-format
 msgid "Setting permissions of '%(target)s' to %(mode)4o."
 msgstr "Setze Rechte von »%(target)s« auf %(mode)4o."
@@ -1544,9 +1535,8 @@ msgid "Stage 5: compression of old log files"
 msgstr "Phase 5: Komprimieren der alten Logdateien"
 
 #: LogRotate/Config.py:768
-#, fuzzy
 msgid "Starting a logfile definition."
-msgstr "Rotation der Logdatei-Definition:"
+msgstr "Beginn einer Logdatei-Definition."
 
 #: LogRotate/Config.py:2021
 msgid "Starting a new log directive with default values."
@@ -1575,19 +1565,14 @@ msgstr "Die Statusdatei »%s« is keine reguläre Datei."
 msgid "Status file object will destroyed."
 msgstr "Statusdatei-Objekt wird zerstört."
 
-#: LogRotate/Handler.py:2415
+#: LogRotate/Handler.py:2417
 msgid "Struct files2send:"
 msgstr "Sruktur files2send:"
 
-#: LogRotate/Handler.py:2001
+#: LogRotate/Handler.py:2001 LogRotate/Handler.py:2010
 #, python-format
-msgid "Substituting '[]' in compressoptions with '%s'."
-msgstr "Ersetze »[]« in den Komprimierungsoptionen durch »%s«."
-
-#: LogRotate/Handler.py:2009
-#, python-format
-msgid "Substituting '{}' in compressoptions with '%s'."
-msgstr "Ersetze »{}« in den Komprimierungsoptionen durch »%s«."
+msgid "Substituting '%(what)s' in compressoptions with '%(by)s'."
+msgstr "Ersetze »%(what)s« in den Komprimierungsoptionen durch »%(by)s«."
 
 #: LogRotate/Config.py:965
 #, python-format
@@ -1595,36 +1580,32 @@ msgid "Syntax error in file '%(file)s', line %(line)s"
 msgstr "Syntaxfehler in Datei Datei »%(file)s«, Zeile %(line)s"
 
 #: LogRotate/Config.py:947
-#, fuzzy
 msgid ""
 "Syntax error: external script definition may not appear inside of a log "
 "file definition."
 msgstr ""
 "Syntaxfehler: eine externe Scriptdefinition darf nicht innerhalb einer "
-"Logdateidefinition auftreten (Datei »%(file)s«, Zeile %(line)s)"
+"Logdateidefinition auftreten."
 
 #: LogRotate/Config.py:897
-#, fuzzy
 msgid "Syntax error: include may not appear inside of log file definition."
 msgstr ""
 "Syntaxfehler: Eine include-Anweisung darf nicht einer Logdateidefinition "
-"auftreten (Datei »%(file)s«, Zeile %(line)s)"
+"auftreten."
 
 #: LogRotate/Config.py:813
-#, fuzzy
 msgid "Syntax error: open curly bracket inside alogfile pattern definition."
 msgstr ""
 "Syntaxfehler: öffnende geschweifte Klammer innerhalb einer "
-"Logdateidefinition (Datei »%(file)s«, Zeile %(line)s)"
+"Logdateidefinition."
 
 #: LogRotate/Config.py:838
-#, fuzzy
 msgid "Syntax error: unbalanced closing curly bracket found."
 msgstr ""
 "Syntaxfehler: unausgeglichene Zahl von öffnenden und schließenden "
-"Klammern (Datei »%(file)s«, Zeile %(line)s)"
+"Klammern."
 
-#: LogRotate/Handler.py:2028
+#: LogRotate/Handler.py:2030
 #, python-format
 msgid ""
 "Target '%s' of compression doesn't exists after executing compression "
@@ -1636,7 +1617,7 @@ msgstr ""
 #: LogRotate/Handler.py:1937
 #, python-format
 msgid "Target file '%s' for compression allready exists."
-msgstr "Die Zieldatei »%s« für die Komprimierung existiert bereits."
+msgstr "Die Zieldatei der Komprimierung »%s« existiert bereits."
 
 #: logrotate.py:101
 msgid "Test mode is ON."
@@ -1687,48 +1668,42 @@ msgid "Trying check for process with PID %d ..."
 msgstr "Versuche, Prozeß mit der PID %d zu überprüfen ..."
 
 #: LogRotate/Config.py:1497
-#, fuzzy, python-format
+#, python-format
 msgid "Trying to determine create group '%s' ..."
-msgstr "Versuche, Verzeichnis »%s« zu erstellen ..."
+msgstr "Versuche, Erstellungsgruppe »%s« festzustellen ..."
 
 #: LogRotate/Config.py:1458
-#, fuzzy, python-format
+#, python-format
 msgid "Trying to determine create mode '%s' ..."
-msgstr "Versuche, Verzeichnis »%s« zu erstellen ..."
+msgstr "Versuche, Erstellungsmodus »%s« festzustellen ..."
 
 #: LogRotate/Config.py:1477
-#, fuzzy, python-format
+#, python-format
 msgid "Trying to determine create owner '%s' ..."
-msgstr "Versuche Objekt »%s« einzubinden ..."
+msgstr "Versuche, Erstellungsnutzer »%s« festzustellen ..."
 
 #: LogRotate/Config.py:1561
-#, fuzzy, python-format
+#, python-format
 msgid "Trying to determine olddir create mode '%s' ..."
-msgstr ""
-"Versuche »olddir«-Erstellungsmodus »%(mode)s« festzustellen ... (Datei "
-"»%(file)s«, Zeile %(lnr)s)"
+msgstr "Versuche, »olddir«-Erstellungsmodus »%s« festzustellen ..."
 
 #: LogRotate/Config.py:1601
-#, fuzzy, python-format
+#, python-format
 msgid "Trying to determine olddir group '%s' ..."
-msgstr ""
-"Versuche »olddir«-Erstellungsgruppe »%(group)s« festzustellen ... (Datei "
-"»%(file)s«, Zeile %(lnr)s)"
+msgstr "Versuche, »olddir«-Erstellungsgruppe »%s« festzustellen ..."
 
 #: LogRotate/Config.py:1581
-#, fuzzy, python-format
+#, python-format
 msgid "Trying to determine olddir owner '%s' ..."
-msgstr ""
-"Versuche »olddir«-Erstellungsnutzer »%(owner)s« festzustellen ... (Datei "
-"»%(file)s«, Zeile %(lnr)s)"
+msgstr "Versuche, »olddir«-Erstellungsnutzer »%s« festzustellen ..."
 
 #: LogRotate/Config.py:1810
 #, python-format
 msgid "Trying to include object '%s' ..."
-msgstr "Versuche Objekt »%s« einzubinden ..."
+msgstr "Versuche, Objekt »%s« einzubinden ..."
 
 #: LogRotate/Handler.py:612
-#, fuzzy, python-format
+#, python-format
 msgid "Unknown error: '%s'."
 msgstr "Unbekannter Fehler: »%s«."
 
@@ -1738,9 +1713,9 @@ msgid "Unknown option '%s'."
 msgstr "Unbekannte Option »%s«."
 
 #: LogRotate/Config.py:1025
-#, fuzzy, python-format
+#, python-format
 msgid "Unsupported option '%s'."
-msgstr "Unbekannte Option »%s«."
+msgstr "Nicht unterstützte Option »%s«."
 
 #: LogRotate/Handler.py:1538
 #, python-format
@@ -1784,7 +1759,7 @@ msgstr "Ausführlichkeitmodus is AN auf Level: %d"
 #: LogRotate/Config.py:1825
 #, python-format
 msgid "What the hell is this: '%s'."
-msgstr ""
+msgstr "Was zum Teufel ist das denn: »%s«?!"
 
 #: LogRotate/Handler.py:644
 #, python-format
