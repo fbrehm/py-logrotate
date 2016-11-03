@@ -443,6 +443,36 @@ class TestCaseCommon(BaseTestCase):
             self.assertIsInstance(result, float)
             self.assertEqual(expected, result)
 
+    # -------------------------------------------------------------------------
+    def test_get_address_list(self):
+
+        log.info("Testing get_address_list() from logrotate.common ...")
+
+        from logrotate.common import get_address_list, pp
+
+        test_pairs = (
+            ('', []),
+            ('frank@brehm-online.com', [('', 'frank@brehm-online.com')]),
+            ('<frank@brehm-online.com>', [('', 'frank@brehm-online.com')]),
+            ('Frank Brehm <frank@brehm-online.com>', [('Frank Brehm', 'frank@brehm-online.com')]),
+            ('"Frank Brehm" <frank@brehm-online.com>', [('Frank Brehm', 'frank@brehm-online.com')]),
+            ('A B <a@b.de>, CD <c@d.com>', [
+                ('A B', 'a@b.de'),
+                ('CD', 'c@d.com'),
+            ]),
+        )
+
+        for pair in test_pairs:
+            text = pair[0]
+            expected = pair[1]
+            if self.verbose > 1:
+                log.debug("Testing get_address_list(%r) => %r", text, expected)
+            result = get_address_list(text, verbose=self.verbose)
+            if self.verbose > 1:
+                log.debug("Got result: %r", pp(result))
+            self.assertIsInstance(result, list)
+            self.assertEqual(expected, result)
+
 
 # =============================================================================
 
@@ -466,7 +496,7 @@ if __name__ == '__main__':
     suite.addTest(TestCaseCommon('test_human2bytes', verbose))
     suite.addTest(TestCaseCommon('test_human2bytes_l10n', verbose))
     suite.addTest(TestCaseCommon('test_period2days', verbose))
-    # suite.addTest(TestCaseCommon('test_to_bool', verbose))
+    suite.addTest(TestCaseCommon('test_get_address_list', verbose))
 
     runner = unittest.TextTestRunner(verbosity=verbose)
 
