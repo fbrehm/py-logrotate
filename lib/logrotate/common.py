@@ -23,7 +23,7 @@ import six
 
 # Own modules
 
-__version__ = '0.2.5'
+__version__ = '0.2.6'
 
 RE_WS = re.compile(r'\s+')
 RE_WS_ONLY = re.compile(r'^\s*$')
@@ -527,14 +527,14 @@ def get_address_list(address_str, verbose = 0):
         for address in row:
             addr_list.append(address)
 
-    if verbose > 2:
+    if verbose > 3:
         logger.debug(_("Found address entries:") + "\n" + pp(addr_list))
 
     for address in addr_list:
         address = re.sub(r',', ' ', address)
         address = re.sub(r'\s+', ' ', address)
         pair = email.utils.parseaddr(address)
-        if verbose > 2:
+        if verbose > 3:
             logger.debug(_("Got mail address pair:") + "\n" + pp(pair))
         if not email_valid(pair[1]):
             logger.warning(_("Found invalid mail address %r."), address)
