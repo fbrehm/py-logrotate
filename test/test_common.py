@@ -18,6 +18,8 @@ try:
 except ImportError:
     import unittest
 
+import six
+
 # Setting the user’s preferred locale settings
 locale.setlocale(locale.LC_ALL, '')
 
@@ -41,6 +43,127 @@ class TestCaseCommon(BaseTestCase):
         log.info("Testing import of logrotate.common ...")
         import logrotate.common                                         # noqa
 
+    # -------------------------------------------------------------------------
+    def test_to_unicode(self):
+
+        log.info("Testing to_unicode_or_bust() ...")
+
+        from logrotate.common import to_unicode_or_bust
+
+        data = []
+        data.append((None, None))
+        data.append((1, 1))
+
+        if six.PY2:
+            data.append((u'a', u'a'))
+            data.append(('a', u'a'))
+        else:
+            data.append(('a', 'a'))
+            data.append((b'a', 'a'))
+
+        for pair in data:
+
+            src = pair[0]
+            tgt = pair[1]
+            result = to_unicode_or_bust(src)
+            log.debug(
+                "Testing to_unicode_or_bust(%r) => %r, result %r",
+                src, tgt, result)
+
+            if six.PY2:
+                if isinstance(src, (str, unicode)):
+                    self.assertIsInstance(result, unicode)
+                else:
+                    self.assertNotIsInstance(result, (str, unicode))
+            else:
+                if isinstance(src, (str, bytes)):
+                    self.assertIsInstance(result, str)
+                else:
+                    self.assertNotIsInstance(result, (str, bytes))
+
+            self.assertEqual(tgt, result)
+
+    # -------------------------------------------------------------------------
+    def test_to_utf8(self):
+
+        log.info("Testing to_utf8_or_bust() ...")
+
+        from logrotate.common import to_utf8_or_bust
+
+        data = []
+        data.append((None, None))
+        data.append((1, 1))
+
+        if six.PY2:
+            data.append((u'a', 'a'))
+            data.append(('a', 'a'))
+        else:
+            data.append(('a', b'a'))
+            data.append((b'a', b'a'))
+
+        for pair in data:
+
+            src = pair[0]
+            tgt = pair[1]
+            result = to_utf8_or_bust(src)
+            log.debug(
+                "Testing to_utf8_or_bust(%r) => %r, result %r",
+                src, tgt, result)
+
+            if six.PY2:
+                if isinstance(src, (str, unicode)):
+                    self.assertIsInstance(result, str)
+                else:
+                    self.assertNotIsInstance(result, (str, unicode))
+            else:
+                if isinstance(src, (str, bytes)):
+                    self.assertIsInstance(result, bytes)
+                else:
+                    self.assertNotIsInstance(result, (str, bytes))
+
+            self.assertEqual(tgt, result)
+
+    # -------------------------------------------------------------------------
+    def test_to_str(self):
+
+        log.info("Testing to_str_or_bust() ...")
+
+        from logrotate.common import to_str_or_bust
+
+        data = []
+        data.append((None, None))
+        data.append((1, 1))
+
+        if six.PY2:
+            data.append((u'a', 'a'))
+            data.append(('a', 'a'))
+        else:
+            data.append(('a', 'a'))
+            data.append((b'a', 'a'))
+
+        for pair in data:
+
+            src = pair[0]
+            tgt = pair[1]
+            result = to_str_or_bust(src)
+            log.debug(
+                "Testing to_str_or_bust(%r) => %r, result %r",
+                src, tgt, result)
+
+            if six.PY2:
+                if isinstance(src, (str, unicode)):
+                    self.assertIsInstance(result, str)
+                else:
+                    self.assertNotIsInstance(result, (str, unicode))
+            else:
+                if isinstance(src, (str, bytes)):
+                    self.assertIsInstance(result, str)
+                else:
+                    self.assertNotIsInstance(result, (str, bytes))
+
+            self.assertEqual(tgt, result)
+
+
 
 # =============================================================================
 
@@ -56,9 +179,9 @@ if __name__ == '__main__':
     suite = unittest.TestSuite()
 
     suite.addTest(TestCaseCommon('test_import', verbose))
-    # suite.addTest(TestCaseCommon('test_to_unicode', verbose))
-    # suite.addTest(TestCaseCommon('test_to_utf8', verbose))
-    # suite.addTest(TestCaseCommon('test_to_str', verbose))
+    suite.addTest(TestCaseCommon('test_to_unicode', verbose))
+    suite.addTest(TestCaseCommon('test_to_utf8', verbose))
+    suite.addTest(TestCaseCommon('test_to_str', verbose))
     # suite.addTest(TestCaseCommon('test_human2mbytes', verbose))
     # suite.addTest(TestCaseCommon('test_human2mbytes_l10n', verbose))
     # suite.addTest(TestCaseCommon('test_bytes2human', verbose))
