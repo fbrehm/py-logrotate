@@ -406,6 +406,43 @@ class TestCaseCommon(BaseTestCase):
         log.debug("Switching back to saved locales %r.", loc)
         locale.setlocale(locale.LC_ALL, loc)    # restore saved locale
 
+    # -------------------------------------------------------------------------
+    def test_period2days(self):
+
+        log.info("Testing period2days() from logrotate.common ...")
+
+        from logrotate.common import period2days
+
+        test_pairs = (
+            ('now', 0.0),
+            ('never', float('inf')),
+            ('1', 1.0),
+            ('1d', 1.0),
+            ('1day', 1.0),
+            ('1 days', 1.0),
+            ('1.1', 1.1),
+            ('1.1 day', 1.1),
+            ('1. bla', 1.0),
+            ('blub', 0.0),
+            ('2 weeks', 14.0),
+            ('2 week 1d', 15.0),
+            ('1day 2w', 15.0),
+            ('2.5m 1', 76.0),
+            ('0.4h', 1.0 / 24 * 0.4),
+            ('1.3y 2.1m 1.1w 0.7d', 1.3 * 365.0 + 2.1 * 30.0 + 1.1 * 7.0 + 0.7),
+        )
+
+        for pair in test_pairs:
+            text = pair[0]
+            expected = pair[1]
+            if self.verbose > 1:
+                log.debug("Testing period2days(%r) => %r", text, expected)
+            result = period2days(text, verbose=self.verbose)
+            if self.verbose > 1:
+                log.debug("Got result: %r", result)
+            self.assertIsInstance(result, float)
+            self.assertEqual(expected, result)
+
 
 # =============================================================================
 
@@ -428,7 +465,7 @@ if __name__ == '__main__':
     suite.addTest(TestCaseCommon('test_email_valid', verbose))
     suite.addTest(TestCaseCommon('test_human2bytes', verbose))
     suite.addTest(TestCaseCommon('test_human2bytes_l10n', verbose))
-    # suite.addTest(TestCaseCommon('test_bytes2human', verbose))
+    suite.addTest(TestCaseCommon('test_period2days', verbose))
     # suite.addTest(TestCaseCommon('test_to_bool', verbose))
 
     runner = unittest.TextTestRunner(verbosity=verbose)
