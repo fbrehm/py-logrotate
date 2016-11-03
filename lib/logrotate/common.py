@@ -23,7 +23,7 @@ import six
 
 # Own modules
 
-__version__ = '0.2.2'
+__version__ = '0.2.3'
 
 RE_WS = re.compile(r'\s+')
 RE_WS_ONLY = re.compile(r'^\s*$')
@@ -229,16 +229,26 @@ def human2bytes(value, si_conform=True, use_locale_radix=False, as_float=False, 
         raise ValueError(msg)
 
     radix = '.'
+    thousep = ','
     if use_locale_radix:
-        radix = locale.RADIXCHAR
+        radix = locale.nl_langinfo(locale.RADIXCHAR)
+        thousep = locale.nl_langinfo(locale.THOUSEP)
     radix = re.escape(radix)
+    thousep = re.escape(thousep)
     if verbose > 4:
-        logger.debug(_("Using radix %r"), radix)
+        logger.debug(_("Using radix %r, thousend separator %r"), radix, thousep)
 
     value_raw = ''
+    value_pre = value
     suffix = None
+
+    if thousep:
+        value_pre = re.sub(thousep, '', value)
+        if verbose > 3:
+            logger.debug(_("Value without thousend separators: %r."), value_pre)
+
     pattern = r'^\s*\+?(\d+(?:' + radix + r'\d*)?)\s*(\S+)?'
-    match = re.search(pattern, value)
+    match = re.search(pattern, value_pre)
     if match is not None:
         value_raw = match.group(1)
         suffix = match.group(2)
