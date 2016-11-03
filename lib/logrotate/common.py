@@ -23,7 +23,7 @@ import six
 
 # Own modules
 
-__version__ = '0.2.1'
+__version__ = '0.2.2'
 
 RE_WS = re.compile(r'\s+')
 RE_WS_ONLY = re.compile(r'^\s*$')
@@ -193,14 +193,10 @@ def email_valid(address):
 
 
 #------------------------------------------------------------------------
-def human2bytes(
-        value,
-        si_conform=True,
-        use_locale_radix=False,
-        verbose=0):
-    '''
+def human2bytes(value, si_conform=True, use_locale_radix=False, as_float=False, verbose=0):
+    """
     Converts the given human readable byte value (e.g. 5MB, 8.4GiB etc.)
-    with a prefix into an integer/long value (without a prefix).
+    with a suffix into an integer/long value (without a suffix).
     It raises a ValueError on invalid values.
 
     Available prefixes are:
@@ -209,43 +205,43 @@ def human2bytes(
         - GB (1000³), GiB (1024³)
         - TB (1000^4), TiB (1024^4)
         - PB (1000^5), PiB (1024^5)
+        - EB (1000^6), EiB (1024^6)
+        - ZB (1000^7), ZiB (1024^7)
 
-    @param value:            the value to convert
-    @type value:             str
-    @param si_conform:       use factor 1000 instead of 1024 for kB a.s.o.
-    @type si_conform:        bool
-    @param use_locale_radix: use the locale version of radix instead of the
-                             english decimal dot.
-    @type use_locale_radix:  bool
-    @param verbose:          level of verbosity
-    @type verbose:           int
+    @param value: the value to convert
+    @type value: str
+    @param si_conform: use factor 1000 instead of 1024 for kB a.s.o.
+    @type si_conform: bool
+    @param use_locale_radix: use the locale version of radix instead of the english decimal dot.
+    @type use_locale_radix: bool
+    @param verbose: level of verbosity
+    @type verbose: int
 
     @return: amount of bytes
-    @rtype:  long
-    '''
+    @rtype: int (or long in Python2)
+    """
 
     t = gettext.translation('pylogrotate', locale_dir, fallback=True)
     _ = t.lgettext
 
     if value is None:
-        msg = _("Given value is 'None'.")
+        msg = "Given value is None."
         raise ValueError(msg)
 
     radix = '.'
     if use_locale_radix:
         radix = locale.RADIXCHAR
     radix = re.escape(radix)
-    if verbose > 5:
-        msg = _("Using radix '%s'.") % (radix)
-        logger.debug(msg)
+    if verbose > 4:
+        logger.debug(_("Using radix %r"), radix)
 
     value_raw = ''
-    prefix = None
+    suffix = None
     pattern = r'^\s*\+?(\d+(?:' + radix + r'\d*)?)\s*(\S+)?'
     match = re.search(pattern, value)
     if match is not None:
         value_raw = match.group(1)
-        prefix = match.group(2)
+        suffix = match.group(2)
     else:
         msg = _("Could not determine bytes in '%s'.") % (value)
         raise ValueError(msg)
@@ -253,51 +249,80 @@ def human2bytes(
     if use_locale_radix:
         value_raw = re.sub(radix, '.', value_raw, 1)
     value_float = float(value_raw)
-    if prefix is None:
-        prefix = ''
+    value_long = 0
+    if six.PY2:
+        value_long = long(value_float)
+    else:
+        value_long = int(value_float)
+    if suffix is None:
+        suffix = ''
+    if verbose > 4:
+        logger.debug(
+            "Value float: %r, Value long: %r, suffix: %r",
+            value_float, value_long, suffix)
 
-    factor_bin = long(1024)
-    factor_si  = long(1000)
+    factor_bin = 1024
+    factor_si = 1000
+    factor = 1
+    if six.PY2:
+        factor_bin = long(1024)
+        factor_si = long(1000)
+        factor = long(1)
     if not si_conform:
         factor_si = factor_bin
 
-    factor = long(1)
-
-    if re.search(r'^\s*(?:b(?:yte)?)?\s*$', prefix, re.IGNORECASE):
-        factor = long(1)
-    elif re.search(r'^\s*k(?:[bB](?:[Yy][Tt][Ee])?)?\s*$', prefix):
+    if re.search(r'^\s*(?:b(?:yte)?)?\s*$', suffix, re.IGNORECASE):
+        factor = 1
+        if six.PY2:
+            factor = long(1)
+    elif re.search(r'^\s*k(?:[bB](?:[Yy][Tt][Ee])?)?\s*$', suffix):
         factor = factor_si
-    elif re.search(r'^\s*Ki?(?:[bB](?:[Yy][Tt][Ee])?)?\s*$', prefix):
+    elif re.search(r'^\s*Ki?(?:[bB](?:[Yy][Tt][Ee])?)?\s*$', suffix):
         factor = factor_bin
-    elif re.search(r'^\s*M(?:B(?:yte)?)?\s*$', prefix, re.IGNORECASE):
-        factor = (factor_si * factor_si)
-    elif re.search(r'^\s*MiB(?:yte)?\s*$', prefix, re.IGNORECASE):
-        factor = (factor_bin * factor_bin)
-    elif re.search(r'^\s*G(?:B(?:yte)?)?\s*$', prefix, re.IGNORECASE):
-        factor = (factor_si * factor_si * factor_si)
-    elif re.search(r'^\s*GiB(?:yte)?\s*$', prefix, re.IGNORECASE):
-        factor = (factor_bin * factor_bin * factor_bin)
-    elif re.search(r'^\s*T(?:B(?:yte)?)?\s*$', prefix, re.IGNORECASE):
-        factor = (factor_si * factor_si * factor_si * factor_si)
-    elif re.search(r'^\s*TiB(?:yte)?\s*$', prefix, re.IGNORECASE):
-        factor = (factor_bin * factor_bin * factor_bin * factor_bin)
-    elif re.search(r'^\s*P(?:B(?:yte)?)?\s*$', prefix, re.IGNORECASE):
-        factor = (factor_si * factor_si * factor_si * factor_si * factor_si)
-    elif re.search(r'^\s*PiB(?:yte)?\s*$', prefix, re.IGNORECASE):
-        factor = (factor_bin * factor_bin * factor_bin *
-                  factor_bin * factor_bin)
+    elif re.search(r'^\s*M(?:B(?:yte)?)?\s*$', suffix, re.IGNORECASE):
+        factor = factor_si ** 2
+    elif re.search(r'^\s*MiB(?:yte)?\s*$', suffix, re.IGNORECASE):
+        factor = factor_bin ** 2
+    elif re.search(r'^\s*G(?:B(?:yte)?)?\s*$', suffix, re.IGNORECASE):
+        factor = factor_si ** 3
+    elif re.search(r'^\s*GiB(?:yte)?\s*$', suffix, re.IGNORECASE):
+        factor = factor_bin ** 3
+    elif re.search(r'^\s*T(?:B(?:yte)?)?\s*$', suffix, re.IGNORECASE):
+        factor = factor_si ** 4
+    elif re.search(r'^\s*TiB(?:yte)?\s*$', suffix, re.IGNORECASE):
+        factor = factor_bin ** 4
+    elif re.search(r'^\s*P(?:B(?:yte)?)?\s*$', suffix, re.IGNORECASE):
+        factor = factor_si ** 5
+    elif re.search(r'^\s*PiB(?:yte)?\s*$', suffix, re.IGNORECASE):
+        factor = factor_bin ** 5
+    elif re.search(r'^\s*E(?:B(?:yte)?)?\s*$', suffix, re.IGNORECASE):
+        factor = factor_si ** 6
+    elif re.search(r'^\s*EiB(?:yte)?\s*$', suffix, re.IGNORECASE):
+        factor = factor_bin ** 6
+    elif re.search(r'^\s*Z(?:B(?:yte)?)?\s*$', suffix, re.IGNORECASE):
+        factor = factor_si ** 7
+    elif re.search(r'^\s*ZiB(?:yte)?\s*$', suffix, re.IGNORECASE):
+        factor = factor_bin ** 7
     else:
-        msg = _("Couldn't detect prefix '%s'.") % (prefix)
+        msg = _("Couldn't detect suffix '%s'.") % (suffix)
         raise ValueError(msg)
 
-    if verbose > 5:
+    if verbose > 4:
         msg = _("Found factor %d.") % (factor)
         logger.debug(msg)
 
-    return long(factor * value_float)
+    fbytes = float(factor) * value_float
+    if as_float:
+        return fbytes
+    if six.PY2:
+        lbytes = long(fbytes)
+    else:
+        lbytes = int(fbytes)
+
+    return lbytes
+
 
 #------------------------------------------------------------------------
-
 def period2days(period, use_locale_radix = False, verbose = 0):
     '''
     Converts the given string of the form »5d 8h« in an amount of days.
@@ -469,8 +494,8 @@ def period2days(period, use_locale_radix = False, verbose = 0):
 
     return days
 
-#------------------------------------------------------------------------
 
+#------------------------------------------------------------------------
 def get_address_list(address_str, verbose = 0):
     '''
     Retrieves all mail addresses from address_str and give them back
