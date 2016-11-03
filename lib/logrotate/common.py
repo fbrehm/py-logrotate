@@ -23,7 +23,7 @@ import six
 
 # Own modules
 
-__version__ = '0.2.4'
+__version__ = '0.2.5'
 
 RE_WS = re.compile(r'\s+')
 RE_WS_ONLY = re.compile(r'^\s*$')
@@ -384,7 +384,7 @@ def period2days(period, use_locale_radix=False, verbose=0):
         raise ValueError(_("Given period was empty."))
 
     if verbose > 3:
-        logger.debug(_("Called with %r."), period))
+        logger.debug(_("Called with %r."), period)
 
     if period == 'now':
         return float(0)
@@ -402,9 +402,9 @@ def period2days(period, use_locale_radix=False, verbose=0):
         logger.debug(_("Using radix %r ..."), radix)
 
     # Search for hours in value
-    pattern = r'(\d+(?:' + radix + r'(\d*)?)\s*h(?:ours?)?'
+    pattern = r'(\d+(?:' + radix + r'\d*)?)\s*h(?:ours?)?'
     if verbose > 4:
-        logger.debug(_("Pattern %r."), pattern))
+        logger.debug(_("Pattern %r."), pattern)
     match = re.search(pattern, value, re.IGNORECASE)
     if match:
         hours_str = match.group(1)
@@ -421,7 +421,7 @@ def period2days(period, use_locale_radix=False, verbose=0):
     # Search for weeks in value
     pattern = r'(\d+(?:' + radix + r'\d*)?)\s*w(?:eeks?)?'
     if verbose > 4:
-        logger.debug(_("Pattern %r."), pattern))
+        logger.debug(_("Pattern %r."), pattern)
     match = re.search(pattern, value, re.IGNORECASE)
     if match:
         weeks_str = match.group(1)
@@ -438,7 +438,7 @@ def period2days(period, use_locale_radix=False, verbose=0):
     # Search for months in value
     pattern = r'(\d+(?:' + radix + r'\d*)?)\s*m(?:onths?)?'
     if verbose > 4:
-        logger.debug(_("Pattern %r."), pattern))
+        logger.debug(_("Pattern %r."), pattern)
     match = re.search(pattern, value, re.IGNORECASE)
     if match:
         months_str = match.group(1)
@@ -455,7 +455,7 @@ def period2days(period, use_locale_radix=False, verbose=0):
     # Search for years in value
     pattern = r'(\d+(?:' + radix + r'\d*)?)\s*y(?:ears?)?'
     if verbose > 4:
-        logger.debug(_("Pattern %r."), pattern))
+        logger.debug(_("Pattern %r."), pattern)
     match = re.search(pattern, value, re.IGNORECASE)
     if match:
         years_str = match.group(1)
@@ -472,7 +472,7 @@ def period2days(period, use_locale_radix=False, verbose=0):
     # At last search for days in value
     pattern = r'(\d+(?:' + radix + r'\d*)?)\s*(?:d(?:ays?)?)?'
     if verbose > 4:
-        logger.debug(_("Pattern %r."), pattern))
+        logger.debug(_("Pattern %r."), pattern)
     match = re.search(pattern, value, re.IGNORECASE)
     if match:
         days_str = match.group(1)
@@ -488,7 +488,7 @@ def period2days(period, use_locale_radix=False, verbose=0):
 
     # warn, if there is a rest
     if not RE_WS_ONLY.search(value):
-        logger.warning(_("Invalid content for a period: %r."), value))
+        logger.warning(_("Invalid content for a period: %r."), value)
 
     if verbose > 3:
         msg = _("Total %f days found.") % (days)
@@ -537,7 +537,7 @@ def get_address_list(address_str, verbose = 0):
         if verbose > 2:
             logger.debug(_("Got mail address pair:") + "\n" + pp(pair))
         if not email_valid(pair[1]):
-            logger.warning(_("Found invalid mail address %r."), address))
+            logger.warning(_("Found invalid mail address %r."), address)
             continue
         addresses.append(pair)
 
