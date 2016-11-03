@@ -23,7 +23,7 @@ import six
 
 # Own modules
 
-__version__ = '0.2.0 '
+__version__ = '0.2.1'
 
 RE_WS = re.compile(r'\s+')
 RE_WS_ONLY = re.compile(r'^\s*$')
@@ -151,9 +151,9 @@ def split_parts(text, keep_quotes=False, raise_on_unbalanced=True):
             quote_char = match.group('quote')
             if raise_on_unbalanced:
                 raise UnbalancedQuotesError(text, quote_char)
-            else:
-                last_chunk += chunk
-                continue
+            last_chunk += chunk
+            txt = RE_UNBALANCED_QUOTE.sub("", txt)
+            continue
 
         # Here we should not come to ...
         msg = "Broken split of %r: %r left." % (text, txt)
