@@ -163,7 +163,72 @@ class TestCaseCommon(BaseTestCase):
 
             self.assertEqual(tgt, result)
 
+    # -------------------------------------------------------------------------
+    def test_split_parts(self):
 
+        log.info("Testing split_parts() ...")
+
+        from logrotate.common import split_parts
+        from logrotate.common import UnbalancedQuotesError
+
+        log.debug("Testing simple splitting ...")
+        test_pairs = [
+            ['', []],
+            ['single_word', ['single_word']],
+            ['two words', ['two', 'words']],
+            ['some utf-8 characters: äöü ÄÖÜ »ß€€«', ['some', 'utf-8', 'characters:', 'äöü', 'ÄÖÜ', '»ß€€«']],
+            [' two\twords ', ['two', 'words']],
+            ['	three words \nthere\n', ['three', 'words', 'there']],
+            ['"bla" \'blub\'', ['bla', 'blub']],
+            ['"bla\'s blub" \'He says "Hello!"\'', ["bla's blub", 'He says "Hello!"']],
+        ]
+
+        for pair in test_pairs:
+            text = pair[0]
+            expected = pair[1]
+            if self.verbose > 1:
+                log.debug("Testing split_parts(%r) => %s", text, expected)
+            result = split_parts(text)
+            if self.verbose > 1:
+                log.debug("Got result: %s", result)
+            self.assertIsInstance(result, list)
+            self.assertEqual(expected, result)
+
+        log.debug("Testing splitting with keeping quoting characters ...")
+        test_pairs = [
+            ['Hello "bla" \'blub\'', ['Hello', '"bla"', "'blub'"]],
+            ['"bla\'s blub" cries \'He says "Hello!"\'', ['"bla\'s blub"', 'cries', '\'He says "Hello!"\'']],
+        ]
+
+        for pair in test_pairs:
+            text = pair[0]
+            expected = pair[1]
+            if self.verbose > 1:
+                log.debug("Testing split_parts(%r) => %s", text, expected)
+            result = split_parts(text, keep_quotes=True)
+            if self.verbose > 1:
+                log.debug("Got result: %s", result)
+            self.assertIsInstance(result, list)
+            self.assertEqual(expected, result)
+
+        log.debug("Testing unbalanced quoting ...")
+        text = "Hey bro's!"
+        expected = ['Hey', "bro's!"]
+
+        if self.verbose > 1:
+            log.debug("Testing split_parts(%r) => %s", text, expected)
+        result = split_parts(text, raise_on_unbalanced=False)
+        if self.verbose > 1:
+            log.debug("Got result: %s", result)
+        self.assertIsInstance(result, list)
+        self.assertEqual(expected, result)
+
+        if self.verbose > 1:
+            log.debug("Testing raising an exception on unbalanced quotings by %r", text)
+        with self.assertRaises(UnbalancedQuotesError) as cm:
+            result = split_parts(text)
+        e = cm.exception
+        log.debug("%s raised: %s", e.__class__.__name__, e)
 
 # =============================================================================
 
@@ -182,6 +247,7 @@ if __name__ == '__main__':
     suite.addTest(TestCaseCommon('test_to_unicode', verbose))
     suite.addTest(TestCaseCommon('test_to_utf8', verbose))
     suite.addTest(TestCaseCommon('test_to_str', verbose))
+    suite.addTest(TestCaseCommon('test_split_parts', verbose))
     # suite.addTest(TestCaseCommon('test_human2mbytes', verbose))
     # suite.addTest(TestCaseCommon('test_human2mbytes_l10n', verbose))
     # suite.addTest(TestCaseCommon('test_bytes2human', verbose))
