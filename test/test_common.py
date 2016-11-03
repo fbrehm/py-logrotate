@@ -329,6 +329,83 @@ class TestCaseCommon(BaseTestCase):
         log.debug("Switching back to saved locales %r.", loc)
         locale.setlocale(locale.LC_ALL, loc)    # restore saved locale
 
+    # -------------------------------------------------------------------------
+    def test_human2bytes_l10n(self):
+
+        log.info("Testing localisation of human2bytes() from logrotate.common ...")
+
+        loc = locale.getlocale()    # get current locale
+        encoding = loc[1]
+        log.debug("Current locale is %r.", loc)
+        german = ('de_DE', encoding)
+
+        log.debug("Setting to locale 'C' to be secure.")
+        locale.setlocale(locale.LC_ALL, 'C')
+        log.debug("Current locale is now %r.", locale.getlocale())
+
+        from logrotate.common import human2bytes
+
+        pairs_en = (
+            ('1.2 GiB', int(1.2 * (1024 ** 3))),
+            ('1.2 TiB', int(1.2 * (1024 ** 4))),
+        )
+
+        pairs_de = (
+            ('1,2 GiB', int(1.2 * (1024 ** 3))),
+            ('1,2 TiB', int(1.2 * (1024 ** 4))),
+            ('1.024 MiB', 1024 ** 3),
+            ('1.055,4 GiB', int(10554 * (1024 ** 3) / 10)),
+        )
+
+        log.debug("Testing english decimal radix character %r.", '.')
+        for pair in pairs_en:
+            src = pair[0]
+            expected = pair[1]
+            if self.verbose > 1:
+                log.debug("Testing localisation of human2bytes(%r) => %d", src, expected)
+            result = human2bytes(src, si_conform=True, use_locale_radix=True, verbose=self.verbose)
+            if self.verbose > 1:
+                log.debug("Got result: %r", result)
+            self.assertIsInstance(result, int)
+            self.assertEqual(expected, result)
+
+        # Switch to german locales
+        log.debug("Switching to german locale %r.", german)
+        # use German locale; name might vary with platform
+        locale.setlocale(locale.LC_ALL, german)
+        log.debug("Current locale is now %r.", locale.getlocale())
+
+        log.debug("Testing german decimal radix character %r.", ',')
+        for pair in pairs_de:
+            src = pair[0]
+            expected = pair[1]
+            if self.verbose > 1:
+                log.debug("Testing localisation of human2bytes(%r) => %d", src, expected)
+            result = human2bytes(src, si_conform=True, use_locale_radix=True, verbose=self.verbose)
+            if self.verbose > 1:
+                log.debug("Got result: %r", result)
+            self.assertIsInstance(result, int)
+            self.assertEqual(expected, result)
+
+        # Switch back to english locales
+        locale.setlocale(locale.LC_ALL, 'C')    # restore saved locale
+
+        log.debug("Testing english decimal radix character %r again.", '.')
+        for pair in pairs_en:
+            src = pair[0]
+            expected = pair[1]
+            if self.verbose > 1:
+                log.debug("Testing localisation of human2bytes(%r) => %d", src, expected)
+            result = human2bytes(src, si_conform=True, use_locale_radix=True, verbose=self.verbose)
+            if self.verbose > 1:
+                log.debug("Got result: %r", result)
+            self.assertIsInstance(result, int)
+            self.assertEqual(expected, result)
+
+        # Switch back to saved locales
+        log.debug("Switching back to saved locales %r.", loc)
+        locale.setlocale(locale.LC_ALL, loc)    # restore saved locale
+
 
 # =============================================================================
 
@@ -350,7 +427,7 @@ if __name__ == '__main__':
     suite.addTest(TestCaseCommon('test_split_parts', verbose))
     suite.addTest(TestCaseCommon('test_email_valid', verbose))
     suite.addTest(TestCaseCommon('test_human2bytes', verbose))
-    # suite.addTest(TestCaseCommon('test_human2mbytes_l10n', verbose))
+    suite.addTest(TestCaseCommon('test_human2bytes_l10n', verbose))
     # suite.addTest(TestCaseCommon('test_bytes2human', verbose))
     # suite.addTest(TestCaseCommon('test_to_bool', verbose))
 
