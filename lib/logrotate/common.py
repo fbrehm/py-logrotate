@@ -1,17 +1,12 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-
-# $Id$
-# $URL$
-
-'''
+"""
 @author: Frank Brehm
 @contact: frank@brehm-online.com
 @license: GPL3
-@copyright: (c) 2010-2011 by Frank Brehm, Berlin
-@version: 0.1.0
+@copyright: © 2010 - 2016 by Frank Brehm, Berlin
 @summary: Module for common used functions
-'''
+"""
 
 # Standard modules
 import re
@@ -24,42 +19,74 @@ import pprint
 import email.utils
 
 # Third party modules
+import six
 
 # Own modules
 
-revision = '$Revision$'
-revision = re.sub( r'\$', '', revision )
-revision = re.sub( r'Revision: ', r'r', revision )
-revision = re.sub( r'\s*$', '', revision )
+__version__ = '0.2.0 '
 
-__author__    = 'Frank Brehm'
-__copyright__ = '(C) 2011 by Frank Brehm, Berlin'
-__contact__    = 'frank@brehm-online.com'
-__version__    = '0.1.0 ' + revision
-__license__    = 'GPL3'
+RE_WS = re.compile(r'\s+')
+RE_WS_ONLY = re.compile(r'^\s*$')
+
+RE_BS_SQ = re.compile(r"\\'")
+RE_SINGLE_QUOTED = re.compile(r"^'((?:\\'|[^'])*)'")
+
+RE_BS_DQ = re.compile(r'\\"')
+RE_DOUBLE_QUOTED = re.compile(r'^"((?:\\"|[^"])*)"')
+
+RE_UNQUOTED = re.compile(r'^((?:[^\s\'"]+|\\\'|\\")+)')
+RE_UNBALANCED_QUOTE = re.compile(r'^(?P<chunk>(?P<quote>[\'"]).*)\s*')
 
 
-logger = logging.getLogger('pylogrotate.common')
+logger = logging.getLogger(__name__)
 locale_dir = None
 
-#========================================================================
 
-def split_parts( text, keep_quotes = False, raise_on_unbalanced = True):
-    '''
+#========================================================================
+class UnbalancedQuotesError(Exception):
+    """Exception class for unbalanced quotes in a text."""
+
+    # -------------------------------------------------------------------------
+    def __init__(self, text, quote_char=None):
+        """
+        Constructor.
+
+        @param text: the text with the unbalanced quotes
+        @type text: str
+        @param tries: the quoting character
+        @type tries: str
+
+        """
+
+        self.text = str(text)
+        self.quote_char = quote_char
+
+    # -----------------------------------------------------
+    def __str__(self):
+
+        if self.quote_char is None:
+            msg = "Unbalanced quotes in %r." % (self.text)
+        else:
+            msg = "Unbalanced quote %r in %r." % (self.quote_char, self.text)
+        return msg
+
+
+#========================================================================
+def split_parts(text, keep_quotes=False, raise_on_unbalanced=True):
+    """
     Split the given text in chunks by whitespaces or
     single or double quoted strings.
-        
-    @param text:        the text to split in chunks
-    @type text:         str
+
+    @param text: the text to split in chunks
+    @type text: str
     @param keep_quotes: keep quotes of quoted chunks
-    @type keep_quotes:  bool
-    @param raise_on_unbalanced: raise an exception on
-                                unbalanced quotes
-    @type raise_on_unbalanced:  bool
+    @type keep_quotes: bool
+    @param raise_on_unbalanced: raise an exception on unbalanced quotes
+    @type raise_on_unbalanced: bool
 
     @return: list of chunks
-    @rtype:  list
-    '''
+    @rtype: list
+    """
 
     chunks = []
     if text is None:
@@ -73,8 +100,8 @@ def split_parts( text, keep_quotes = False, raise_on_unbalanced = True):
 
         # add chunk, if there is a chunk left and a whitspace
         # at the begin of the line
-        match = re.search(r"\s+", txt)
-        if ( last_chunk != '' ) and match:
+        match = RE_WS.search(txt)
+        if (last_chunk != '') and match:
             chunks.append(last_chunk)
             last_chunk = ''
 
@@ -84,52 +111,53 @@ def split_parts( text, keep_quotes = False, raise_on_unbalanced = True):
             break
 
         # search for a single quoted string at the begin of the line
-        match = re.search(r"^'((?:\\'|[^'])*)'", txt)
+        match = RE_SINGLE_QUOTED.search(txt)
         if match:
             chunk = match.group(1)
-            chunk = re.sub(r"\\'", "'", chunk)
+            chunk = RE_BS_SQ.sub("'", chunk)
             if keep_quotes:
                 chunk = "'" + chunk + "'"
             last_chunk += chunk
-            txt = re.sub(r"^'(?:\\'|[^'])*'", "", txt)
+            txt = RE_SINGLE_QUOTED.sub("", txt)
             continue
 
         # search for a double quoted string at the begin of the line
-        match = re.search(r'^"((?:\\"|[^"])*)"', txt)
+        match = RE_DOUBLE_QUOTED.search(txt)
         if match:
             chunk = match.group(1)
-            chunk = re.sub(r'\\"', '"', chunk)
+            chunk = RE_BS_DQ.sub('"', chunk)
             if keep_quotes:
                 chunk = '"' + chunk + '"'
             last_chunk += chunk
-            txt = re.sub(r'^"(?:\\"|[^"])*"', "", txt)
+            txt = RE_DOUBLE_QUOTED.sub("", txt)
             continue
 
         # search for unquoted, whitespace delimited text
         # at the begin of the line
-        match = re.search(r'^((?:[^\s\'"]+|\\\'|\\")+)', txt)
+        match = RE_UNQUOTED.search(txt)
         if match:
             last_chunk += match.group(1)
-            txt = re.sub(r'^(?:[^\s\'"]+|\\\'|\\")+', "", txt)
+            txt = RE_UNQUOTED.sub("", txt)
             continue
 
         # Only whitespaces left
-        match = re.search(r'^\s*$', txt)
-        if match:
+        if RE_WS_ONLY.search(txt):
             break
 
         # Check for unbalanced quotes
-        match = re.search(r'^([\'"].*)\s*', txt)
+        match = RE_UNBALANCED_QUOTE.search(txt)
         if match:
-            chunk = match.group(1)
+            chunk = match.group('chunk')
+            quote_char = match.group('quote')
             if raise_on_unbalanced:
-                raise Exception("Unbalanced quotes in »%s«." % ( str(text) ) )
+                raise UnbalancedQuotesError(text, quote_char)
             else:
                 last_chunk += chunk
                 continue
 
         # Here we should not come to ...
-        raise Exception("Broken split of »%s«: »%s« left" %( str(text), txt))
+        msg = "Broken split of %r: %r left." % (text, txt)
+        raise Exception(msg)
 
     if last_chunk != '':
         chunks.append(last_chunk)
@@ -491,28 +519,105 @@ def get_address_list(address_str, verbose = 0):
 
     return addresses
 
-#------------------------------------------------------------------------
-
+# =============================================================================
 def to_unicode_or_bust(obj, encoding='utf-8'):
-    '''
-    Transforms a string, what is not a unicode string, into a unicode string.
+    """
+    Transforms a string, which is not a unicode string, into a unicode string.
     All other objects are left untouched.
 
     @param obj: the object to transform
     @type obj:  object
-    @param encoding: the encoding to use to decode the object
-                     defaults to 'utf-8'
+    @param encoding: the encoding to use to decode the object,
     @type encoding:  str
 
     @return: the maybe decoded object
     @rtype:  object
-    '''
 
-    if isinstance(obj, basestring):
-        if not isinstance(obj, unicode):
-            obj = unicode(obj, encoding)
+    """
+
+    do_decode = False
+    if six.PY2:
+        if isinstance(obj, str):
+            do_decode = True
+    else:
+        if isinstance(obj, bytes):
+            do_decode = True
+
+    if do_decode:
+        obj = obj.decode(encoding)
 
     return obj
+
+
+# =============================================================================
+def encode_or_bust(obj, encoding='utf-8'):
+    """
+    Encodes the given unicode object into the given encoding.
+    In Python 3 a bytes object is returend in this case.
+
+    @param obj: the object to encode
+    @type obj:  object
+    @param encoding: the encoding to use to encode the object,
+    @type encoding:  str
+
+    @return: the maybe encoded object
+    @rtype:  object
+
+    """
+
+    do_encode = False
+    if six.PY2:
+        if isinstance(obj, unicode):
+            do_encode = True
+    else:
+        if isinstance(obj, str):
+            do_encode = True
+
+    if do_encode:
+        obj = obj.encode(encoding)
+
+    return obj
+
+
+# =============================================================================
+def to_utf8_or_bust(obj):
+    """
+    Transforms a string, what is a unicode string, into a utf-8 encoded string.
+    All other objects are left untouched.
+    In Python 3 a bytes object is returend in this case.
+
+    @param obj: the object to transform
+    @type obj:  object
+
+    @return: the maybe encoded object
+    @rtype:  object
+
+    """
+
+    return encode_or_bust(obj, 'utf-8')
+
+
+# =============================================================================
+def to_bytes(obj, encoding='utf-8'):
+    "Wrapper for encode_or_bust()"
+
+    return encode_or_bust(obj, encoding)
+
+
+# =============================================================================
+def to_str_or_bust(obj, encoding='utf-8'):
+    """
+    Transformes the given string-like object into the str-type according
+    to the current Python version.
+    """
+
+    if six.PY2:
+        return encode_or_bust(obj, encoding)
+    else:
+        return to_unicode_or_bust(obj, encoding)
+
+
+
 
 #========================================================================
 
