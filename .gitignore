@@ -1,0 +1,12 @@
+*.swp
+*.diff
+*-stamp
+*.pyc
+*.swp
+*.egg-info
+.idea/*
+/build
+/dist
+local_version.py
+/.tox
+
