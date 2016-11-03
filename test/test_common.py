@@ -260,6 +260,76 @@ class TestCaseCommon(BaseTestCase):
             self.assertIsInstance(result, bool)
             self.assertEqual(expected, result)
 
+    # -------------------------------------------------------------------------
+    def test_human2bytes(self):
+
+        log.info("Testing human2bytes() from logrotate.common ...")
+
+        from logrotate.common import human2bytes
+
+        loc = locale.getlocale()    # get current locale
+        encoding = loc[1]
+        log.debug("Current locale is %r.", loc)
+        german = ('de_DE', encoding)                                # noqa
+
+        log.debug("Setting to locale 'C' to be secure.")
+        locale.setlocale(locale.LC_ALL, 'C')
+        log.debug("Current locale is now %r.", locale.getlocale())
+
+        test_pairs_int_si = (
+            ('1048576', 1024 ** 2),
+            ('1MiB', 1024 ** 2),
+            ('1 MiB', 1024 ** 2),
+            ('1 MiB', 1024 ** 2),
+            (' 1 MiB	', 1024 ** 2),
+            ('1.2 MiB', int(1.2 * (1024 ** 2))),
+            ('1 GiB', 1024 ** 3),
+            ('1 GB', 1000 ** 3),
+            ('1.2 GiB', int(1.2 * (1024 ** 3))),
+            ('102400 KB', 100 * (1024 ** 2)),
+            ('100000 KB', 100000 * 1024),
+            ('102400 MB', 1024 * 1000 * 1000 * 100),
+            ('100000 MB', 1000 * 1000 * 1000 * 100),
+            ('102400 MiB', 1024 * 100 * (1024 ** 2)),
+            ('100000 MiB', 1000 * 100 * (1024 ** 2)),
+            ('102400 GB', 1024 * 1000 * 1000 * 1000 * 100),
+            ('100000 GB', 1000 * 1000 * 1000 * 1000 * 100),
+            ('102400 GiB', 1024 * 1024 * 100 * (1024 ** 2)),
+            ('100000 GiB', 1024 * 1000 * 100 * (1024 ** 2)),
+            ('1024 TB', 1024 * (1000 ** 4)),
+            ('1000 TB', 1000 * (1000 ** 4)),
+            ('1024 TiB', 1024 ** 5),
+            ('1000 TiB', 1000 * (1024 ** 4)),
+            ('1024 PB', 1024 * (1000 ** 5)),
+            ('1000 PB', 1000 * (1000 ** 5)),
+            ('1024 PiB', 1024 ** 6),
+            ('1000 PiB', 1000 * (1024 ** 5)),
+            ('1024 EB', 1024 * (1000 ** 6)),
+            ('1000 EB', 1000 * (1000 ** 6)),
+            ('1024 EiB', 1024 ** 7),
+            ('1000 EiB', 1000 * (1024 ** 6)),
+        )
+
+        for pair in test_pairs_int_si:
+
+            src = pair[0]
+            expected = pair[1]
+            if self.verbose > 1:
+                log.debug("Testing human2bytes(%r) => %d", src, expected)
+            result = human2bytes(src, si_conform=True, verbose=self.verbose)
+            if self.verbose > 1:
+                log.debug("Got result: %r", result)
+            if six.PY2:
+                self.assertIsInstance(result, long)
+            else:
+                self.assertIsInstance(result, int)
+            self.assertEqual(expected, result)
+
+        # Switch back to saved locales
+        log.debug("Switching back to saved locales %r.", loc)
+        locale.setlocale(locale.LC_ALL, loc)    # restore saved locale
+
+
 # =============================================================================
 
 if __name__ == '__main__':
@@ -279,7 +349,7 @@ if __name__ == '__main__':
     suite.addTest(TestCaseCommon('test_to_str', verbose))
     suite.addTest(TestCaseCommon('test_split_parts', verbose))
     suite.addTest(TestCaseCommon('test_email_valid', verbose))
-    # suite.addTest(TestCaseCommon('test_human2mbytes', verbose))
+    suite.addTest(TestCaseCommon('test_human2bytes', verbose))
     # suite.addTest(TestCaseCommon('test_human2mbytes_l10n', verbose))
     # suite.addTest(TestCaseCommon('test_bytes2human', verbose))
     # suite.addTest(TestCaseCommon('test_to_bool', verbose))
