@@ -23,7 +23,7 @@ import six
 
 # Own modules
 
-__version__ = '0.2.3'
+__version__ = '0.2.4'
 
 RE_WS = re.compile(r'\s+')
 RE_WS_ONLY = re.compile(r'^\s*$')
@@ -45,7 +45,7 @@ logger = logging.getLogger(__name__)
 locale_dir = None
 
 
-#========================================================================
+# =============================================================================
 class UnbalancedQuotesError(Exception):
     """Exception class for unbalanced quotes in a text."""
 
@@ -74,7 +74,20 @@ class UnbalancedQuotesError(Exception):
         return msg
 
 
-#========================================================================
+# =============================================================================
+def pp(value):
+    """
+    Returns a pretty print string of the given value.
+
+    @return: pretty print string
+    @rtype: str
+    """
+
+    pretty_printer = pprint.PrettyPrinter(indent=4)
+    return pretty_printer.pformat(value)
+
+
+# =============================================================================
 def split_parts(text, keep_quotes=False, raise_on_unbalanced=True):
     """
     Split the given text in chunks by whitespaces or
@@ -168,7 +181,7 @@ def split_parts(text, keep_quotes=False, raise_on_unbalanced=True):
     return chunks
 
 
-#------------------------------------------------------------------------
+# =============================================================================
 def email_valid(address):
     """
     Simple Check for E-Mail addresses
@@ -192,7 +205,7 @@ def email_valid(address):
     return False
 
 
-#------------------------------------------------------------------------
+# =============================================================================
 def human2bytes(value, si_conform=True, use_locale_radix=False, as_float=False, verbose=0):
     """
     Converts the given human readable byte value (e.g. 5MB, 8.4GiB etc.)
@@ -332,9 +345,9 @@ def human2bytes(value, si_conform=True, use_locale_radix=False, as_float=False, 
     return lbytes
 
 
-#------------------------------------------------------------------------
-def period2days(period, use_locale_radix = False, verbose = 0):
-    '''
+# =============================================================================
+def period2days(period, use_locale_radix=False, verbose=0):
+    """
     Converts the given string of the form »5d 8h« in an amount of days.
     It raises a ValueError on invalid values.
 
@@ -349,33 +362,29 @@ def period2days(period, use_locale_radix = False, verbose = 0):
         - »m[onths]« - == 30 days
         - »y[ears]«  - == 365 days
 
-    @param period:           the period to convert
-    @type period:            str
-    @param use_locale_radix: use the locale version of radix instead of the
-                             english decimal dot.
-    @type use_locale_radix:  bool
-    @param verbose:          level of verbosity
-    @type verbose:           int
+    @param period: the period to convert
+    @type period: str
+    @param use_locale_radix: use the locale version of radix instead of the english decimal dot.
+    @type use_locale_radix: bool
+    @param verbose: level of verbosity
+    @type verbose: int
 
     @return: amount of days
-    @rtype:  float
-    '''
+    @rtype: float
+    """
 
     t = gettext.translation('pylogrotate', locale_dir, fallback=True)
     _ = t.lgettext
 
     if period is None:
-        msg = _("Given period is 'None'.")
-        raise ValueError(msg)
+        raise ValueError(_("Given period is None."))
 
     value = str(period).strip().lower()
     if period == '':
-        msg = _("Given period was empty.")
-        raise ValueError(msg)
+        raise ValueError(_("Given period was empty."))
 
-    if verbose > 4:
-        msg = _("Called with '%s'.") % (period)
-        logger.debug(msg)
+    if verbose > 3:
+        logger.debug(_("Called with %r."), period))
 
     if period == 'now':
         return float(0)
@@ -389,95 +398,81 @@ def period2days(period, use_locale_radix = False, verbose = 0):
     if use_locale_radix:
         radix = locale.RADIXCHAR
     radix = re.escape(radix)
-    if verbose > 5:
-        msg = _("Using radix '%s'.") % (radix)
-        logger.debug(msg)
+    if verbose > 3:
+        logger.debug(_("Using radix %r ..."), radix)
 
     # Search for hours in value
-    pattern = r'(\d+(?:' + radix + r'\d*)?)\s*h(?:ours?)?'
-    if verbose > 5:
-        msg = _("Pattern '%s'.") % (pattern)
-        logger.debug(msg)
+    pattern = r'(\d+(?:' + radix + r'(\d*)?)\s*h(?:ours?)?'
+    if verbose > 4:
+        logger.debug(_("Pattern %r."), pattern))
     match = re.search(pattern, value, re.IGNORECASE)
     if match:
         hours_str = match.group(1)
         if use_locale_radix:
             hours_str = re.sub(radix, '.', hours_str, 1)
         hours = float(hours_str)
-        days += (hours/24)
-        if verbose > 4:
-            msg = _("Found %f hours.") % (hours)
-            logger.debug(msg)
+        days += hours / 24
+        if verbose > 3:
+            logger.debug(_("Found %.2f hours."), hours)
         value = re.sub(pattern, '', value, re.IGNORECASE)
-    if verbose > 5:
-        msg = _("Rest after hours: '%s'." % (value))
-        logger.debug(msg)
+    if verbose > 4:
+        logger.debug(_("Rest after hours: %r."), value)
 
     # Search for weeks in value
     pattern = r'(\d+(?:' + radix + r'\d*)?)\s*w(?:eeks?)?'
-    if verbose > 5:
-        msg = _("Pattern '%s'.") % (pattern)
-        logger.debug(msg)
+    if verbose > 4:
+        logger.debug(_("Pattern %r."), pattern))
     match = re.search(pattern, value, re.IGNORECASE)
     if match:
         weeks_str = match.group(1)
         if use_locale_radix:
             weeks_str = re.sub(radix, '.', weeks_str, 1)
         weeks = float(weeks_str)
-        days += (weeks*7)
-        if verbose > 4:
-            msg = _("Found %f weeks.") % (weeks)
-            logger.debug(msg)
+        days += weeks * 7
+        if verbose > 3:
+            logger.debug(_("Found %f weeks."), weeks)
         value = re.sub(pattern, '', value, re.IGNORECASE)
-    if verbose > 5:
-        msg = _("Rest after weeks: '%s'." % (value))
-        logger.debug(msg)
+    if verbose > 4:
+        logger.debug(_("Rest after weeks: %r."), value)
 
     # Search for months in value
     pattern = r'(\d+(?:' + radix + r'\d*)?)\s*m(?:onths?)?'
-    if verbose > 5:
-        msg = _("Pattern '%s'.") % (pattern)
-        logger.debug(msg)
+    if verbose > 4:
+        logger.debug(_("Pattern %r."), pattern))
     match = re.search(pattern, value, re.IGNORECASE)
     if match:
         months_str = match.group(1)
         if use_locale_radix:
             months_str = re.sub(radix, '.', months_str, 1)
         months = float(months_str)
-        days += (months*30)
-        if verbose > 4:
-            msg = _("Found %f months.") % (months)
-            logger.debug(msg)
+        days += months * 30
+        if verbose > 3:
+            logger.debug(_("Found %f months."), months)
         value = re.sub(pattern, '', value, re.IGNORECASE)
-    if verbose > 5:
-        msg = _("Rest after months: '%s'." % (value))
-        logger.debug(msg)
+    if verbose > 4:
+        logger.debug(_("Rest after months: %r."), value)
 
     # Search for years in value
     pattern = r'(\d+(?:' + radix + r'\d*)?)\s*y(?:ears?)?'
-    if verbose > 5:
-        msg = _("Pattern '%s'.") % (pattern)
-        logger.debug(msg)
+    if verbose > 4:
+        logger.debug(_("Pattern %r."), pattern))
     match = re.search(pattern, value, re.IGNORECASE)
     if match:
         years_str = match.group(1)
         if use_locale_radix:
             years_str = re.sub(radix, '.', years_str, 1)
         years = float(years_str)
-        days += (years*365)
-        if verbose > 4:
-            msg = _("Found %f years.") % (years)
-            logger.debug(msg)
+        days += years * 365
+        if verbose > 3:
+            logger.debug(_("Found %f years."), years)
         value = re.sub(pattern, '', value, re.IGNORECASE)
-    if verbose > 5:
-        msg = _("Rest after years: '%s'." % (value))
-        logger.debug(msg)
+    if verbose > 4:
+        logger.debug(_("Rest after years: %r."), value)
 
     # At last search for days in value
     pattern = r'(\d+(?:' + radix + r'\d*)?)\s*(?:d(?:ays?)?)?'
-    if verbose > 5:
-        msg = _("Pattern '%s'.") % (pattern)
-        logger.debug(msg)
+    if verbose > 4:
+        logger.debug(_("Pattern %r."), pattern))
     match = re.search(pattern, value, re.IGNORECASE)
     if match:
         days_str = match.group(1)
@@ -485,27 +480,24 @@ def period2days(period, use_locale_radix = False, verbose = 0):
             days_str = re.sub(radix, '.', days_str, 1)
         days_float = float(days_str)
         days += days_float
-        if verbose > 4:
-            msg = _("Found %f days.") % (days_float)
-            logger.debug(msg)
+        if verbose > 3:
+            logger.debug(_("Found %f days."), days_float)
         value = re.sub(pattern, '', value, re.IGNORECASE)
-    if verbose > 5:
-        msg = _("Rest after days: '%s'." % (value))
-        logger.debug(msg)
+    if verbose > 4:
+        logger.debug(_("Rest after days: %r."), value)
 
     # warn, if there is a rest
-    if re.search(r'^\s*$', value) is None:
-        msg = _("Invalid content for a period: '%s'.") % (value)
-        logger.warning(msg)
+    if not RE_WS_ONLY.search(value):
+        logger.warning(_("Invalid content for a period: %r."), value))
 
-    if verbose > 4:
+    if verbose > 3:
         msg = _("Total %f days found.") % (days)
-        logger.debug(msg)
+        logger.debug(_("Total %f days found."), days)
 
     return days
 
 
-#------------------------------------------------------------------------
+# =============================================================================
 def get_address_list(address_str, verbose = 0):
     '''
     Retrieves all mail addresses from address_str and give them back
@@ -525,7 +517,6 @@ def get_address_list(address_str, verbose = 0):
 
     t = gettext.translation('pylogrotate', locale_dir, fallback=True)
     _ = t.lgettext
-    pp = pprint.PrettyPrinter(indent=4)
 
     addr_list = []
     addresses = []
@@ -537,23 +528,21 @@ def get_address_list(address_str, verbose = 0):
             addr_list.append(address)
 
     if verbose > 2:
-        msg = _("Found address entries:") + "\n" + pp.pformat(addr_list)
-        logger.debug(msg)
+        logger.debug(_("Found address entries:") + "\n" + pp(addr_list))
 
     for address in addr_list:
         address = re.sub(r',', ' ', address)
         address = re.sub(r'\s+', ' ', address)
         pair = email.utils.parseaddr(address)
         if verbose > 2:
-            msg = _("Got mail address pair:") + "\n" + pp.pformat(pair)
-            logger.debug(msg)
+            logger.debug(_("Got mail address pair:") + "\n" + pp(pair))
         if not email_valid(pair[1]):
-            msg = _("Found invalid mail address '%s'.") % (address)
-            logger.warning(msg)
+            logger.warning(_("Found invalid mail address %r."), address))
             continue
         addresses.append(pair)
 
     return addresses
+
 
 # =============================================================================
 def to_unicode_or_bust(obj, encoding='utf-8'):
@@ -653,13 +642,11 @@ def to_str_or_bust(obj, encoding='utf-8'):
         return to_unicode_or_bust(obj, encoding)
 
 
-
-
-#========================================================================
+# =============================================================================
 
 if __name__ == "__main__":
     pass
 
-#========================================================================
+# =============================================================================
 
 # vim: fileencoding=utf-8 filetype=python ts=4 expandtab
