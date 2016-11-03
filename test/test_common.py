@@ -230,6 +230,36 @@ class TestCaseCommon(BaseTestCase):
         e = cm.exception
         log.debug("%s raised: %s", e.__class__.__name__, e)
 
+    # -------------------------------------------------------------------------
+    def test_email_valid(self):
+
+        log.info("Testing email_valid() ...")
+
+        from logrotate.common import email_valid
+
+        test_pairs = [
+            [None, False],
+            ['', False],
+            ['  ', False],
+            [' uhu ', False],
+            ['1@2.d', False],
+            ['1@2.33', False],
+            ['1@2.de', True],
+            ['1@2.defghijklmnopqrst', False],
+            ['@2.de', False],
+        ]
+
+        for pair in test_pairs:
+            address = pair[0]
+            expected = pair[1]
+            if self.verbose > 1:
+                log.debug("Testing email_valid(%r) => %s", address, expected)
+            result = email_valid(address)
+            if self.verbose > 1:
+                log.debug("Got result: %s", result)
+            self.assertIsInstance(result, bool)
+            self.assertEqual(expected, result)
+
 # =============================================================================
 
 if __name__ == '__main__':
@@ -248,6 +278,7 @@ if __name__ == '__main__':
     suite.addTest(TestCaseCommon('test_to_utf8', verbose))
     suite.addTest(TestCaseCommon('test_to_str', verbose))
     suite.addTest(TestCaseCommon('test_split_parts', verbose))
+    suite.addTest(TestCaseCommon('test_email_valid', verbose))
     # suite.addTest(TestCaseCommon('test_human2mbytes', verbose))
     # suite.addTest(TestCaseCommon('test_human2mbytes_l10n', verbose))
     # suite.addTest(TestCaseCommon('test_bytes2human', verbose))
