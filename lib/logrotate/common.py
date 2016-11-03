@@ -37,6 +37,9 @@ RE_DOUBLE_QUOTED = re.compile(r'^"((?:\\"|[^"])*)"')
 RE_UNQUOTED = re.compile(r'^((?:[^\s\'"]+|\\\'|\\")+)')
 RE_UNBALANCED_QUOTE = re.compile(r'^(?P<chunk>(?P<quote>[\'"]).*)\s*')
 
+RE_EMAIL = re.compile(
+    r'^[a-z0-9._%-+]+@[a-z0-9._%-]+\.[a-z]{2,12}$',
+    re.IGNORECASE)
 
 logger = logging.getLogger(__name__)
 locale_dir = None
@@ -164,18 +167,18 @@ def split_parts(text, keep_quotes=False, raise_on_unbalanced=True):
 
     return chunks
 
-#------------------------------------------------------------------------
 
+#------------------------------------------------------------------------
 def email_valid(address):
-    '''
+    """
     Simple Check for E-Mail addresses
 
     @param address: the mail address to check
-    @type address:  str
+    @type address: str
 
     @return: Validity of the given mil address
-    @rtype:  bool
-    '''
+    @rtype: bool
+    """
 
     if address is None:
         return False
@@ -184,14 +187,12 @@ def email_valid(address):
     if adr is None or adr == '':
         return False
 
-    pattern = r'^[a-z0-9._%-+]+@[a-z0-9._%-]+.[a-z]{2,6}$'
-    if re.search(pattern, adr, re.IGNORECASE) is None:
-        return False
+    if RE_EMAIL.search(adr):
+        return True
+    return False
 
-    return True
 
 #------------------------------------------------------------------------
-
 def human2bytes(
         value,
         si_conform=True,
