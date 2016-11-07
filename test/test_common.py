@@ -473,6 +473,86 @@ class TestCaseCommon(BaseTestCase):
             self.assertIsInstance(result, list)
             self.assertEqual(expected, result)
 
+    # -------------------------------------------------------------------------
+    def test_to_bool(self):
+
+        log.info("Testing to_bool() from logrotate.common ...")
+
+        from logrotate.common import to_bool
+
+        class TestClass(object):
+            pass
+        test_object = TestClass()
+
+        class TestClassTrue(object):
+            if six.PY3:
+                def __bool__(self):
+                    return True
+            else:
+                def __nonzero__(self):
+                    return True
+        test_object_true = TestClassTrue()
+
+        class TestClassFalse(object):
+            if six.PY3:
+                def __bool__(self):
+                    return False
+            else:
+                def __nonzero__(self):
+                    return False
+        test_object_false = TestClassFalse()
+
+        class TestClassFilled(object):
+            def __len__(self):
+                return 1
+        test_object_filled = TestClassFilled()
+
+        class TestClassEmpty(object):
+            def __len__(self):
+                return 0
+        test_object_empty = TestClassEmpty()
+
+        test_pairs = (
+            (None, False),
+            (True, True),
+            (False, False),
+            (0, False),
+            (0.0, False),
+            (1, True),
+            (1.0, True),
+            (-1, True),
+            ('', False),
+            ('yes', True),
+            ('YES', True),
+            ('Yes', True),
+            ('y', True),
+            ('no', False),
+            ('NO', False),
+            ('No', False),
+            ('n', False),
+            ('true', True),
+            ('False', False),
+            ('On', True),
+            ('Off', False),
+            (test_object, True),
+            (test_object_true, True),
+            (test_object_false, False),
+            (test_object_filled, True),
+            (test_object_empty, False),
+        )
+
+        for pair in test_pairs:
+
+            src = pair[0]
+            expected = pair[1]
+            if self.verbose > 1:
+                log.debug("Testing to_bool(%r) => %r", src, expected)
+            result = to_bool(src)
+            if self.verbose > 1:
+                log.debug("Got result: %r", result)
+            self.assertIsInstance(result, bool)
+            self.assertEqual(expected, result)
+
 
 # =============================================================================
 
@@ -497,6 +577,7 @@ if __name__ == '__main__':
     suite.addTest(TestCaseCommon('test_human2bytes_l10n', verbose))
     suite.addTest(TestCaseCommon('test_period2days', verbose))
     suite.addTest(TestCaseCommon('test_get_address_list', verbose))
+    suite.addTest(TestCaseCommon('test_to_bool', verbose))
 
     runner = unittest.TextTestRunner(verbosity=verbose)
 
