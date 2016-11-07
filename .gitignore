@@ -3,6 +3,7 @@
 *-stamp
 *.pyc
 *.swp
+*.mo
 *.egg-info
 .idea/*
 /build

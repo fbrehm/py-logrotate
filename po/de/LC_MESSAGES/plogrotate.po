@@ -1,0 +1,302 @@
+# German translations for plogrotate.
+# Copyright (C) 2016 Frank Brehm
+# This file is distributed under the same license as the plogrotate project.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2016.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: plogrotate 0.7.0\n"
+"Report-Msgid-Bugs-To: frank.brehm@profitbricks.com\n"
+"POT-Creation-Date: 2016-11-07 18:29+0100\n"
+"PO-Revision-Date: 2016-11-07 17:40+0100\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language: de\n"
+"Language-Team: de <LL@li.org>\n"
+"Plural-Forms: nplurals=2; plural=(n != 1)\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.1.1\n"
+
+#: lib/logrotate/common.py:281
+#, python-format
+msgid "Using radix %(radix)r, thousend separator %(sep)r"
+msgstr "Verwende Dezimaltrennzeichen %(radix)r und Tausendertrennzeichen %(sep)r"
+
+#: lib/logrotate/common.py:291
+#, python-format
+msgid "Value without thousend separators: %r."
+msgstr "Wert ohne Tausendertrennzeichen: %r."
+
+#: lib/logrotate/common.py:299
+#, python-format
+msgid "Could not determine bytes in %r."
+msgstr "Konnte Bytes in %r nicht ermitteln."
+
+#: lib/logrotate/common.py:360
+#, python-format
+msgid "Couldn't detect suffix %r."
+msgstr "Konnte keinen Suffix in %r ermitteln."
+
+#: lib/logrotate/common.py:364
+#, python-format
+msgid "Found factor %d."
+msgstr "Faktor %d gefunden."
+
+#: lib/logrotate/common.py:407
+msgid "Given period is None."
+msgstr "Die übergebene Periode ist None."
+
+#: lib/logrotate/common.py:411
+msgid "Given period was empty."
+msgstr "Die übergebene Periode war leer."
+
+#: lib/logrotate/common.py:414
+#, python-format
+msgid "Called with %r."
+msgstr "Mit %r aufgerufen."
+
+#: lib/logrotate/common.py:429
+#, python-format
+msgid "Using radix %r ..."
+msgstr "Verwende Dezimaltrennzeichen %r ..."
+
+#: lib/logrotate/common.py:434 lib/logrotate/common.py:451 lib/logrotate/common.py:468
+#: lib/logrotate/common.py:485 lib/logrotate/common.py:502
+#, python-format
+msgid "Pattern %r."
+msgstr "Muster %r."
+
+#: lib/logrotate/common.py:443
+#, python-format
+msgid "Found %.2f hours."
+msgstr "%.2f Stunden gefunden."
+
+#: lib/logrotate/common.py:446
+#, python-format
+msgid "Rest after hours: %r."
+msgstr "Rest nach den Stunden: %r."
+
+#: lib/logrotate/common.py:460
+#, python-format
+msgid "Found %f weeks."
+msgstr "%f Wochen gefunden."
+
+#: lib/logrotate/common.py:463
+#, python-format
+msgid "Rest after weeks: %r."
+msgstr "Rest nach den Wochen: %r."
+
+#: lib/logrotate/common.py:477
+#, python-format
+msgid "Found %f months."
+msgstr "%f Monate gefunden."
+
+#: lib/logrotate/common.py:480
+#, python-format
+msgid "Rest after months: %r."
+msgstr "Rest nach den Monaten: %r."
+
+#: lib/logrotate/common.py:494
+#, python-format
+msgid "Found %f years."
+msgstr "%f Jahre gefunden."
+
+#: lib/logrotate/common.py:497
+#, python-format
+msgid "Rest after years: %r."
+msgstr "Rest nach den Jahren: %r."
+
+#: lib/logrotate/common.py:511
+#, python-format
+msgid "Found %f days."
+msgstr "%f Tage gefunden."
+
+#: lib/logrotate/common.py:514
+#, python-format
+msgid "Rest after days: %r."
+msgstr "Rest nach den Tagen: %r."
+
+#: lib/logrotate/common.py:518
+#, python-format
+msgid "Invalid content for a period: %r."
+msgstr "Ungültige Periode: %r."
+
+#: lib/logrotate/common.py:521 lib/logrotate/common.py:522
+#, python-format
+msgid "Total %f days found."
+msgstr "Insgesamt %f Tage gefunden."
+
+#: lib/logrotate/common.py:555
+msgid "Found address entry:"
+msgid_plural "Found address entries:"
+msgstr[0] "Gefundenen Adresseintrag:"
+msgstr[1] "Gefundene Adresseinträge:"
+
+#: lib/logrotate/common.py:562
+msgid "Got mail address pair:"
+msgstr "Mailadress-Paar bekommen:"
+
+#: lib/logrotate/common.py:564
+#, python-format
+msgid "Found invalid mail address %r."
+msgstr "Ungültige Mailadresse %r gefunden."
+
+#: lib/logrotate/status.py:167
+msgid "Status file object will destroyed."
+msgstr ""
+
+#: lib/logrotate/status.py:241
+#, python-format
+msgid "Setting rotation date of '%(file)s' to '%(date)s' ..."
+msgstr ""
+
+#: lib/logrotate/status.py:281
+#, python-format
+msgid "Open status file '%s' for writing ..."
+msgstr ""
+
+#: lib/logrotate/status.py:290
+#, python-format
+msgid "Could not open status file '%s' for write: "
+msgstr ""
+
+#: lib/logrotate/status.py:299
+#, python-format
+msgid "Writing version line '%s'."
+msgstr ""
+
+#: lib/logrotate/status.py:324
+#, python-format
+msgid "Writing line '%s'."
+msgstr ""
+
+#: lib/logrotate/status.py:360
+#, python-format
+msgid "Checking permissions of status file '%s' ..."
+msgstr ""
+
+#: lib/logrotate/status.py:367
+#, python-format
+msgid "Access to status file '%s' is OK."
+msgstr ""
+
+#: lib/logrotate/status.py:371
+#, python-format
+msgid "No write access to status file '%s'."
+msgstr ""
+
+#: lib/logrotate/status.py:380
+#, python-format
+msgid "Checking permissions of parent directory '%s' ..."
+msgstr ""
+
+#: lib/logrotate/status.py:386
+#, python-format
+msgid "Directory '%s' doesn't exists."
+msgstr ""
+
+#: lib/logrotate/status.py:395
+#, python-format
+msgid "Parent directory '%(dir)s' of status file '%(file)s' is not a directory."
+msgstr ""
+
+#: lib/logrotate/status.py:406
+#, python-format
+msgid "No write access to parent directory '%(dir)s' of status file '%(file)s'."
+msgstr ""
+
+#: lib/logrotate/status.py:415
+#, python-format
+msgid "Permissions to parent directory '%s' are OK."
+msgstr ""
+
+#: lib/logrotate/status.py:441
+#, python-format
+msgid "Status file '%s' doesn't exists."
+msgstr ""
+
+#: lib/logrotate/status.py:453
+#, python-format
+msgid "Absolute path of status file is now '%s'."
+msgstr ""
+
+#: lib/logrotate/status.py:459
+#, python-format
+msgid "Status file '%s' is not a regular file."
+msgstr ""
+
+#: lib/logrotate/status.py:464
+#, python-format
+msgid "Reading status file '%s' ..."
+msgstr ""
+
+#: lib/logrotate/status.py:471
+#, python-format
+msgid "Could not read status file '%s': "
+msgstr ""
+
+#: lib/logrotate/status.py:483
+#, python-format
+msgid "Performing status file line '%s'."
+msgstr ""
+
+#: lib/logrotate/status.py:484 lib/logrotate/status.py:529 lib/logrotate/status.py:555
+#: lib/logrotate/status.py:566
+#, python-format
+msgid "(file '%(file)s', line %(lnr)s)"
+msgstr ""
+
+#: lib/logrotate/status.py:498
+#, python-format
+msgid "Idendified version of status file: %d"
+msgstr ""
+
+#: lib/logrotate/status.py:504
+#, python-format
+msgid "Incompatible version of status file '%(file)s': %(header)s"
+msgstr ""
+
+#: lib/logrotate/status.py:517
+#, python-format
+msgid "Found logfile '%(file)s' with rotation date '%(date)s'."
+msgstr ""
+
+#: lib/logrotate/status.py:527
+#, python-format
+msgid "Could not determine date format: '%s'."
+msgstr ""
+
+#: lib/logrotate/status.py:554
+#, python-format
+msgid "Invalid date: '%s'."
+msgstr ""
+
+#: lib/logrotate/status.py:564
+#, python-format
+msgid "Neither a logfile nor a date found in line '%s'."
+msgstr ""
+
+#: lib/logrotate/translate.py:69
+#, python-format
+msgid "Basedir: %r"
+msgstr "Basisverzeichnis: %r"
+
+#: lib/logrotate/translate.py:70
+#, fuzzy, python-format
+msgid "Locales Dir: %r"
+msgstr "Verzeichnis für Lokalisierungen: %r"
+
+#: lib/logrotate/translate.py:71
+#, python-format
+msgid "Domain: %r"
+msgstr "Domäne: %r"
+
+#: lib/logrotate/translate.py:72
+#, python-format
+msgid "Found .mo-file: %r"
+msgid_plural "Found .mo-files: %r"
+msgstr[0] ".mo-Datei gefunden: %r"
+msgstr[1] ".mo-Dateien gefunden: %r"
+

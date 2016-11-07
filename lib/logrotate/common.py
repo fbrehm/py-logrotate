@@ -24,6 +24,13 @@ import six
 
 # Own modules
 
+basedir = os.path.realpath(os.path.join(os.path.dirname(__file__), '..', '..'))
+locale_dir = os.path.join(basedir, 'po')
+if not os.path.isdir(locale_dir):
+    locale_dir = None
+
+translator = gettext.translation('plogrotate', locale_dir, fallback=True)
+
 __version__ = '0.3.1'
 
 RE_WS = re.compile(r'\s+')
@@ -44,6 +51,26 @@ RE_EMAIL = re.compile(
 
 RE_YES = re.compile(r'^\s*(?:y(?:es)?|true|on)\s*$', re.IGNORECASE)
 RE_NO = re.compile(r'^\s*(?:no?|false|off)\s*$', re.IGNORECASE)
+
+
+# =============================================================================
+def logrotate_gettext(message):
+    if six.PY3:
+        return to_str_or_bust(translator.gettext(message))
+    else:
+        return to_str_or_bust(translator.lgettext(message))
+
+
+# =============================================================================
+def logrotate_ngettext(singular, plural, n):
+    if six.PY3:
+        return to_str_or_bust(translator.ngettext(singular, plural, n))
+    else:
+        return to_str_or_bust(translator.lngettext(singular, plural, n))
+
+
+_ = logrotate_gettext
+__ = logrotate_ngettext
 
 logger = logging.getLogger(__name__)
 locale_dir = None
@@ -238,9 +265,6 @@ def human2bytes(value, si_conform=True, use_locale_radix=False, as_float=False, 
     @rtype: int (or long in Python2)
     """
 
-    t = gettext.translation('pylogrotate', locale_dir, fallback=True)
-    _ = t.lgettext
-
     if value is None:
         msg = "Given value is None."
         raise ValueError(msg)
@@ -253,7 +277,8 @@ def human2bytes(value, si_conform=True, use_locale_radix=False, as_float=False, 
     radix = re.escape(radix)
     thousep = re.escape(thousep)
     if verbose > 4:
-        logger.debug(_("Using radix %r, thousend separator %r"), radix, thousep)
+        logger.debug(_("Using radix %(radix)r, thousend separator %(sep)r") % {
+            'radix': radix, 'sep': thousep})
 
     value_raw = ''
     value_pre = value
@@ -270,7 +295,7 @@ def human2bytes(value, si_conform=True, use_locale_radix=False, as_float=False, 
         value_raw = match.group(1)
         suffix = match.group(2)
     else:
-        msg = _("Could not determine bytes in '%s'.") % (value)
+        msg = _("Could not determine bytes in %r.") % (value)
         raise ValueError(msg)
 
     if use_locale_radix:
@@ -331,7 +356,7 @@ def human2bytes(value, si_conform=True, use_locale_radix=False, as_float=False, 
     elif re.search(r'^\s*ZiB(?:yte)?\s*$', suffix, re.IGNORECASE):
         factor = factor_bin ** 7
     else:
-        msg = _("Couldn't detect suffix '%s'.") % (suffix)
+        msg = _("Couldn't detect suffix %r.") % (suffix)
         raise ValueError(msg)
 
     if verbose > 4:
@@ -376,9 +401,6 @@ def period2days(period, use_locale_radix=False, verbose=0):
     @return: amount of days
     @rtype: float
     """
-
-    t = gettext.translation('pylogrotate', locale_dir, fallback=True)
-    _ = t.lgettext
 
     if period is None:
         raise ValueError(_("Given period is None."))
@@ -519,9 +541,6 @@ def get_address_list(address_str, verbose = 0):
 
     '''
 
-    t = gettext.translation('pylogrotate', locale_dir, fallback=True)
-    _ = t.lgettext
-
     addr_list = []
     addresses = []
 
@@ -532,7 +551,11 @@ def get_address_list(address_str, verbose = 0):
             addr_list.append(address)
 
     if verbose > 3:
-        logger.debug(_("Found address entries:") + "\n" + pp(addr_list))
+        logger.debug(
+            __(
+                "Found address entry:",
+                "Found address entries:", len(addr_list)
+            ) + "\n" + pp(addr_list))
 
     for address in addr_list:
         address = re.sub(r',', ' ', address)

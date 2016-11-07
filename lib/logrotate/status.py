@@ -1,17 +1,12 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-
-# $Id$
-# $URL$
-
-'''
+"""
 @author: Frank Brehm
 @contact: frank@brehm-online.com
 @license: GPL3
-@copyright: (c) 2010-2011 by Frank Brehm, Berlin
-@version: 0.0.2
+@copyright: © 2010 - 2016 by Frank Brehm, Berlin
 @summary: module for operations with the logrotate state file
-'''
+"""
 
 # Standard modules
 import re
@@ -20,44 +15,30 @@ import os
 import os.path
 import gettext
 import logging
-import pprint
 
 from datetime import tzinfo, timedelta, datetime, date, time
 
 # Third party modules
 import pytz
+import six
 
 # Own modules
-try:
-    import LogRotate.Common
-except ImportError:
-    sys.path.append(os.path.abspath(os.path.join(sys.path[0], '..')))
-    import LogRotate.Common
+from logrotate.common import split_parts, pp
 
-from LogRotate.Common import split_parts 
-
-revision = '$Revision$'
-revision = re.sub( r'\$', '', revision )
-revision = re.sub( r'Revision: ', r'r', revision )
-revision = re.sub( r'\s*$', '', revision )
-
-__author__    = 'Frank Brehm'
-__copyright__ = '(C) 2011 by Frank Brehm, Berlin'
-__contact__    = 'frank@brehm-online.com'
-__version__    = '0.1.0 ' + revision
-__license__    = 'GPL3'
+__version__ = '0.2.0 '
 
 utc = pytz.utc
 
-#========================================================================
 
+#========================================================================
 class LogrotateStatusFileError(Exception):
-    '''
+    """
     Base class for exceptions in this module.
-    '''
+    """
+    pass
+
 
 #========================================================================
-
 class LogrotateStatusFile(object):
     '''
     Class for operations with the logrotate state file
@@ -363,8 +344,7 @@ class LogrotateStatusFile(object):
         @rtype:  str
         '''
 
-        pp = pprint.PrettyPrinter(indent=4)
-        return pp.pformat(self.as_dict())
+        return pp(self.as_dict())
 
     #------------------------------------------------------------
     def _check_permissions(self):
