@@ -14,8 +14,7 @@ import os
 import sys
 import locale
 import logging
-import gettext
-import pprint
+import datetime
 
 # Third party modules
 import six
@@ -23,7 +22,7 @@ import six
 # Own modules
 from logrotate.common import logrotate_gettext, logrotate_ngettext
 
-__version__ = '0.1.0'
+__version__ = '0.2.1'
 
 log = logging.getLogger(__name__)
 
@@ -32,7 +31,7 @@ __ = logrotate_ngettext
 
 
 # =============================================================================
-class BaseObjectError(PbError):
+class BaseObjectError(Exception):
     """
     Base error class useable by all descendand objects.
     """
@@ -203,6 +202,89 @@ class BaseObject(object):
         res['base_dir'] = self.base_dir
 
         return res
+
+    # -------------------------------------------------------------------------
+    def handle_error(
+            self, error_message=None, exception_name=None, do_traceback=False):
+        """
+        Handle an error gracefully.
+
+        Print a traceback and continue.
+
+        @param error_message: the error message to display
+        @type error_message: str
+        @param exception_name: name of the exception class
+        @type exception_name: str
+        @param do_traceback: allways show a traceback
+        @type do_traceback: bool
+
+        """
+
+        msg = 'Exception happened: '
+        if exception_name is not None:
+            exception_name = exception_name.strip()
+            if exception_name:
+                msg = exception_name + ': '
+            else:
+                msg = ''
+        if error_message:
+            msg += str(error_message)
+        else:
+            msg += _('undefined error.')
+
+        root_log = logging.getLogger()
+        has_handlers = False
+        if root_log.handlers:
+            has_handlers = True
+
+        if has_handlers:
+            log.error(msg)
+            if do_traceback:
+                log.error(traceback.format_exc())
+
+        curdate = datetime.datetime.now()
+        curdate_str = "[" + curdate.isoformat(' ') + "]: "
+        msg = curdate_str + msg + "\n"
+        sys.stderr.write(msg)
+        if do_traceback:
+            traceback.print_exc()
+
+        return
+
+    # -------------------------------------------------------------------------
+    def handle_info(self, message, info_name=None):
+        """
+        Shows an information. This happens both to STDERR and to all
+        initialized log handlers.
+
+        @param message: the info message to display
+        @type message: str
+        @param info_name: Title of information
+        @type info_name: str
+
+        """
+
+        msg = ''
+        if info_name is not None:
+            info_name = info_name.strip()
+            if info_name:
+                msg = info_name + ': '
+        msg += str(message).strip()
+
+        root_log = logging.getLogger()
+        has_handlers = False
+        if root_log.handlers:
+            has_handlers = True
+
+        if has_handlers:
+            log.info(msg)
+
+        curdate = datetime.datetime.now()
+        curdate_str = "[" + curdate.isoformat(' ') + "]: "
+        msg = curdate_str + msg + "\n"
+        sys.stderr.write(msg)
+
+        return
 
 # =============================================================================
 
