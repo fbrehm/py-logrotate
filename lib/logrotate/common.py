@@ -10,6 +10,7 @@
 
 # Standard modules
 import re
+import os
 import sys
 import locale
 import logging
@@ -23,7 +24,7 @@ import six
 
 # Own modules
 
-__version__ = '0.2.6'
+__version__ = '0.3.1'
 
 RE_WS = re.compile(r'\s+')
 RE_WS_ONLY = re.compile(r'^\s*$')
@@ -40,6 +41,9 @@ RE_UNBALANCED_QUOTE = re.compile(r'^(?P<chunk>(?P<quote>[\'"]).*)\s*')
 RE_EMAIL = re.compile(
     r'^[a-z0-9._%-+]+@[a-z0-9._%-]+\.[a-z]{2,12}$',
     re.IGNORECASE)
+
+RE_YES = re.compile(r'^\s*(?:y(?:es)?|true|on)\s*$', re.IGNORECASE)
+RE_NO = re.compile(r'^\s*(?:no?|false|off)\s*$', re.IGNORECASE)
 
 logger = logging.getLogger(__name__)
 locale_dir = None
@@ -545,7 +549,40 @@ def get_address_list(address_str, verbose = 0):
 
 
 # =============================================================================
-def to_unicode_or_bust(obj, encoding='utf-8'):
+def to_bool(value):
+    """
+    Converter from string to boolean values (e.g. from configurations)
+    """
+
+    if not value:
+        return False
+    if isinstance(value, bool):
+        return value
+
+    try:
+        v_int = int(value)
+    except ValueError:
+        pass
+    except TypeError:
+        pass
+    else:
+        if v_int == 0:
+            return False
+        else:
+            return True
+
+    v_str = to_str_or_bust(value, force=True)
+
+    if RE_YES.search(v_str):
+        return True
+
+    if RE_NO.search(v_str):
+        return False
+
+    return bool(value)
+
+# =============================================================================
+def to_unicode_or_bust(obj, encoding='utf-8', force=False):
     """
     Transforms a string, which is not a unicode string, into a unicode string.
     All other objects are left untouched.
@@ -564,9 +601,13 @@ def to_unicode_or_bust(obj, encoding='utf-8'):
     if six.PY2:
         if isinstance(obj, str):
             do_decode = True
+        elif force:
+            return unicode(obj)
     else:
         if isinstance(obj, bytes):
             do_decode = True
+        elif force:
+            return str(obj)
 
     if do_decode:
         obj = obj.decode(encoding)
@@ -575,7 +616,7 @@ def to_unicode_or_bust(obj, encoding='utf-8'):
 
 
 # =============================================================================
-def encode_or_bust(obj, encoding='utf-8'):
+def encode_or_bust(obj, encoding='utf-8', force=False):
     """
     Encodes the given unicode object into the given encoding.
     In Python 3 a bytes object is returend in this case.
@@ -594,9 +635,13 @@ def encode_or_bust(obj, encoding='utf-8'):
     if six.PY2:
         if isinstance(obj, unicode):
             do_encode = True
+        elif force:
+            return str(obj)
     else:
         if isinstance(obj, str):
             do_encode = True
+        elif force:
+            return bytes(obj)
 
     if do_encode:
         obj = obj.encode(encoding)
@@ -605,7 +650,7 @@ def encode_or_bust(obj, encoding='utf-8'):
 
 
 # =============================================================================
-def to_utf8_or_bust(obj):
+def to_utf8_or_bust(obj, force=False):
     """
     Transforms a string, what is a unicode string, into a utf-8 encoded string.
     All other objects are left untouched.
@@ -619,27 +664,90 @@ def to_utf8_or_bust(obj):
 
     """
 
-    return encode_or_bust(obj, 'utf-8')
+    return encode_or_bust(obj, 'utf-8', force=force)
 
 
 # =============================================================================
-def to_bytes(obj, encoding='utf-8'):
+def to_bytes(obj, encoding='utf-8', force=False):
     "Wrapper for encode_or_bust()"
 
-    return encode_or_bust(obj, encoding)
+    return encode_or_bust(obj, encoding, force=force)
 
 
 # =============================================================================
-def to_str_or_bust(obj, encoding='utf-8'):
+def to_str_or_bust(obj, encoding='utf-8', force=False):
     """
     Transformes the given string-like object into the str-type according
     to the current Python version.
     """
 
     if six.PY2:
-        return encode_or_bust(obj, encoding)
+        return encode_or_bust(obj, encoding, force=force)
     else:
-        return to_unicode_or_bust(obj, encoding)
+        return to_unicode_or_bust(obj, encoding, force=force)
+
+
+# =============================================================================
+def terminal_can_colors(verbose=0):
+    """
+    Method to detect, whether the current terminal (stdout and stderr)
+    is able to perform ANSI color sequences.
+
+    @return: both stdout and stderr can perform ANSI color sequences
+    @rtype: bool
+
+    """
+
+    cur_term = ''
+    if 'TERM' in os.environ:
+        cur_term = os.environ['TERM'].lower().strip()
+
+    colored_term_list = (
+        r'ansi',
+        r'linux.*',
+        r'screen.*',
+        r'[xeak]term.*',
+        r'gnome.*',
+        r'rxvt.*',
+        r'interix',
+    )
+    term_pattern = r'^(?:' + r'|'.join(colored_term_list) + r')$'
+    re_term = re.compile(term_pattern)
+
+    ansi_term = False
+    env_term_has_colors = False
+
+    if cur_term:
+        if cur_term == 'ansi':
+            env_term_has_colors = True
+            ansi_term = True
+        elif re_term.search(cur_term):
+            env_term_has_colors = True
+    if verbose:
+        sys.stderr.write(
+            "ansi_term: %r, env_term_has_colors: %r\n" % (
+                ansi_term, env_term_has_colors))
+
+    has_colors = False
+    if env_term_has_colors:
+        has_colors = True
+    for handle in [sys.stdout, sys.stderr]:
+        if (hasattr(handle, "isatty") and handle.isatty()):
+            if debug:
+                sys.stderr.write("%s is a tty.\n" % (handle.name))
+            if (platform.system() == 'Windows' and not ansi_term):
+                if debug:
+                    sys.stderr.write("platform is Windows and not ansi_term.\n")
+                has_colors = False
+        else:
+            if debug:
+                sys.stderr.write("%s is not a tty.\n" % (handle.name))
+            if ansi_term:
+                pass
+            else:
+                has_colors = False
+
+    return has_colors
 
 
 # =============================================================================
