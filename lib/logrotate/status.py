@@ -30,7 +30,7 @@ from logrotate.common import to_str_or_bust as as_str
 
 from logrotate.base import BaseObjectError, BaseObject
 
-__version__ = '0.2.2'
+__version__ = '0.2.3'
 
 _ = logrotate_gettext
 __ = logrotate_ngettext
@@ -79,7 +79,7 @@ class StatusFileEntry(BaseObject):
         self._filename = None
         self._ts = None
 
-        super(ShadowEntry, self).__init__(
+        super(StatusFileEntry, self).__init__(
             appname=appname, verbose=verbose, version=__version__, base_dir=base_dir)
 
         self.filename = filename
@@ -198,10 +198,14 @@ class StatusFileEntry(BaseObject):
     # -------------------------------------------------------------------------
     def get_line(self, min_len_filename=0):
 
-        return '%-*s "%s"' % (
-            min_len_filename,
-            self.quoted_filename,
-            self.ts.strftime('%Y-%m-%d %H:%M:%S'))
+        fn_out = '~'
+        if self.filename:
+            fn_out = self.quoted_filename
+        ts_out = '~'
+        if self.ts:
+            ts_out = self.ts.strftime('%Y-%m-%d %H:%M:%S')
+
+        return '%-*s "%s"' % (min_len_filename, fn_out, ts_out)
 
     # -------------------------------------------------------------------------
     def __str__(self):
@@ -518,7 +522,7 @@ class LogrotateStatusFile(object):
             if not self.test_mode:
                 try:
                     fd = open(self.file_name, 'w')
-                except IOError, e:
+                except IOError as e:
                     msg = (_("Could not open status file '%s' for write: ") %
                             (self.file_name) + str(e))
                     raise LogrotateStatusFileError(msg)
@@ -699,7 +703,7 @@ class LogrotateStatusFile(object):
         fd = None
         try:
             fd = open(self.file_name, 'Ur')
-        except IOError, e:
+        except IOError as e:
             msg = (_("Could not read status file '%s': ")
                     % (self.file_name)) + str(e)
             raise LogrotateStatusFileError(msg)
@@ -782,7 +786,7 @@ class LogrotateStatusFile(object):
                         dt = datetime(d['Y'], d['m'], d['d'],
                                       d['H'], d['M'], d['S'],
                                       tzinfo = utc)
-                    except ValueError, e:
+                    except ValueError as e:
                         msg = _("Invalid date: '%s'.") % (rdate)
                         msg += " " + ( _("(file '%(file)s', line %(lnr)s)")
                                         % {'file': logfile, 'lnr': i})
