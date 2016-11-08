@@ -26,11 +26,11 @@ from six.moves import shlex_quote
 # Own modules
 from logrotate.common import split_parts, pp
 from logrotate.common import logrotate_gettext, logrotate_ngettext
-from logrotate.common import to_str_or_bust as as_str
+from logrotate.common import to_str_or_bust as to_str
 
 from logrotate.base import BaseObjectError, BaseObject
 
-__version__ = '0.2.3'
+__version__ = '0.2.4'
 
 _ = logrotate_gettext
 __ = logrotate_ngettext
@@ -83,6 +83,7 @@ class StatusFileEntry(BaseObject):
             appname=appname, verbose=verbose, version=__version__, base_dir=base_dir)
 
         self.filename = filename
+        self.ts = ts
 
     # -----------------------------------------------------------------------
     @property
@@ -95,7 +96,7 @@ class StatusFileEntry(BaseObject):
         if value is None:
             self._filename = None
             return
-        self._filename = str(value, force=True)
+        self._filename = to_str(value, force=True)
 
     # -----------------------------------------------------------------------
     @property
@@ -123,7 +124,7 @@ class StatusFileEntry(BaseObject):
             self._ts = datetime(value.year, value.month, value.day, tzinfo=utc)
             return
 
-        v_str = as_str(value, force=True)
+        v_str = to_str(value, force=True)
 
         match = self.re_ts_v3.search(v_str)
         if match:
@@ -141,8 +142,8 @@ class StatusFileEntry(BaseObject):
                 day=int(match.group('day')), tzinfo=utc)
             return
 
-        msg = _("Could not evaluate %r as a dateime object.") % (value)
-        raise StatusEntryValueError
+        msg = _("Could not evaluate %r as a datetime object.") % (value)
+        raise StatusEntryValueError(msg)
 
     # -------------------------------------------------------------------------
     def as_dict(self):
