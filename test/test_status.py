@@ -66,11 +66,11 @@ class StatusTestCase(BaseTestCase):
             LOG.debug("Created status entry as dict:\n%s", pp(entry.as_dict()))
         entry_str = str(entry)
         LOG.debug("Created status entry as str: %r", entry_str)
-        self.assertEqual(entry_str, '~ "~"')
+        self.assertEqual(entry_str, '~ ~')
 
         entry_str = entry.get_line(10)
         LOG.debug("Status entry as str: %r", entry_str)
-        self.assertEqual(entry_str, '~          "~"')
+        self.assertEqual(entry_str, '~          ~')
 
     # -------------------------------------------------------------------------
     def test_initialized_entry(self):
@@ -112,19 +112,19 @@ class StatusTestCase(BaseTestCase):
         ts_obj_dt = TestDateOut('2014-04-03 03:44:11')
 
         valid_test_data = (
-            (fn, ts_d, '/a.log "2016-01-01 00:00:00"'),
-            (fn_normal, ts_d, '/var/log/messages "2016-01-01 00:00:00"'),
-            (fn_ws, ts_d, '\'/var/log/strange whatever.log\' "2016-01-01 00:00:00"'),
-            (fn_utf8, ts_d, '\'/var/log/strange-»äöüÄÖÜß€ß«.log\' "2016-01-01 00:00:00"'),
-            (fn_squot, ts_d, '\'/var/log/\'"\'"\'bla.log\' "2016-01-01 00:00:00"'),
-            (fn_dquot, ts_d, '\'/var/log/"blub.log\' "2016-01-01 00:00:00"'),
-            (fn, ts_dt, '/a.log "2016-02-02 03:14:25"'),
-            (fn, ts_d_str, '/a.log "2015-01-03 00:00:00"'),
-            (fn, ts_dt_str1, '/a.log "2014-04-05 03:44:11"'),
-            (fn, ts_dt_str2, '/a.log "2014-04-05 03:44:22"'),
-            (fn, ts_dt_str3, '/a.log "2014-04-05 03:44:33"'),
-            (fn, ts_obj_d, '/a.log "2014-04-01 00:00:00"'),
-            (fn, ts_obj_dt, '/a.log "2014-04-03 03:44:11"'),
+            (fn, ts_d, '/a.log 2016-01-01_00:00:00'),
+            (fn_normal, ts_d, '/var/log/messages 2016-01-01_00:00:00'),
+            (fn_ws, ts_d, '\'/var/log/strange whatever.log\' 2016-01-01_00:00:00'),
+            (fn_utf8, ts_d, '\'/var/log/strange-»äöüÄÖÜß€ß«.log\' 2016-01-01_00:00:00'),
+            (fn_squot, ts_d, '\'/var/log/\'"\'"\'bla.log\' 2016-01-01_00:00:00'),
+            (fn_dquot, ts_d, '\'/var/log/"blub.log\' 2016-01-01_00:00:00'),
+            (fn, ts_dt, '/a.log 2016-02-02_03:14:25'),
+            (fn, ts_d_str, '/a.log 2015-01-03_00:00:00'),
+            (fn, ts_dt_str1, '/a.log 2014-04-05_03:44:11'),
+            (fn, ts_dt_str2, '/a.log 2014-04-05_03:44:22'),
+            (fn, ts_dt_str3, '/a.log 2014-04-05_03:44:33'),
+            (fn, ts_obj_d, '/a.log 2014-04-01_00:00:00'),
+            (fn, ts_obj_dt, '/a.log 2014-04-03_03:44:11'),
         )
 
         LOG.debug("Testing valid initialisation data ...")
