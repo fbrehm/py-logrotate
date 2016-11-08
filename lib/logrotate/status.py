@@ -13,12 +13,15 @@ import re
 import sys
 import os
 import logging
+import shlex
 
 from datetime import tzinfo, timedelta, datetime, date, time
 
 # Third party modules
 import pytz
 import six
+
+from six.moves import shlex_quote
 
 # Own modules
 from logrotate.common import split_parts, pp
@@ -27,12 +30,12 @@ from logrotate.common import to_str_or_bust as as_str
 
 from logrotate.base import BaseObjectError, BaseObject
 
-__version__ = '0.2.1'
+__version__ = '0.2.2'
 
 _ = logrotate_gettext
 __ = logrotate_ngettext
 
-log = logging.getLogger(__name__)
+LOG = logging.getLogger(__name__)
 
 utc = pytz.utc
 
@@ -42,6 +45,18 @@ class LogrotateStatusFileError(BaseObjectError):
     """
     Base class for exceptions in this module.
     """
+    pass
+
+
+# =============================================================================
+class LogrotateStatusEntryError(BaseObjectError):
+    "Exception class for errors with status file entries."
+    pass
+
+
+# =============================================================================
+class StatusEntryValueError(LogrotateStatusEntryError, ValueError):
+    "Exception class for wrong values on status file entries."
     pass
 
 
@@ -80,7 +95,15 @@ class StatusFileEntry(BaseObject):
         if value is None:
             self._filename = None
             return
-        self._filename = str(value)
+        self._filename = str(value, force=True)
+
+    # -----------------------------------------------------------------------
+    @property
+    def quoted_filename(self):
+        "The filename in a shell-escaped version."
+        if self.filename is None:
+            return None
+        return shlex_quote(self.filename)
 
     # -----------------------------------------------------------------------
     @property
@@ -99,8 +122,152 @@ class StatusFileEntry(BaseObject):
         if isinstance(value, date):
             self._ts = datetime(value.year, value.month, value.day, tzinfo=utc)
             return
+
         v_str = as_str(value, force=True)
+
         match = self.re_ts_v3.search(v_str)
+        if match:
+            self._ts = datetime(
+                year=int(match.group('year')), month=int(match.group('month')),
+                day=int(match.group('day')), hour=int(match.group('hour')),
+                minute=int(match.group('min')), second=int(match.group('sec')),
+                tzinfo=utc)
+            return
+
+        match = self.re_ts_v2.search(v_str)
+        if match:
+            self._ts = datetime(
+                year=int(match.group('year')), month=int(match.group('month')),
+                day=int(match.group('day')), tzinfo=utc)
+            return
+
+        msg = _("Could not evaluate %r as a dateime object.") % (value)
+        raise StatusEntryValueError
+
+    # -------------------------------------------------------------------------
+    def as_dict(self):
+        """
+        Transforms the elements of the object into a dict
+
+        @return: structure as dict
+        @rtype:  dict
+        """
+
+        res = super(StatusFileEntry, self).as_dict()
+
+        res['filename'] = self.filename
+        res['quoted_filename'] = self.quoted_filename
+        res['ts'] = self.ts
+        res['pat_ts_v2'] = self.pat_ts_v2
+        res['pat_ts_v3'] = self.pat_ts_v3
+
+        return res
+
+    # -----------------------------------------------------------------------
+    @classmethod
+    def from_line(cls, line, appname=None, verbose=0, base_dir=None):
+
+        entry = cls(appname=appname, verbose=verbose, base_dir=base_dir)
+        #fields = split_parts(line.strip())
+        fields = shlex.split(line, comments=False, posix=True)
+
+        if len(fields) > 0:
+            entry.filename = fields[0]
+        if len(fields) > 1:
+            entry.ts = fields[1]
+
+        return entry
+
+    # -------------------------------------------------------------------------
+    def __repr__(self):
+        """Typecasting into a string for reproduction."""
+
+        out = "<%s(" % (self.__class__.__name__)
+
+        fields = []
+        fields.append("filename=%r" % (self.filename))
+        fields.append("ts=%r" % (self.ts))
+        fields.append("appname=%r" % (self.appname))
+        fields.append("verbose=%r" % (self.verbose))
+        fields.append("version=%r" % (self.version))
+        fields.append("base_dir=%r" % (self.base_dir))
+
+        out += ", ".join(fields) + ")>"
+        return out
+
+    # -------------------------------------------------------------------------
+    def get_line(self, min_len_filename=0):
+
+        return '%-*s "%s"' % (
+            min_len_filename,
+            self.quoted_filename,
+            self.ts.strftime('%Y-%m-%d %H:%M:%S'))
+
+    # -------------------------------------------------------------------------
+    def __str__(self):
+        return self.get_line()
+
+    # -------------------------------------------------------------------------
+    def __eq__(self, other):
+
+        if not isinstance(other, StatusFileEntry):
+            return NotImplemented
+
+        if self.filename == other.filename:
+            return True
+        return False
+
+    # -------------------------------------------------------------------------
+    def __ne__(self, other):
+
+        if not isinstance(other, StatusFileEntry):
+            return NotImplemented
+        if self == other:
+            return False
+        return True
+
+    # -------------------------------------------------------------------------
+    def __lt__(self, other):
+
+        if not isinstance(other, StatusFileEntry):
+            return NotImplemented
+
+        if self.filename is None:
+            if other.filename is None:
+                return False
+            else:
+                return True
+        elif other.filename is None:
+            return False
+
+        if self.filename.lower() != other.filename.lower():
+            return self.filename.lower() < other.filename.lower()
+
+        return self.filename < other.filename
+
+    # -------------------------------------------------------------------------
+    def __gt__(self, other):
+
+        if not isinstance(other, StatusFileEntry):
+            return NotImplemented
+
+        if self < other:
+            return False
+        return True
+
+    # -------------------------------------------------------------------------
+    def __copy__(self):
+        "Implementing a wrapper for copy.copy()."
+
+        if self.verbose > 3:
+            LOG.debug("Copying status file entry for %r ...", self.filename)
+
+        entry = StatusFileEntry(
+            filename=self.filename, ts=self.ts,
+            appname=self.appname, verbose=self.verbose, base_dir=self.base_dir)
+
+        entry._version = self.version
+        return entry
 
 
 # =============================================================================
