@@ -12,8 +12,6 @@
 import re
 import sys
 import os
-import os.path
-import gettext
 import logging
 
 from datetime import tzinfo, timedelta, datetime, date, time
@@ -24,21 +22,88 @@ import six
 
 # Own modules
 from logrotate.common import split_parts, pp
+from logrotate.common import logrotate_gettext, logrotate_ngettext
+from logrotate.common import to_str_or_bust as as_str
 
-__version__ = '0.2.0 '
+from logrotate.base import BaseObjectError, BaseObject
+
+__version__ = '0.2.1'
+
+_ = logrotate_gettext
+__ = logrotate_ngettext
+
+log = logging.getLogger(__name__)
 
 utc = pytz.utc
 
 
-#========================================================================
-class LogrotateStatusFileError(Exception):
+# =============================================================================
+class LogrotateStatusFileError(BaseObjectError):
     """
     Base class for exceptions in this module.
     """
     pass
 
 
-#========================================================================
+# =============================================================================
+class StatusFileEntry(BaseObject):
+    """
+    Class for a single status file entry.
+    """
+
+    pat_ts_date = r'(?P<year>\d+)[-_](?P<month>\d+)[-_](?P<day>\d+)'
+    pat_ts_time = r'(?P<hour>\d+)[-_:](?P<min>\d+)[-_:](?P<sec>\d+)'
+    pat_ts_v2 = r'^\s*' + pat_ts_date + r'\s*$'
+    pat_ts_v3 = r'^\s*' + pat_ts_date + r'[-_\s]+' + pat_ts_time + r'\s*$'
+    re_ts_v2 = re.compile(pat_ts_v2)
+    re_ts_v3 = re.compile(pat_ts_v3)
+
+    # -----------------------------------------------------------------------
+    def __init__( self, filename=None, ts=None, appname=None, verbose=0, base_dir=None):
+
+        self._filename = None
+        self._ts = None
+
+        super(ShadowEntry, self).__init__(
+            appname=appname, verbose=verbose, version=__version__, base_dir=base_dir)
+
+        self.filename = filename
+
+    # -----------------------------------------------------------------------
+    @property
+    def filename(self):
+        "The file name of this entry."
+        return self._filename
+
+    @filename.setter
+    def filename(self, value):
+        if value is None:
+            self._filename = None
+            return
+        self._filename = str(value)
+
+    # -----------------------------------------------------------------------
+    @property
+    def ts(self):
+        "The timestamp of the last rotation of this file."
+        return self._ts
+
+    @ts.setter
+    def ts(self, value):
+        if value is None:
+            self._ts = None
+            return
+        if isinstance(value, datetime):
+            self._ts = value
+            return
+        if isinstance(value, date):
+            self._ts = datetime(value.year, value.month, value.day, tzinfo=utc)
+            return
+        v_str = as_str(value, force=True)
+        match = self.re_ts_v3.search(v_str)
+
+
+# =============================================================================
 class LogrotateStatusFile(object):
     '''
     Class for operations with the logrotate state file
@@ -575,12 +640,12 @@ class LogrotateStatusFile(object):
 
         return True
 
-#========================================================================
+# =============================================================================
 
 if __name__ == "__main__":
     pass
 
 
-#========================================================================
+# =============================================================================
 
 # vim: fileencoding=utf-8 filetype=python ts=4 expandtab
