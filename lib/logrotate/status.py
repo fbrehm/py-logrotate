@@ -14,6 +14,8 @@ import sys
 import os
 import logging
 import shlex
+import collections
+import stat
 
 from datetime import tzinfo, timedelta, datetime, date, time
 
@@ -30,12 +32,14 @@ from logrotate.common import to_str_or_bust as to_str
 
 from logrotate.base import BaseObjectError, BaseObject
 
-__version__ = '0.2.4'
+__version__ = '0.3.1'
 
 _ = logrotate_gettext
 __ = logrotate_ngettext
 
 LOG = logging.getLogger(__name__)
+DEFAULT_PERMISSIONS = stat.S_IRUSR | stat.S_IWUSR | stat.S_IRGRP | stat.S_IROTH
+ENCODING = "utf-8"
 
 utc = pytz.utc
 
@@ -204,9 +208,9 @@ class StatusFileEntry(BaseObject):
             fn_out = self.quoted_filename
         ts_out = '~'
         if self.ts:
-            ts_out = self.ts.strftime('%Y-%m-%d %H:%M:%S')
+            ts_out = self.ts.strftime('%Y-%m-%d_%H:%M:%S')
 
-        return '%-*s "%s"' % (min_len_filename, fn_out, ts_out)
+        return '%-*s %s' % (min_len_filename, fn_out, ts_out)
 
     # -------------------------------------------------------------------------
     def __str__(self):
@@ -276,302 +280,288 @@ class StatusFileEntry(BaseObject):
 
 
 # =============================================================================
-class LogrotateStatusFile(object):
-    '''
-    Class for operations with the logrotate state file
+class StatusFile(BaseObject, collections.MutableMapping):
+    """Class for operations with the logrotate state file"""
 
-    @author: Frank Brehm
-    @contact: frank@brehm-online.com
-    '''
+    open_args = {}
+    if six.PY3:
+        open_args = {
+            'encoding': ENCODING,
+            'errors': 'surrogateescape'
+        }
 
-    #-------------------------------------------------------
-    def __init__( self, file_name,
-                        local_dir  = None,
-                        verbose    = 0,
-                        test_mode  = False,
-    ):
-        '''
+    re_first_line = re.compile(
+        r'^logrotate\s+state\s+-+\s+version\s+(\d+)$',
+        re.IGNORECASE)
+
+    # -----------------------------------------------------------------------
+    def __init__(
+        self, filename, simulate=False, auto_read=True, permissions=DEFAULT_PERMISSIONS,
+            verbose=0, version=__version__, base_dir=None):
+        """
         Constructor.
 
         @param file_name: the file name of the status file
-        @type file_name:  str
-        @param verbose:   verbosity (debug) level
-        @type verbose:    int
-        @param test_mode: test mode - no write actions are made
-        @type test_mode:  bool
-        @param local_dir: The directory, where the i18n-files (*.mo)
-                          are located. If None, then system default
-                          (/usr/share/locale) is used.
-        @type local_dir:  str or None
+        @type file_name: str
+        @param simulate: test mode - no write actions are made
+        @type simulate: bool
+        """
 
-        @return: None
-        '''
+        self.filename = filename
+        self._simulate = bool(simulate)
+        self._was_read = False
+        self._has_changed = False
+        self.permissions = permissions
 
-        self.local_dir = local_dir
-        '''
-        @ivar: The directory, where the i18n-files (*.mo) are located.
-        @type: str or None
-        '''
+        self._entries = []
 
-        self.t = gettext.translation(
-            'pylogrotate',
-            local_dir,
-            fallback = True
-        )
-        '''
-        @ivar: a gettext translation object
-        @type: gettext.translation
-        '''
+        super(StatusFile, self).__init__(
+            appname=appname, verbose=verbose, version=__version__, base_dir=base_dir)
 
-        _ = self.t.lgettext
+        if auto_read:
+            if self.verbose > 2:
+                LOG.debug("Auto reading on init ...")
+            self.read()
+        else:
+            if self.verbose > 2:
+                LOG.debug("No auto reading on init ...")
 
-        self.verbose = verbose
-        '''
-        @ivar: verbosity level (0 - 9)
-        @type: int
-        '''
+    # -----------------------------------------------------------
+    @property
+    def was_read(self):
+        """Flag, that the current config file was read."""
+        return self._was_read
 
-        self.file_name = file_name
-        '''
-        @ivar: the initial file name of the status file to use
-        @type: str
-        '''
+    # -----------------------------------------------------------
+    @property
+    def has_changed(self):
+        """Flag, that something has changed, which must be written."""
+        return self._has_changed
 
-        self.file_name_is_absolute = False
-        '''
-        @ivar: flag, that shows, that the file name is now an absolute path
-        @type: bool
-        '''
+    # -----------------------------------------------------------
+    @property
+    def simulate(self):
+        """Simulation mode."""
+        return self._simulate
 
-        self.fd = None
-        '''
-        @ivar: the file object of the opened status file, or None, if not opened
-        @type: file or None
-        '''
+    @simulate.setter
+    def simulate(self, value):
+        self._simulate = bool(value)
 
-        self.was_read = False
-        '''
-        @ivar: flag, whether the status file was read
-        @type: bool
-        '''
-
-        self.status_version = None
-        '''
-        @ivar: the version of the status file (2 or 3)
-        @type: int or None
-        '''
-
-        self.test_mode = test_mode
-        '''
-        @ivar: test mode - no write actions are made
-        @type: bool
-        '''
-
-        self.has_changed = False
-        '''
-        @ivar: flag, whether something has changed and needs to be written
-        @type: bool
-        '''
-
-        self.logger = logging.getLogger('pylogrotate.status_file')
-        '''
-        @ivar: logger object
-        @type: logging.getLogger
-        '''
-
-        self.file_state = {}
-        '''
-        @ivar: the last rotation date of every particular log file
-               keys are the asolute filenames (without globbing)
-               and the values are datetime objects of the last rotation
-               referencing to UTC
-               If no rotation was made, value is datetime.min().
-        @type: dict
-        '''
-
-        # Initial read and check for permissions
-        self.read(must_exists = False)
-        self._check_permissions()
-
-    #-------------------------------------------------------
-    def __del__(self):
-        '''
-        Destructor.
-        Enforce saving of status file, if something has changed.
-        '''
-
-        _ = self.t.lgettext
-        msg = _("Status file object will destroyed.")
-        self.logger.debug(msg)
-
-        if self.has_changed:
-            self.write()
-
-    #-------------------------------------------------------
+    # -----------------------------------------------------------------------
     def as_dict(self):
-        '''
+        """
         Transforms the elements of the object into a dict
 
         @return: structure as dict
         @rtype:  dict
-        '''
+        """
 
-        res = {}
-        res['local_dir']             = self.local_dir
-        res['t']                     = self.t
-        res['verbose']               = self.verbose
-        res['file_name']             = self.file_name
-        res['file_name_is_absolute'] = self.file_name_is_absolute
-        res['fd']                    = self.fd
-        res['status_version']        = self.status_version
-        res['test_mode']             = self.test_mode
-        res['logger']                = self.logger
-        res['file_state']            = self.file_state
-        res['was_read']              = self.was_read
-        res['has_changed']           = self.has_changed
+        res = super(StatusFile, self).as_dict()
+
+        res['simulate'] = self.simulate
+        res['was_read'] = self.was_read
+        res['has_changed'] = self.has_changed
+        res['open_args'] = self.open_args
+        res['permissions'] = "%04o" % (self.permissions)
+
+        res['entries'] = []
+        for entry in self._entries:
+            res['entries'].append(entry.as_dict())
 
         return res
 
-    #------------------------------------------------------------
-    def get_rotation_date(self, logfile):
-        '''
-        Gives back the date of the last rotation of a particular logfile.
-        If this logfile is not found in the state file,
-        datetime.min() is given back.
+    # -----------------------------------------------------------------------
+    def __del__(self):
+        """
+        Destructor.
+        Enforce saving of status file, if something has changed.
+        """
 
-        @param logfile: the logfile to query
-        @type logfile:  str
+        LOG.debug(_("Status file object will destroyed."))
 
-        @return: date of last rotation of this logfile
-        @rtype:  datetime
-        '''
+        if self.has_changed:
+            self.write()
 
-        if not self.was_read:
-            self.read(must_exists = False)
+    # -----------------------------------------------------------------------
+    def __getitem__(self, filename):
 
-        rotate_date = datetime.min.replace(tzinfo=utc)
-        if logfile in self.file_state:
-            rotate_date = self.file_state[logfile]
+        for entry in self._entries:
+            if entry.filename == filename:
+                return entry
+        raise KeyError(filename)
 
-        return rotate_date
+    # -----------------------------------------------------------------------
+    def __setitem__(self, filename, entry):
 
-    #------------------------------------------------------------
-    def set_rotation_date(self, logfile, rotate_date = None):
-        '''
-        Sets the rotation date of the given logfile.
-        If the rotation date is not given, datetime.utcnow() is used.
+        if not isinstance(entry, StatusFileEntry):
+            raise ValueError(
+                _('Only %(e)s objects can be added to a %(f)s object.') % {
+                    'e': 'StatusFileEntry', 'f': self.__class__.__name__})
 
-        @param logfile:     the logfile to set
-        @type logfile:      str
-        @param rotate_date: the rotation date of this logfile
-        @type rotate_date:  datetime or None
+        if filename != entry.filename:
+            msg = _(
+                "Filename %(f1)r in given %(o)s object "
+                "does not match given filename %(f2)r.") % {
+                'f1': entry.filename, 'o': entry.__class__.__name__,
+                'f2': filename
+            }
+            raise ValueError(msg)
 
-        @return: date of rotation of this logfile (relative to UTC)
-        @rtype:  datetime
-        '''
+        found = False
+        for i in range(len(self._entries)):
+            if self._entries[i].filename == filename:
+                if self._entries[i].ts != entry.ts:
+                    self._entries[i] = entry
+                    self._has_changed = True
+                found = True
+                break
+        if not found:
+            self._entries.append(entry)
+            self._has_changed = True
 
-        date_utc = datetime.utcnow()
-        if rotate_date:
-            date_utc = rotate_date.astimezone(utc)
+    # -----------------------------------------------------------------------
+    def __contains__(self, filename):
+        for entry in self._entries:
+            if entry.filename == filename:
+                return True
+        return False
 
-        _ = self.t.lgettext
-        msg = (_("Setting rotation date of '%(file)s' to '%(date)s' ...") %
-                {'file': logfile, 'date': date_utc.isoformat(' ') })
-        self.logger.debug(msg)
+    # -----------------------------------------------------------------------
+    def __delitem__(self, filename):
 
-        #self.read(must_exists = False)
-        self.file_state[logfile] = date_utc
-        self.has_changed = True
+        for i in range(len(self._entries)):
+            entry = self._entries[i]
+            if entry.filename == filename:
+                self._entries.pop(i)
+                self._has_changed = True
+                break
 
-        #self.write()
+    # -----------------------------------------------------------------------
+    def __iter__(self):
+        for entry in self._entries:
+            yield entry.filename
 
-        return date_utc
+    # -----------------------------------------------------------------------
+    def __len__(self):
+        return len(self._entries)
 
-    #------------------------------------------------------------
-    def write(self):
-        '''
-        Writes the content of self.file_state in the state file.
+    # -----------------------------------------------------------------------
+    def get_permissions(self):
+        """Retrieving the current file permissions and store them
+            in self.permissions."""
 
-        @return:    success of writing
-        @rtype:     bool
-        '''
+        orig_mode = os.stat(self.filename).st_mode
+        orig_perms = stat.S_IMODE((orig_mode))
+        LOG.debug(
+            _("Original permissions of %(fn)r: %(perm)04o") % {
+                'fn': self.filename, 'perm': orig_perms})
+        self.permissions = orig_perms
 
-        _ = self.t.lgettext
+    # -----------------------------------------------------------------------
+    def read(self):
+        """Reads the status file and put the results in self._entries."""
 
-        # setting a failing version of the status file
-        if not self.status_version:
-            self.status_version = 3
+        self._entries = list()
 
-        max_length = 1
+        if not os.path.exists(self.filename):
+            msg = _("File %r does not exists.") % (self.filename)
+            raise IOError(errno.ENOENT, msg, self.filename)
 
-        # Retrieving the maximum length of the logfiles for version 3
-        if self.status_version == 3:
-            for logfile in self.file_state:
-                if len(logfile) > max_length:
-                    max_length = len(logfile)
-            max_length += 2
+        if not os.path.isfile(self.filename):
+            msg = _("Path %r is not a regular file.") % (self.filename)
+            raise IOError(errno.ENOENT, msg, self.filename)
 
-        fd = None
-        # Big try block for ensure closing open status file
-        try:
+        if not os.access(self.filename, os.R_OK):
+            msg = _("No read permissions for %r.") % (self.filename)
+            raise IOError(errno.ENOENT, msg, self.filename)
 
-            msg = (_("Open status file '%s' for writing ...") %
-                    (self.file_name))
-            self.logger.debug(msg)
-
-            # open status file for writing
-            if not self.test_mode:
+        LOG.debug(_("Trying to read %r ..."), self.filename)
+        with open(self.filename, 'r', **self.open_args) as fh:
+            i = 0
+            for line in fh.readlines():
+                i += 1
+                match = self.re_first_line.search(line)
+                if match:
+                    LOG.debug(
+                        _("Idendified version of status file: %d"),
+                        int(match.group(1)))
+                    continue
                 try:
-                    fd = open(self.file_name, 'w')
-                except IOError as e:
-                    msg = (_("Could not open status file '%s' for write: ") %
-                            (self.file_name) + str(e))
-                    raise LogrotateStatusFileError(msg)
+                    entry = StatusFileEntry.from_line(
+                        line, appname=self.appname, verbose=self.verbose,
+                        base_dir=self.base_dir)
+                    self._entries.append(entry)
+                except ValueError as e:
+                    LOG.error(
+                        "Could not evaluate line %(file)r:%(lnr)d %(line)r: %(err)s" % {
+                            'file': self.filename, 'lnr': i, 'line': line, 'err': e})
+                    continue
 
-            # write logrotate version line
-            line = 'Logrotate State -- Version 3'
-            if self.status_version == 2:
-                line = 'logrotate state -- version 2'
+        self.get_permissions()
+        self._was_read = True
+
+    # -----------------------------------------------------------------------
+    def write(self):
+        """Writes the states into the status file."""
+
+        max_len_filename = 1
+        for entry in self._entries:
+            new_len = len(entry.quoted_filename)
+            if new_len > max_len_filename:
+                max_len_filename = new_len
+
+        first_line = 'Logrotate State -- Version 3'
+
+        if self.simulate:
+            LOG.info(_("Simulating writing %r ..."), self.filename)
             if self.verbose > 2:
-                msg = _("Writing version line '%s'.") % (line)
-                self.logger.debug(msg)
-            line += '\n'
-            if fd:
-                fd.write(line)
+                LOG.debug(_("Writing line %r."), first_line)
+                for entry in sorted(self._entries):
+                    line = entry.get_line(max_len_filename)
+                    LOG.debug(_("Writing line %r."), line)
+            self._has_changed = False
+            return
 
-            # iterate over logfiles in self.file_state
-            for logfile in sorted(
-                    self.file_state.keys(),
-                    lambda x,y: cmp(x.lower(), y.lower())):
-                rotate_date = self.file_state[logfile]
-                date_str = ( "%d-%d-%d" 
-                    % (rotate_date.year, rotate_date.month, rotate_date.day))
-                if self.status_version == 3:
-                    date_str = (
-                        "%d-%02d-%02d_%02d:%02d:%02d" % (
-                            rotate_date.year,
-                            rotate_date.month,
-                            rotate_date.day,
-                            rotate_date.hour,
-                            rotate_date.minute,
-                            rotate_date.second))
-                line = ('%-*s %s'
-                        % (max_length, ('"' + logfile + '"'), date_str))
+        LOG.info(_("Trying to write %r ..."), self.filename)
+
+        with open(self.filename, 'w', 1, **self.open_args) as fh:
+            if self.verbose > 2:
+                LOG.debug(_("Writing line %r."), first_line)
+            fh.write('%s\n' % (first_line))
+            for entry in sorted(self._entries):
+                line = entry.get_line(max_len_filename)
                 if self.verbose > 2:
-                    msg = _("Writing line '%s'.") % (line)
-                    self.logger.debug(msg)
-                if fd:
-                    fd.write(line + "\n")
+                    LOG.debug(_("Writing line %r."), line)
+                fh.write('%s\n' % (line))
 
-        finally:
-            if fd:
-                fd.close()
-                fd = None
+        self.ensure_permissions()
+        self._has_changed = False
 
-        self.has_changed = False
-        return True
+    # -----------------------------------------------------------------------
+    def ensure_permissions(self, permissions=None):
 
-    #------------------------------------------------------------
+        if not os.path.exists(self.filename):
+            msg = _("File %r does not exists.") % (self.filename)
+            raise IOError(errno.ENOENT, msg, self.filename)
+
+        if permissions is None:
+            permissions = self.permissions
+
+        LOG.debug(_("Ensuring permissions of %r ..."), self.filename)
+        operms = os.stat(self.filename).st_mode
+        operms = stat.S_IMODE(operms)
+        LOG.debug(
+            _("Current permissions of %(fn)r: %(cur)04o, expected: %(exp)04o") % {
+            'fn': self.filename, 'cur': operms, 'exp': permissions})
+        if operms != permissions:
+            LOG.info(
+                "Setting permissions of %(fn)r to %(perm)04o." % {
+                'fn': self.filename, 'perm': permissions})
+            if not self.simulate:
+                os.chmod(self.filename, permissions)
+
+    # -----------------------------------------------------------------------
     def __str__(self):
         '''
         Typecasting function for translating object structure
@@ -583,240 +573,74 @@ class LogrotateStatusFile(object):
 
         return pp(self.as_dict())
 
-    #------------------------------------------------------------
-    def _check_permissions(self):
+    # -----------------------------------------------------------------------
+    def check_permissions(self):
         '''
         Checks the permissions of the state file and/or his parent directory.
         Throws a LogrotateStatusFileError on a error.
 
-        @return:    success of check
-        @rtype:     bool
+        @return: success of check
+        @rtype: bool
         '''
 
-        _ = self.t.lgettext
-        msg = (_("Checking permissions of status file '%s' ...")
-                % (self.file_name))
-        self.logger.debug(msg)
+        msg = _("Checking permissions of status file %r ...") % (self.filename)
+        LOG.debug(msg)
 
-        if os.path.exists(self.file_name):
+        if os.path.exists(self.filename):
             # Check for write access to the status file
-            if os.access(self.file_name, os.W_OK):
-                msg = _("Access to status file '%s' is OK.") % (self.file_name)
-                self.logger.debug(msg)
+            if os.access(self.filename, os.W_OK):
+                msg = _("Access to status file %r is OK.") % (self.filename)
+                LOG.debug(msg)
                 return True
             else:
-                msg = (_("No write access to status file '%s'.")
-                        % (self.file_name))
-                if self.test_mode:
-                    self.logger.error(msg)
+                msg = _("No write access to status file %r.") % (self.filename)
+                if self.simulate:
+                    LOG.error(msg)
                 else:
                     raise LogrotateStatusFileError(msg)
                 return False
 
-        parent_dir = os.path.dirname(self.file_name)
-        msg = (_("Checking permissions of parent directory '%s' ...")
-                % (parent_dir))
-        self.logger.debug(msg)
+        parent_dir = os.path.dirname(self.filename)
+        msg = _("Checking permissions of parent directory %r ...") % (parent_dir)
+        LOG.debug(msg)
 
         # Check for existence of parent dir
         if not os.path.exists(parent_dir):
-            msg = _("Directory '%s' doesn't exists.") % (parent_dir)
-            if self.test_mode:
-                self.logger.error(msg)
+            msg = _("Directory %r doesn't exists.") % (parent_dir)
+            if self.simulate:
+                LOG.error(msg)
             else:
                 raise LogrotateStatusFileError(msg)
             return False
 
         # Check whether parent dir is a directory
         if not os.path.isdir(parent_dir):
-            msg = (_("Parent directory '%(dir)s' of status file '%(file)s' "
-                     + "is not a directory.") 
-                    % {'dir': parent_dir, 'file': self.file_name })
-            if self.test_mode:
-                self.logger.error(msg)
+            msg = _("Parent directory %(dir)r of status file %(file)r is not a directory.") % {
+                'dir': parent_dir, 'file': self.filename}
+            if self.simulate:
+                LOG.error(msg)
             else:
                 raise LogrotateStatusFileError(msg)
             return False
 
         # Check for write access to parent dir
         if not os.access(parent_dir, os.W_OK):
-            msg = (_("No write access to parent directory '%(dir)s' "
-                     + "of status file '%(file)s'.")
-                    % {'dir': parent_dir, 'file': self.file_name })
-            if self.test_mode:
-                self.logger.error(msg)
+            msg = _("No write access to parent directory %(dir)r of status file %(file)r.") % {
+                'dir': parent_dir, 'file': self.file_name}
+            if self.simulate:
+                LOG.error(msg)
             else:
                 raise LogrotateStatusFileError(msg)
             return False
 
-        msg = _("Permissions to parent directory '%s' are OK.") % (parent_dir)
-        self.logger.debug(msg)
-        return True
-
-    #-------------------------------------------------------
-    def read(self, must_exists = True):
-        '''
-        Reads the status file and put the results in the dict self.file_state.
-        Puts back the absolute path of the status file
-        in self.file_name on success.
-
-        Throws a LogrotateStatusFileError on a error.
-
-        @param must_exists: throws an exception, if true and the status file
-                            doesn't exists
-        @type must_exists:  bool
-
-        @return:    success of reading
-        @rtype:     bool
-        '''
-
-        self.file_state = {}
-        _ = self.t.lgettext
-
-        # Check for existence of status file
-        if not os.path.exists(self.file_name):
-            msg = _("Status file '%s' doesn't exists.") % (self.file_name)
-            if must_exists:
-                raise LogrotateStatusFileError(msg)
-            else:
-                self.logger.info(msg)
-            return False
-
-        # makes the name of the status file an absolute path
-        if not self.file_name_is_absolute:
-            self.file_name = os.path.abspath(self.file_name)
-            self.file_name_is_absolute = True
-            if self.verbose > 2:
-                msg = (_("Absolute path of status file is now '%s'.")
-                        % (self.file_name))
-                self.logger.debug(msg)
-
-        # Checks, that the status file is a regular file
-        if not os.path.isfile(self.file_name):
-            msg = (_("Status file '%s' is not a regular file.")
-                    % (self.file_name))
-            raise LogrotateStatusFileError(msg)
-            return False
-
-        msg = _("Reading status file '%s' ...") % (self.file_name)
-        self.logger.debug(msg)
-
-        fd = None
-        try:
-            fd = open(self.file_name, 'Ur')
-        except IOError as e:
-            msg = (_("Could not read status file '%s': ")
-                    % (self.file_name)) + str(e)
-            raise LogrotateStatusFileError(msg)
-        self.fd = fd
-
-        try:
-            # Reading the lines of the status file
-            i = 0
-            for line in fd:
-                i += 1
-                line = line.strip()
-                if self.verbose > 4:
-                    msg = _("Performing status file line '%s'.") % (line)
-                    msg += " " + ( _("(file '%(file)s', line %(lnr)s)")
-                                        % {'file': self.file_name, 'lnr': i})
-                    self.logger.debug(msg)
-
-                # check for file heading
-                if i == 1:
-                    match = re.search(
-                        r'^logrotate\s+state\s+-+\s+version\s+([23])$',
-                        line, re.IGNORECASE
-                    )
-                    if match:
-                        # Correct file header
-                        self.status_version = int(match.group(1))
-                        if self.verbose > 1:
-                            msg = (_("Idendified version of status file: %d")
-                                    % (self.status_version))
-                            self.logger.debug(msg)
-                        continue
-                    else:
-                        # Wrong header
-                        msg = (_("Incompatible version of status file "
-                                 + "'%(file)s': %(header)s")
-                                % { 'file': self.file_name, 'header': line })
-                        fd.close()
-                        raise LogrotateStatusFileError(msg)
-
-                if line == '':
-                    continue
-
-                parts = split_parts(line)
-                logfile = parts[0]
-                rdate   = parts[1]
-                if self.verbose > 2:
-                    msg = (_("Found logfile '%(file)s' with rotation "
-                             + "date '%(date)s'.")
-                            % { 'file': logfile, 'date': rdate })
-                    self.logger.debug(msg)
-
-                if logfile and rdate:
-                    pat = (r'\s*(\d+)[_\-](\d+)[_\-](\d+)' +
-                           r'(?:[\s\-_]+(\d+)[_\-:](\d+)[_\-:](\d+))?')
-                    match = re.search(pat, rdate)
-                    if not match:
-                        msg = (_("Could not determine date format: '%s'.")
-                                % (rdate))
-                        msg += " " + ( _("(file '%(file)s', line %(lnr)s)")
-                                            % {'file': logfile, 'lnr': i})
-                        self.logger.warning(msg)
-                        continue
-                    d = {
-                        'Y': int(match.group(1)),
-                        'm': int(match.group(2)),
-                        'd': int(match.group(3)),
-                        'H': 0,
-                        'M': 0,
-                        'S': 0,
-                    }
-                    if match.group(4) is not None:
-                        d['H'] = int(match.group(4))
-                    if match.group(5) is not None:
-                        d['M'] = int(match.group(5))
-                    if match.group(6) is not None:
-                        d['S'] = int(match.group(6))
-
-                    dt = None
-                    try:
-                        dt = datetime(d['Y'], d['m'], d['d'],
-                                      d['H'], d['M'], d['S'],
-                                      tzinfo = utc)
-                    except ValueError as e:
-                        msg = _("Invalid date: '%s'.") % (rdate)
-                        msg += " " + ( _("(file '%(file)s', line %(lnr)s)")
-                                        % {'file': logfile, 'lnr': i})
-                        self.logger.warning(msg)
-                        continue
-
-                    self.file_state[logfile] = dt
-
-                else:
-
-                    msg = (_("Neither a logfile nor a date found " +
-                             "in line '%s'.") % (line))
-                    msg += " " + ( _("(file '%(file)s', line %(lnr)s)")
-                                        % {'file': logfile, 'lnr': i})
-                    self.logger.warning(msg)
-
-        finally:
-            fd.close
-
-        self.fd = None
-        self.was_read = True
-
+        msg = _("Permissions to parent directory %r are OK.") % (parent_dir)
+        LOG.debug(msg)
         return True
 
 # =============================================================================
 
 if __name__ == "__main__":
     pass
-
 
 # =============================================================================
 
