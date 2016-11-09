@@ -13,6 +13,7 @@ import os
 import sys
 import logging
 import locale
+import glob
 
 from datetime import tzinfo, timedelta, datetime, date, time
 
@@ -47,7 +48,6 @@ class StatusTestCase(BaseTestCase):
 
         super(StatusTestCase, self).setUp()
         self.appname = APPNAME
-        self.test_dir = os.path.join(self.base_dir, 'test')
 
     # -------------------------------------------------------------------------
     def test_import(self):
@@ -165,6 +165,26 @@ class StatusTestCase(BaseTestCase):
             e = cm.exception
             LOG.debug("%s raised: %s", e.__class__.__name__, str(e))
 
+    # -------------------------------------------------------------------------
+    def test_reading_status_file(self):
+
+        LOG.info("Testing reading a status file ...")
+        from logrotate.status import StatusFile
+
+        pattern = os.path.join(self.test_dir, 'status-version*')
+        status_files = glob.glob(pattern)
+        LOG.debug("Got test status files:\n%s", pp(status_files))
+
+        for filename in sorted(status_files):
+            status_file = StatusFile(
+                filename, simulate=True, verbose=self.verbose, appname=self.appname)
+            if self.verbose > 2:
+                LOG.debug(
+                    "Read status file as dict:\n%s",
+                    pp(status_file.as_dict()))
+        self.assertEqual(status_file.filename, filename)
+        self.assertEqual(status_file.was_read, True)
+
 
 # =============================================================================
 
@@ -182,6 +202,7 @@ if __name__ == '__main__':
     suite.addTest(StatusTestCase('test_import', verbose))
     suite.addTest(StatusTestCase('test_empty_entry', verbose))
     suite.addTest(StatusTestCase('test_initialized_entry', verbose))
+    suite.addTest(StatusTestCase('test_reading_status_file', verbose))
 
     runner = unittest.TextTestRunner(verbosity=verbose)
 
