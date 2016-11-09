@@ -32,7 +32,7 @@ from logrotate.common import to_str_or_bust as to_str
 
 from logrotate.base import BaseObjectError, BaseObject
 
-__version__ = '0.3.1'
+__version__ = '0.3.2'
 
 _ = logrotate_gettext
 __ = logrotate_ngettext
@@ -297,7 +297,7 @@ class StatusFile(BaseObject, collections.MutableMapping):
     # -----------------------------------------------------------------------
     def __init__(
         self, filename, simulate=False, auto_read=True, permissions=DEFAULT_PERMISSIONS,
-            verbose=0, version=__version__, base_dir=None):
+            appname=None, verbose=0, version=__version__, base_dir=None):
         """
         Constructor.
 
@@ -380,8 +380,8 @@ class StatusFile(BaseObject, collections.MutableMapping):
 
         LOG.debug(_("Status file object will destroyed."))
 
-        if self.has_changed:
-            self.write()
+        # if self.has_changed:
+        #     self.write()
 
     # -----------------------------------------------------------------------
     def __getitem__(self, filename):
