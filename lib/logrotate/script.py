@@ -1,18 +1,12 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-
-# $Id$
-# $URL$
-
-'''
+"""
 @author: Frank Brehm
 @contact: frank@brehm-online.com
 @license: GPL3
-@copyright: (c) 2010-2011 by Frank Brehm, Berlin
-@version: 0.0.2
-@summary: module for a logrotate script object
-	  (for pre- and postrotate actions)
-'''
+@copyright: © 2010 - 2016 by Frank Brehm, Berlin
+@summary: module for a logrotate script object (for pre- and postrotate actions)
+"""
 
 # Standard modules
 import re
@@ -22,389 +16,173 @@ import pprint
 import gettext
 
 # Third party modules
+import pytz
+import six
 
 # Own modules
+from logrotate.common import split_parts, pp
+from logrotate.common import logrotate_gettext, logrotate_ngettext
 
-revision = '$Revision$'
-revision = re.sub( r'\$', '', revision )
-revision = re.sub( r'Revision: ', r'r', revision )
-revision = re.sub( r'\s*$', '', revision )
+from logrotate.base import BaseObjectError, BaseObject
 
-__author__    = 'Frank Brehm'
-__copyright__ = '(C) 2011 by Frank Brehm, Berlin'
-__contact__    = 'frank@brehm-online.com'
-__version__    = '0.1.0 ' + revision
-__license__    = 'GPL3'
+__version__ = '0.2.1'
 
-#========================================================================
+_ = logrotate_gettext
+__ = logrotate_ngettext
 
-class LogRotateScriptError(Exception):
-    '''
+LOG = logging.getLogger(__name__)
+
+
+# =============================================================================
+class LogRotateScriptError(BaseObjectError):
+    """
     Base class for exceptions in this module.
-    '''
+    """
 
-#========================================================================
 
-class LogRotateScript(object):
-    '''
-    Class for encapsulating a logrotate script
-    (for pre- and postrotate actions)
-
-    @author: Frank Brehm
-    @contact: frank@brehm-online.com
-    '''
+# =============================================================================
+class LogRotateScript(BaseObject):
+    "Class for encapsulating a logrotate script (for pre- and postrotate actions)"
 
     #-------------------------------------------------------
-    def __init__( self, name,
-                        local_dir = None,
-                        verbose   = 0,
-                        test_mode = False,
-    ):
-        '''
+    def __init__(self, name=None, simulate=False, appname=None, verbose=0, base_dir=None):
+        """
         Constructor.
 
-        @param name:      the name of the script as an identifier
-        @type name:       str
-        @param local_dir: The directory, where the i18n-files (*.mo)
-                          are located. If None, then system default
-                          (/usr/share/locale) is used.
-        @type local_dir:  str or None
-        @param verbose:   verbosity (debug) level
-        @type verbose:    int
-        @param test_mode: test mode - no write actions are made
-        @type test_mode:  bool
+        @param name: the name of the script as an identifier
+        @type name: str
+        @param simulate: test mode - no write actions are made
+        @type simulate: bool
 
         @return: None
-        '''
+        """
 
-        self.t = gettext.translation(
-            'pylogrotate',
-            local_dir,
-            fallback = True
-        )
-        '''
-        @ivar: a gettext translation object
-        @type: gettext.translation
-        '''
+        self._name = None
+        self._simulate = bool(simulate)
+        self._post_files = 0
+        self._last_files = 0
+        self._done_firstrun = False
+        self._done_prerun = False
+        self._done_postrun = False
+        self._done_lastrun = False
+        self._do_post = False
+        self._do_last = False
 
-        _ = self.t.lgettext
-
-        self.verbose = verbose
-        '''
-        @ivar: verbosity level (0 - 9)
-        @type: int
-        '''
-
-        self._name = name
-        '''
-        @ivar: the name of the script as an identifier
-        @type: str
-        '''
-
-        self.test_mode = test_mode
-        '''
-        @ivar: test mode - no write actions are made
-        @type: bool
-        '''
-
-        self.logger = logging.getLogger('pylogrotate.script')
-        '''
-        @ivar: logger object
-        @type: logging.getLogger
-        '''
-
-        self._cmd = []
+        self.cmd = []
         '''
         @ivar: List of commands to execute
         @type: list
         '''
 
-        self._post_files = 0
-        '''
-        @ivar: Number of logfiles referencing to this script
-               as a postrotate script
-        @type: int
-        '''
-
-        self._last_files = 0
-        '''
-        @ivar: Number of logfiles referencing to this script
-               as a lastaction script
-        @type: int
-        '''
-
-        self._done_firstrun = False
-        '''
-        @ivar: Flag, whether the script was executed as
-               a firstaction script
-        @type: bool
-        '''
-
-        self._done_prerun = False
-        '''
-        @ivar: Flag, whether the script was executed as
-               a prerun script
-        @type: bool
-        '''
-
-        self._done_postrun = False
-        '''
-        @ivar: Flag, whether the script was executed as
-               a postrun script
-        @type: bool
-        '''
-
-        self._done_lastrun = False
-        '''
-        @ivar: Flag, whether the script was executed as
-               a lastaction script
-        @type: bool
-        '''
-
-        self._do_post = False
-        '''
-        Runtime flag, that the script should be executed
-        as an postrun script
-        '''
-
-        self._do_last = False
-        '''
-        Runtime flag, that the script should be executed
-        as an lastaction script
-        '''
+        super(LogRotateScript, self).__init__(
+            appname=appname, verbose=verbose, version=__version__, base_dir=base_dir)
 
     #------------------------------------------------------------
     # Defintion of some properties
 
     #------------------------------------------------------------
-    # Property 'name'
-    def _get_name(self):
-        '''
-        Getter method for property 'name'
-        '''
+    @property
+    def name(self):
+        "Name of the script as an identifier"
         return self._name
 
-    name = property(
-            _get_name,
-            None,
-            None,
-            "Name of the script as an identifier"
-    )
+    #------------------------------------------------------------
+    @property
+    def simulate(self):
+        "Number of logfiles referencing to this script as a postrotate script."
+        return self._simulate
+
+    @simulate.setter
+    def simulate(self, value):
+        self._simulate = bool(value)
 
     #------------------------------------------------------------
-    # Property 'cmd'
-    def _get_cmd(self):
-        '''
-        Getter method for property 'cmd'
-        '''
-        if len(self._cmd):
-            return "\n".join(self._cmd)
-        else:
-            return None
-
-    def _set_cmd(self, value):
-        '''
-        Setter method for property 'cmd'
-        '''
-        if value:
-            if isinstance(value, list):
-                self._cmd = value[:]
-            else:
-                self._cmd = [value]
-        else:
-            self._cmd = []
-
-    def _del_cmd(self):
-        '''
-        Deleter method for property 'cmd'
-        '''
-        self._cmd = []
-
-    cmd = property(_get_cmd, _set_cmd, _del_cmd, "the commands to execute")
-
-    #------------------------------------------------------------
-    # Property 'post_files'
-    def _get_post_files(self):
-        '''
-        Getter method for property 'post_files'
-        '''
+    @property
+    def post_files(self):
+        "Number of logfiles referencing to this script as a postrotate script."
         return self._post_files
 
-    def _set_post_files(self, value):
-        '''
-        Setter method for property 'post_files'
-        '''
-        _ = self.t.lgettext
+    @post_files.setter
+    def post_files(self, value):
         if isinstance(value, int):
             self._post_files = value
-        else:
-            msg = _("Invalid value for property '%s' given.") % ('post_files')
-            raise LogRotateScriptError(msg)
-
-    post_files = property(
-            _get_post_files,
-            _set_post_files,
-            None,
-            "Number of logfiles referencing to this script " +
-                "as a postrotate script."
-    )
+            return
+        msg = _("Invalid value for property %r given.") % ('post_files')
+        raise LogRotateScriptError(msg)
 
     #------------------------------------------------------------
-    # Property 'last_files'
-    def _get_last_files(self):
-        '''
-        Getter method for property 'last_files'
-        '''
+    @property
+    def last_files(self):
+        "Number of logfiles referencing to this script as a lastaction script."
         return self._last_files
 
-    def _set_last_files(self, value):
-        '''
-        Setter method for property 'last_files'
-        '''
-        _ = self.t.lgettext
+    @last_files.setter
+    def last_files(self, value):
         if isinstance(value, int):
             self._last_files = value
-        else:
-            msg = _("Invalid value for property '%s' given.") % ('last_files')
-            raise LogRotateScriptError(msg)
-
-    last_files = property(
-            _get_last_files,
-            _set_last_files,
-            None,
-            "Number of logfiles referencing to this script " +
-                "as a lastaction script."
-    )
+            return
+        msg = _("Invalid value for property '%s' given.") % ('last_files')
+        raise LogRotateScriptError(msg)
 
     #------------------------------------------------------------
-    # Property 'done_firstrun'
-    def _get_done_firstrun(self):
-        '''
-        Getter method for property 'done_firstrun'
-        '''
+    @property
+    def done_firstrun(self):
+        "Flag, whether the script was executed as a firstaction script."
         return self._done_firstrun
 
-    def _set_done_firstrun(self, value):
-        '''
-        Setter method for property 'done_firstrun'
-        '''
+    @done_firstrun.setter
+    def done_firstrun(self, value):
         self._done_firstrun = bool(value)
 
-    done_firstrun = property(
-            _get_done_firstrun,
-            _set_done_firstrun,
-            None,
-            "Flag, whether the script was executed as a firstaction script."
-    )
-
     #------------------------------------------------------------
-    # Property 'done_prerun'
-    def _get_done_prerun(self):
-        '''
-        Getter method for property 'done_prerun'
-        '''
+    @property
+    def done_prerun(self):
+        "Flag, whether the script was executed as a prerun script."
         return self._done_prerun
 
-    def _set_done_prerun(self, value):
-        '''
-        Setter method for property 'done_prerun'
-        '''
+    @done_prerun.setter
+    def done_prerun(self, value):
         self._done_prerun = bool(value)
 
-    done_prerun = property(
-            _get_done_prerun,
-            _set_done_prerun,
-            None,
-            "Flag, whether the script was executed as a prerun script."
-    )
-
     #------------------------------------------------------------
-    # Property 'done_postrun'
-    def _get_done_postrun(self):
-        '''
-        Getter method for property 'done_postrun'
-        '''
+    @property
+    def done_postrun(self):
+        "Flag, whether the script was executed as a postrun script."
         return self._done_postrun
 
-    def _set_done_postrun(self, value):
-        '''
-        Setter method for property 'done_postrun'
-        '''
+    @done_postrun.setter
+    def done_postrun(self, value):
         self._done_postrun = bool(value)
 
-    done_postrun = property(
-            _get_done_postrun,
-            _set_done_postrun,
-            None,
-            "Flag, whether the script was executed as a postrun script."
-    )
-
     #------------------------------------------------------------
-    # Property 'done_lastrun'
-    def _get_done_lastrun(self):
-        '''
-        Getter method for property 'done_lastrun'
-        '''
+    @property
+    def done_lastrun(self):
+        "Flag, whether the script was executed as a lastaction script."
         return self._done_lastrun
 
-    def _set_done_lastrun(self, value):
-        '''
-        Setter method for property 'done_lastrun'
-        '''
+    @done_lastrun.setter
+    def done_lastrun(self, value):
         self._done_lastrun = bool(value)
 
-    done_lastrun = property(
-            _get_done_lastrun,
-            _set_done_lastrun,
-            None,
-            "Flag, whether the script was executed as a lastaction script."
-    )
-
     #------------------------------------------------------------
-    # Property 'do_post'
-    def _get_do_post(self):
-        '''
-        Getter method for property 'do_post'
-        '''
+    @property
+    def do_post(self):
+        "Flag, whether the script should be executed as a postrun script."
         return self._do_post
 
+    @do_post.setter
     def _set_do_post(self, value):
-        '''
-        Setter method for property 'do_post'
-        '''
         self._do_post = bool(value)
 
-    do_post = property(
-            _get_do_post,
-            _set_do_post,
-            None,
-            "Flag, whether the script should be executed as a postrun script."
-    )
-
     #------------------------------------------------------------
-    # Property 'do_last'
-    def _get_do_last(self):
-        '''
-        Getter method for property 'do_last'
-        '''
+    @property
+    def do_last(self):
+        "Flag, whether the script should be executed as a lastaction script."
         return self._do_last
 
-    def _set_do_last(self, value):
-        '''
-        Setter method for property 'do_last'
-        '''
+    @do_last.setter
+    def do_last(self, value):
         self._do_last = bool(value)
-
-    do_last = property(
-            _get_do_last,
-            _set_do_last,
-            None,
-            "Flag, whether the script should be executed " +
-                "as a lastaction script."
-    )
-
-    #------------------------------------------------------------
-    # Other Methods
 
     #-------------------------------------------------------
     def __del__(self):
@@ -414,11 +192,9 @@ class LogRotateScript(object):
         a postrun or a lastaction script
         '''
 
-        _ = self.t.lgettext
         if self.verbose > 2:
-            msg = (_("Logrotate script object '%s' will destroyed.")
-                    % (self.name))
-            self.logger.debug(msg)
+            msg = _("Logrotate script object '%s' will destroyed.") % (self.name)
+            LOG.debug(msg)
 
         self.check_for_execute()
 
@@ -427,14 +203,9 @@ class LogRotateScript(object):
         '''
         Typecasting function for translating object structure
         into a string
-
-        @return: structure as string
-        @rtype:  str
         '''
 
-        pp = pprint.PrettyPrinter(indent=4)
-        structure = self.as_dict()
-        return pp.pformat(structure)
+        return pp(self.as_dict())
 
     #-------------------------------------------------------
     def as_dict(self):
@@ -445,21 +216,18 @@ class LogRotateScript(object):
         @rtype:  dict
         '''
 
-        res = {}
-        res['t']             = self.t
-        res['verbose']       = self.verbose
-        res['name']          = self.name
-        res['test_mode']     = self.test_mode
-        res['logger']        = self.logger
-        res['cmd']           = self._cmd[:]
-        res['post_files']    = self.post_files
-        res['last_files']    = self.last_files
+        res = super(LogRotateScript, self).as_dict()
+
+        res['name'] = self.name
+        res['simulate'] = self.simulate
+        res['post_files'] = self.post_files
+        res['last_files'] = self.last_files
         res['done_firstrun'] = self.done_firstrun
-        res['done_prerun']   = self.done_prerun
-        res['done_postrun']  = self.done_postrun
-        res['done_lastrun']  = self.done_lastrun
-        res['do_post']       = self.do_post
-        res['do_last']       = self.do_last
+        res['done_prerun'] = self.done_prerun
+        res['done_postrun'] = self.done_postrun
+        res['done_lastrun'] = self.done_lastrun
+        res['do_post'] = self.do_post
+        res['do_last'] = self.do_last
 
         return res
 
@@ -473,7 +241,7 @@ class LogRotateScript(object):
 
         @return: None
         '''
-        self._cmd.append(cmd)
+        self.cmd.append(cmd)
 
     #------------------------------------------------------------
     def execute(self, force=False, expected_retcode=0):
@@ -481,7 +249,7 @@ class LogRotateScript(object):
         Executes the command as an OS command in a shell.
 
         @param force: force executing command even
-                      if self.test_mode == True
+                      if self.simulate == True
         @type force:    bool
         @param expected_retcode: expected returncode of the command
                                  (should be 0)
@@ -491,40 +259,35 @@ class LogRotateScript(object):
         @rtype:  bool
         '''
 
-        _ = self.t.lgettext
         cmd = self.cmd
         if cmd is None:
-            msg = (_("No command to execute defined in script '%s'.") %
-                        (self.name))
+            msg = _("No command to execute defined in script %r.") % (self.name)
             raise LogRotateScriptError(msg)
-            return False
         if self.verbose > 3:
-            msg = (_("Executing script '%(name)s' with command: '%(cmd)s'") %
-                    {'name': self.name, 'cmd': cmd})
-            self.logger.debug(msg)
+            msg = _("Executing script %(name)r with command: '%(cmd)s'") % {
+                'name': self.name, 'cmd': cmd}
+            LOG.debug(msg)
         if not force:
-            if self.test_mode:
+            if self.simulate:
                 return True
         try:
             retcode = subprocess.call(command, shell=True)
             if self.verbose > 3:
-                msg = (_("Got returncode for script '%(name)s': " +
-                         "'%(retcode)s'") %
-                        {'name': self.name, 'retcode': retcode})
-                self.logger.debug(msg)
+                msg = _("Got returncode for script %(name)r: %(retcode)r") % {
+                    'name': self.name, 'retcode': retcode}
+                LOG.debug(msg)
             if retcode < 0:
-                msg = (_("Child in script '%(name)s' was terminated " +
-                         "by signal %(retcode)d.") %
-                        {'name': self.name, 'retcode': -retcode})
-                self.logger.error(msg)
+                msg = _("Child in script %(name)r was terminated by signal %(retcode)r.") % {
+                    'name': self.name, 'retcode': -retcode}
+                LOG.error(msg)
                 return False
             if retcode != expected_retcode:
                 return False
             return True
         except OSError, e:
-            msg = (_("Execution of script '%(name)s' failed: %(error)s") %
-                    {'name': self.name, 'error': str(e)})
-            self.logger.error(msg)
+            msg = _("Execution of script %(name)r failed: %(error)s") % {
+                'name': self.name, 'error': e}
+            LOG.error(msg)
             return False
 
         return False
@@ -535,7 +298,7 @@ class LogRotateScript(object):
         Checks, whether the script should executed.
 
         @param force: force executing command even
-                      if self.test_mode == True
+                      if self.simulate == True
         @type force:    bool
         @param expected_retcode: expected returncode of the command
                                  (should be 0)
@@ -545,16 +308,11 @@ class LogRotateScript(object):
         @rtype:  bool
         '''
 
-        _ = self.t.lgettext
-        msg = (_("Checking, whether the script '%s' should be executed.") %
-                (self.name))
-        self.logger.debug(msg)
+        msg = _("Checking, whether the script %r should be executed.") % (self.name))
+        LOG.debug(msg)
 
         if self.do_post or self.do_last:
-            result = self.execute(
-                    force=force,
-                    expected_retcode=expected_retcode
-            )
+            result = self.execute(force=force, expected_retcode=expected_retcode)
             self.do_post = False
             self.do_last = False
             return result

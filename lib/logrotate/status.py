@@ -81,7 +81,7 @@ class StatusFileEntry(BaseObject):
     re_ts_v3 = re.compile(pat_ts_v3)
 
     # -----------------------------------------------------------------------
-    def __init__( self, filename=None, ts=None, appname=None, verbose=0, base_dir=None):
+    def __init__(self, filename=None, ts=None, appname=None, verbose=0, base_dir=None):
 
         self._filename = None
         self._ts = None
