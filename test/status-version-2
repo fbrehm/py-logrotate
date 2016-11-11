@@ -12,26 +12,5 @@ logrotate state -- version 2
 "/var/log/mail.info" 2010-6-3
 "/var/log/mail.warn" 2010-6-3
 "/var/log/mail.err" 2010-6-3
-"/var/log/mail.log" 2010-6-3
-"/var/log/daemon.log" 2010-6-6
-"/var/log/kern.log" 2010-6-6
-"/var/log/auth.log" 2010-6-6
-"/var/log/user.log" 2010-6-6
-"/var/log/lpr.log" 2010-6-3
-"/var/log/cron.log" 2010-6-3
-"/var/log/debug" 2010-6-6
-"/var/log/messages" 2010-6-6
-"/var/log/wtmp" 2010-6-3
-"/var/log/btmp" 2010-6-3
-"/var/log/apache2/access.log" 2010-6-8
-"/var/log/apache2/error.log" 2010-6-8
-"/var/log/apache2/other_vhosts_access.log" 2010-6-8
-"/var/log/clamav/clamav.log" 2010-6-8
-"/var/log/clamav/freshclam.log" 2010-6-8
-"/var/log/uucp.log" 2010-6-8
-"/var/log/ulog/syslogemu.log" 2010-6-8
-"/var/log/ulog/ulogd.log" 2010-6-8
-"/var/log/named/complete-debug.log" 2010-10-27
-"/var/log/named/debug.log" 2010-10-27
-"/var/log/named/named.log" 2010-10-27
 "/var/log/named/query.log" 2010-10-27
+"/var/log/bla blub.log" 2010-10-27
