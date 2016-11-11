@@ -32,7 +32,7 @@ from logrotate.common import to_str_or_bust as to_str
 
 from logrotate.base import BaseObjectError, BaseObject
 
-__version__ = '0.3.2'
+__version__ = '0.3.3'
 
 _ = logrotate_gettext
 __ = logrotate_ngettext
@@ -41,7 +41,7 @@ LOG = logging.getLogger(__name__)
 DEFAULT_PERMISSIONS = stat.S_IRUSR | stat.S_IWUSR | stat.S_IRGRP | stat.S_IROTH
 ENCODING = "utf-8"
 
-utc = pytz.utc
+UTC = pytz.utc
 
 
 # =============================================================================
@@ -74,6 +74,9 @@ class StatusFileEntry(BaseObject):
     pat_ts_time = r'(?P<hour>\d+)[-_:](?P<min>\d+)[-_:](?P<sec>\d+)'
     pat_ts_v2 = r'^\s*' + pat_ts_date + r'\s*$'
     pat_ts_v3 = r'^\s*' + pat_ts_date + r'[-_\s]+' + pat_ts_time + r'\s*$'
+    quotes = '"' + "'"
+    pat_quotes = r'^(?P<quote>[' + quotes + r']).*?(?P=quote)$'
+    re_quoted = re.compile(pat_quotes)
     re_ts_v2 = re.compile(pat_ts_v2)
     re_ts_v3 = re.compile(pat_ts_v3)
 
@@ -108,7 +111,10 @@ class StatusFileEntry(BaseObject):
         "The filename in a shell-escaped version."
         if self.filename is None:
             return None
-        return shlex_quote(self.filename)
+        ret = shlex_quote(self.filename)
+        if not self.re_quoted.search(ret):
+            ret = '"' + ret + '"'
+        return ret
 
     # -----------------------------------------------------------------------
     @property
@@ -121,30 +127,36 @@ class StatusFileEntry(BaseObject):
         if value is None:
             self._ts = None
             return
+        self._ts = self.to_timestamp(value)
+
+    # -------------------------------------------------------------------------
+    @classmethod
+    def to_timestamp(cls, value):
+        """Tries to cast the given value into a datetime object somehow."""
+
+        if value is None:
+            return datetime.utcnow()
+
         if isinstance(value, datetime):
-            self._ts = value
-            return
+            return value
         if isinstance(value, date):
-            self._ts = datetime(value.year, value.month, value.day, tzinfo=utc)
-            return
+            return datetime(value.year, value.month, value.day, tzinfo=UTC)
 
         v_str = to_str(value, force=True)
 
-        match = self.re_ts_v3.search(v_str)
+        match = cls.re_ts_v3.search(v_str)
         if match:
-            self._ts = datetime(
+            return datetime(
                 year=int(match.group('year')), month=int(match.group('month')),
                 day=int(match.group('day')), hour=int(match.group('hour')),
                 minute=int(match.group('min')), second=int(match.group('sec')),
-                tzinfo=utc)
-            return
+                tzinfo=UTC)
 
-        match = self.re_ts_v2.search(v_str)
+        match = cls.re_ts_v2.search(v_str)
         if match:
-            self._ts = datetime(
+            return datetime(
                 year=int(match.group('year')), month=int(match.group('month')),
-                day=int(match.group('day')), tzinfo=utc)
-            return
+                day=int(match.group('day')), tzinfo=UTC)
 
         msg = _("Could not evaluate %r as a datetime object.") % (value)
         raise StatusEntryValueError(msg)
@@ -163,8 +175,13 @@ class StatusFileEntry(BaseObject):
         res['filename'] = self.filename
         res['quoted_filename'] = self.quoted_filename
         res['ts'] = self.ts
-        res['pat_ts_v2'] = self.pat_ts_v2
-        res['pat_ts_v3'] = self.pat_ts_v3
+        if self.verbose > 2:
+            res['line'] = str(self)
+        if self.verbose > 3:
+            res['pat_ts_v2'] = self.pat_ts_v2
+            res['pat_ts_v3'] = self.pat_ts_v3
+            res['pat_quotes'] = self.pat_quotes
+            res['quotes'] = self.quotes
 
         return res
 
@@ -318,7 +335,7 @@ class StatusFile(BaseObject, collections.MutableMapping):
         super(StatusFile, self).__init__(
             appname=appname, verbose=verbose, version=__version__, base_dir=base_dir)
 
-        if auto_read:
+        if auto_read and os.path.exists(self.filename):
             if self.verbose > 2:
                 LOG.debug("Auto reading on init ...")
             self.read()
@@ -572,6 +589,19 @@ class StatusFile(BaseObject, collections.MutableMapping):
         '''
 
         return pp(self.as_dict())
+
+    # -----------------------------------------------------------------------
+    def set_entry(self, filename, timestamp=None):
+        """
+        Setting the rotation timestamp of the given filename. If no timestamp
+        was given, the current timestamp will be used.
+        """
+
+        ts = StatusFileEntry.to_timestamp(timestamp)
+        entry = StatusFileEntry(
+            filename=filename, ts=ts,
+            appname=self.appname, verbose=self.verbose, base_dir=self.base_dir)
+        self[filename] = entry
 
     # -----------------------------------------------------------------------
     def check_permissions(self):
