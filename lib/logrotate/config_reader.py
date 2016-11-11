@@ -1,17 +1,12 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-
-# $Id$
-# $URL$
-
-'''
+"""
 @author: Frank Brehm
 @contact: frank@brehm-online.com
 @license: GPL3
-@copyright: (c) 2010-2011 by Frank Brehm, Berlin
-@version: 0.0.2
+@copyright: © 2010 - 2016 by Frank Brehm, Berlin
 @summary: module the configuration parsing object for Python logrotating
-'''
+"""
 
 # Standard modules
 import re
@@ -27,28 +22,24 @@ import logging
 import email.utils
 
 # Third party modules
+import six
+
+from six.moves import shlex_quote
 
 # Own modules
-try:
-    import LogRotate.Common
-except ImportError:
-    sys.path.append(os.path.abspath(os.path.join(sys.path[0], '..')))
-    import LogRotate.Common
+from logrotate.common import split_parts, pp, email_valid, period2days
+from logrotate.common import human2bytes, get_address_list
+from logrotate.common import logrotate_gettext, logrotate_ngettext
+from logrotate.common import to_str_or_bust as to_str
 
-from LogRotate.Common import split_parts, email_valid, period2days
-from LogRotate.Common import human2bytes, get_address_list
+from logrotate.base import BaseObjectError, BaseObject
+
 from LogRotate.Script import LogRotateScript
 
-revision = '$Revision$'
-revision = re.sub( r'\$', '', revision )
-revision = re.sub( r'Revision: ', r'r', revision )
-revision = re.sub( r'\s*$', '', revision )
+__version__    = '0.2.1'
 
-__author__    = 'Frank Brehm'
-__copyright__ = '(C) 2011 by Frank Brehm, Berlin'
-__contact__    = 'frank@brehm-online.com'
-__version__    = '0.1.2 ' + revision
-__license__    = 'GPL3'
+_ = logrotate_gettext
+__ = logrotate_ngettext
 
 
 #========================================================================
@@ -205,18 +196,6 @@ class LogrotateConfigurationReader(object):
         @ivar: The directory, where the i18n-files (*.mo) are located.
         @type: str or None
         '''
-
-        self.t = gettext.translation(
-            'pylogrotate',
-            local_dir,
-            fallback = True
-        )
-        '''
-        @ivar: a gettext translation object
-        @type: gettext.translation
-        '''
-
-        _ = self.t.lgettext
 
         self.verbose = verbose
         '''
@@ -378,7 +357,6 @@ class LogrotateConfigurationReader(object):
             'search_path':      self.search_path,
             'scripts':          {},
             'shred_command':    self.shred_command,
-            't':                self.t,
             'taboo':            self.taboo,
             'test_mode':        self.test_mode,
             'verbose':          self.verbose,
@@ -394,8 +372,6 @@ class LogrotateConfigurationReader(object):
         '''
         Resetting self.default to the hard coded values
         '''
-
-        _ = self.t.lgettext
 
         if self.verbose > 3:
             msg = _("Resetting default values for directives " +
@@ -455,8 +431,6 @@ class LogrotateConfigurationReader(object):
         @return: None
         '''
 
-        _ = self.t.lgettext
-
         if not pattern_type in pattern_types:
             msg = _("Invalid taboo pattern type '%s' given.") % (pattern_type)
             raise Exception(msg)
@@ -476,7 +450,6 @@ class LogrotateConfigurationReader(object):
         @return: None
         '''
 
-        _ = self.t.lgettext
         dir_included = {}
 
         # Including default path list from environment $PATH
@@ -539,8 +512,6 @@ class LogrotateConfigurationReader(object):
         @rtype:  list
         '''
 
-        _ = self.t.lgettext
-
         path_list = self.search_path
         if include_current:
             item = os.getcwd()
@@ -556,7 +527,6 @@ class LogrotateConfigurationReader(object):
         this system command or to None, if not found (including a warning).
         '''
 
-        _ = self.t.lgettext
         path_list = self._get_std_search_path(True)
 
         cmd = None
@@ -604,7 +574,6 @@ class LogrotateConfigurationReader(object):
         @rtype:  str or None
         '''
 
-        _ = self.t.lgettext
         path_list = self._get_std_search_path(True)
  
         pat = r'^\s*internal[\-_\s]?zip\s*'
@@ -685,8 +654,6 @@ class LogrotateConfigurationReader(object):
         @rtype:  bool
         '''
 
-        _ = self.t.lgettext
-
         if self.config_was_read:
             return True
 
@@ -712,7 +679,6 @@ class LogrotateConfigurationReader(object):
         @type configfile:  str
         '''
 
-        _ = self.t.lgettext
         pp = pprint.PrettyPrinter(indent=4)
         msg = _("Try reading configuration from '%s' ...") % (configfile)
         self.logger.debug(msg)
@@ -1015,7 +981,6 @@ class LogrotateConfigurationReader(object):
         @rtype:  bool
         '''
 
-        _ = self.t.lgettext
         if self.verbose > 4:
             msg = _("Checking line '%s' for a logrotate option.") % (line)
             msg += " " + (_("(file '%(file)s', line %(lnr)s)")
@@ -1764,8 +1729,6 @@ class LogrotateConfigurationReader(object):
         @rtype:  str or None
         '''
 
-        _ = self.t.lgettext
-
         # split the rest in chunks
         values = split_parts(rest)
 
@@ -1821,8 +1784,6 @@ class LogrotateConfigurationReader(object):
         @return: Success of include
         @rtype:  bool
         '''
-
-        _ = self.t.lgettext
 
         # split the rest in chunks
         values = split_parts(rest)
@@ -1960,8 +1921,6 @@ class LogrotateConfigurationReader(object):
         @rtype:  str or None
         '''
 
-        _ = self.t.lgettext
-
         if in_fd:
             msg = _("Nested logfile definitions are not allowed.")
             msg += " " + ( _("(file '%(file)s', line %(lnr)s)")
@@ -2005,8 +1964,6 @@ class LogrotateConfigurationReader(object):
         @return: name of the script (if a new script definition) or None
         @rtype:  str or None
         '''
-
-        _ = self.t.lgettext
 
         if not in_fd:
             msg = _("Directive '%s' is not allowed outside of a " +
@@ -2079,8 +2036,6 @@ class LogrotateConfigurationReader(object):
         @type rownum:       int
         '''
 
-        _ = self.t.lgettext
-
         if self.verbose > 3:
             msg = _("Starting a new log directive with default values.")
             self.logger.debug(msg)
@@ -2143,8 +2098,6 @@ class LogrotateConfigurationReader(object):
                  to self.new_log['file_patterns']
         @rtype:  int
         '''
-
-        _ = self.t.lgettext
 
         if len(self.new_log['file_patterns']) <= 0:
             msg = _("No logfile pattern defined.")
