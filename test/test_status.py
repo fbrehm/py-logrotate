@@ -14,6 +14,8 @@ import sys
 import logging
 import locale
 import glob
+import tempfile
+import textwrap
 
 from datetime import tzinfo, timedelta, datetime, date, time
 
@@ -24,6 +26,9 @@ except ImportError:
 
 # Third party modules
 import six
+import pytz
+
+UTC = pytz.utc
 
 # Setting the user’s preferred locale settings
 locale.setlocale(locale.LC_ALL, '')
@@ -112,19 +117,19 @@ class StatusTestCase(BaseTestCase):
         ts_obj_dt = TestDateOut('2014-04-03 03:44:11')
 
         valid_test_data = (
-            (fn, ts_d, '/a.log 2016-01-01_00:00:00'),
-            (fn_normal, ts_d, '/var/log/messages 2016-01-01_00:00:00'),
+            (fn, ts_d, '"/a.log" 2016-01-01_00:00:00'),
+            (fn_normal, ts_d, '"/var/log/messages" 2016-01-01_00:00:00'),
             (fn_ws, ts_d, '\'/var/log/strange whatever.log\' 2016-01-01_00:00:00'),
             (fn_utf8, ts_d, '\'/var/log/strange-»äöüÄÖÜß€ß«.log\' 2016-01-01_00:00:00'),
             (fn_squot, ts_d, '\'/var/log/\'"\'"\'bla.log\' 2016-01-01_00:00:00'),
             (fn_dquot, ts_d, '\'/var/log/"blub.log\' 2016-01-01_00:00:00'),
-            (fn, ts_dt, '/a.log 2016-02-02_03:14:25'),
-            (fn, ts_d_str, '/a.log 2015-01-03_00:00:00'),
-            (fn, ts_dt_str1, '/a.log 2014-04-05_03:44:11'),
-            (fn, ts_dt_str2, '/a.log 2014-04-05_03:44:22'),
-            (fn, ts_dt_str3, '/a.log 2014-04-05_03:44:33'),
-            (fn, ts_obj_d, '/a.log 2014-04-01_00:00:00'),
-            (fn, ts_obj_dt, '/a.log 2014-04-03_03:44:11'),
+            (fn, ts_dt, '"/a.log" 2016-02-02_03:14:25'),
+            (fn, ts_d_str, '"/a.log" 2015-01-03_00:00:00'),
+            (fn, ts_dt_str1, '"/a.log" 2014-04-05_03:44:11'),
+            (fn, ts_dt_str2, '"/a.log" 2014-04-05_03:44:22'),
+            (fn, ts_dt_str3, '"/a.log" 2014-04-05_03:44:33'),
+            (fn, ts_obj_d, '"/a.log" 2014-04-01_00:00:00'),
+            (fn, ts_obj_dt, '"/a.log" 2014-04-03_03:44:11'),
         )
 
         LOG.debug("Testing valid initialisation data ...")
@@ -166,6 +171,72 @@ class StatusTestCase(BaseTestCase):
             LOG.debug("%s raised: %s", e.__class__.__name__, str(e))
 
     # -------------------------------------------------------------------------
+    def test_creating_status_file(self):
+
+        LOG.info("Testing creating a new status file ...")
+        from logrotate.status import StatusFileEntry
+        from logrotate.status import StatusFile
+        from logrotate.status import ENCODING
+
+        test_filename = '/var/log/blub.log'
+        rdate = datetime(2010, 1, 1, 0, 0, 0, tzinfo=UTC)
+
+        expected = textwrap.dedent('''\
+            Logrotate State -- Version 3
+            "/var/log/blub.log" 2010-01-01_00:00:00
+            ''')
+
+        open_args = {}
+        if six.PY3:
+            open_args = {'encoding': ENCODING, 'errors': 'surrogateescape'}
+
+        (fh, filename) = tempfile.mkstemp(prefix='plogrotate-status.', text=True)
+        try:
+            os.close(fh)
+            fh = None
+            if os.path.exists(filename):
+                LOG.debug("Removing %r ...", filename)
+                os.remove(filename)
+            LOG.debug("Creating a new status file %r.", filename)
+
+            status_file = StatusFile(filename, verbose=self.verbose, appname=self.appname)
+            if self.verbose > 2:
+                LOG.debug("New status file as dict:\n%s", pp(status_file.as_dict()))
+
+            status_file.set_entry(test_filename, rdate)
+            entry = status_file[test_filename]
+            if self.verbose > 1:
+                LOG.debug("New created entry:\n%s", pp(entry.as_dict()))
+
+            self.assertEqual(entry.__class__.__name__, StatusFileEntry.__name__)
+            self.assertEqual(entry.filename, test_filename)
+            self.assertEqual(entry.ts, rdate)
+
+            status_file.write()
+
+            if self.verbose > 2:
+                LOG.debug("Written status file as dict:\n%s", pp(status_file.as_dict()))
+
+            LOG.debug("Checking written status file %r ...", filename)
+            self.assertTrue(os.path.exists(filename))
+            filesize = os.stat(filename).st_size
+            self.assertGreater(filesize, 0)
+            content = ''
+            with open(filename, 'r', **open_args) as fh:
+                content = fh.read()
+            fh = None
+            if self.verbose > 2:
+                LOG.debug("Content of %r:\n%s", filename, content.rstrip())
+            self.assertEqual(content, expected)
+
+        finally:
+            if fh:
+                os.close(fh)
+            if os.path.exists(filename):
+                LOG.debug("Removing %r ...", filename)
+                os.remove(filename)
+
+    # -------------------------------------------------------------------------
     def test_reading_status_file(self):
 
         LOG.info("Testing reading a status file ...")
@@ -182,8 +253,8 @@ class StatusTestCase(BaseTestCase):
                 LOG.debug(
                     "Read status file as dict:\n%s",
                     pp(status_file.as_dict()))
-        self.assertEqual(status_file.filename, filename)
-        self.assertEqual(status_file.was_read, True)
+            self.assertEqual(status_file.filename, filename)
+            self.assertEqual(status_file.was_read, True)
 
 
 # =============================================================================
@@ -202,6 +273,7 @@ if __name__ == '__main__':
     suite.addTest(StatusTestCase('test_import', verbose))
     suite.addTest(StatusTestCase('test_empty_entry', verbose))
     suite.addTest(StatusTestCase('test_initialized_entry', verbose))
+    suite.addTest(StatusTestCase('test_creating_status_file', verbose))
     suite.addTest(StatusTestCase('test_reading_status_file', verbose))
 
     runner = unittest.TextTestRunner(verbosity=verbose)
