@@ -171,6 +171,44 @@ class StatusTestCase(BaseTestCase):
             LOG.debug("%s raised: %s", e.__class__.__name__, str(e))
 
     # -------------------------------------------------------------------------
+    def test_quoting(self):
+
+        LOG.info("Testing quoting of an filename ...")
+
+        from logrotate.status import StatusFileEntry
+
+        rdate = datetime(2010, 1, 1, 0, 0, 0, tzinfo=UTC)
+
+        filenames = (
+            '/var/log/messages',
+            '/var/log/strange whatever.log',
+            '/var/log/strange-»äöüÄÖÜß€ß«.log',
+            "/var/log/'bla.log",
+            "/var/log/'blabber'.log",
+            '/var/log/"blub.log',
+            '/var/log/"blubber".log',
+        )
+
+        for filename in filenames:
+
+            LOG.debug("Testing filename %r ...", filename)
+            entry = StatusFileEntry(
+                filename=filename, ts=rdate,
+                verbose=self.verbose, appname=self.appname)
+            entry_str = str(entry)
+            LOG.debug("Line to write:\n%s", entry_str)
+            if self.verbose > 2:
+                LOG.debug("Created status entry as dict:\n%s", pp(entry.as_dict()))
+
+            new_entry = StatusFileEntry.from_line(
+                entry_str, verbose=self.verbose, appname=self.appname)
+            LOG.debug("Filename after re-reading: %r.", new_entry.filename)
+            if self.verbose > 2:
+                LOG.debug("Re-created status entry as dict:\n%s", pp(entry.as_dict()))
+
+            self.assertEqual(new_entry.filename, filename)
+
+    # -------------------------------------------------------------------------
     def test_creating_status_file(self):
 
         LOG.info("Testing creating a new status file ...")
@@ -225,7 +263,7 @@ class StatusTestCase(BaseTestCase):
             with open(filename, 'r', **open_args) as fh:
                 content = fh.read()
             fh = None
-            if self.verbose > 2:
+            if self.verbose > 1:
                 LOG.debug("Content of %r:\n%s", filename, content.rstrip())
             self.assertEqual(content, expected)
 
@@ -273,6 +311,7 @@ if __name__ == '__main__':
     suite.addTest(StatusTestCase('test_import', verbose))
     suite.addTest(StatusTestCase('test_empty_entry', verbose))
     suite.addTest(StatusTestCase('test_initialized_entry', verbose))
+    suite.addTest(StatusTestCase('test_quoting', verbose))
     suite.addTest(StatusTestCase('test_creating_status_file', verbose))
     suite.addTest(StatusTestCase('test_reading_status_file', verbose))
 
