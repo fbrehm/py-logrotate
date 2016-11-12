@@ -372,7 +372,7 @@ class LogRotateScript(BaseObject, MutableSequence):
 
         command = '\n'.join(self._commands)
 
-        if self.verbose > 3:
+        if self.verbose > 2:
             msg = _("Executing script %(name)r with command:\n%(cmd)s") % {
                 'name': self.name, 'cmd': command.rstrip()}
             LOG.debug(msg)

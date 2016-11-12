@@ -77,6 +77,45 @@ class ScriptTestCase(BaseTestCase):
         self.assertEqual(len(script), 1)
         self.assertEqual(script[0], cmd)
 
+    # -------------------------------------------------------------------------
+    def test_execution(self):
+
+        LOG.info("Testing executing a LogRotateScript object ...")
+        from logrotate.script import LogRotateScript
+
+        sname = 'TestScript'
+        (fh, filename) = tempfile.mkstemp(prefix='remove-test.', text=True)
+        try:
+            os.close(fh)
+            fh = None
+
+            script = LogRotateScript(name=sname, verbose=self.verbose, appname=self.appname)
+            if self.verbose:
+                script.append('date')
+                script.append('echo "Removing \'%s\' ..."' % (filename))
+                script.append('rm -v "%s"' % (filename))
+            else:
+                script.append('date >/dev/null')
+                script.append('rm "%s"' % (filename))
+            if self.verbose > 2:
+                LOG.debug(
+                    "Created %s object as dict:\n%s",
+                    script.__class__.__name__, pp(script.as_dict()))
+            LOG.debug("Trying to execute script %r ...", script.name)
+            script()
+            LOG.debug("Checking, whether %r was really removed ...", filename)
+            self.assertFalse(os.path.isfile(filename))
+            del script
+
+        finally:
+            if self.verbose > 2:
+                LOG.debug("Aftermath ...")
+            if fh:
+                os.close(fh)
+            if os.path.exists(filename):
+                LOG.debug("Removing %r ...", filename)
+                os.remove(filename)
+
 # =============================================================================
 
 if __name__ == '__main__':
@@ -92,6 +131,7 @@ if __name__ == '__main__':
 
     suite.addTest(ScriptTestCase('test_import', verbose))
     suite.addTest(ScriptTestCase('test_object', verbose))
+    suite.addTest(ScriptTestCase('test_execution', verbose))
 
     runner = unittest.TextTestRunner(verbosity=verbose)
 
