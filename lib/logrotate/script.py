@@ -29,7 +29,7 @@ from logrotate.common import to_str_or_bust as to_str
 
 from logrotate.base import BaseObjectError, BaseObject
 
-__version__ = '0.3.1'
+__version__ = '0.3.2'
 
 _ = logrotate_gettext
 __ = logrotate_ngettext
@@ -74,6 +74,9 @@ class LogRotateScript(BaseObject, MutableSequence):
         self._do_post = False
         self._do_last = False
 
+        if name is not None:
+            self._name = to_str(name, force=True)
+
         self._commands = []
         '''
         @ivar: List of commands to execute
@@ -83,9 +86,17 @@ class LogRotateScript(BaseObject, MutableSequence):
         super(LogRotateScript, self).__init__(
             appname=appname, verbose=verbose, version=__version__, base_dir=base_dir)
 
-        if isinstance(commands,(list, tuple)):
+        if isinstance(commands, (list, tuple)):
             for cmd in commands:
                 self.append(cmd)
+        elif commands is None:
+            pass
+        elif isinstance(to_str(commands), str):
+            self.append(commands)
+        else:
+            msg = _("Invalide type %(t)r of parameter commands %(c)r.") % {
+                't': commands.__class__.__name__, 'c': commands}
+            raise TypeError(msg)
 
     #------------------------------------------------------------
     # Defintion of some properties
@@ -383,7 +394,7 @@ class LogRotateScript(BaseObject, MutableSequence):
             if retcode != expected_retcode:
                 return False
             return True
-        except OSError, e:
+        except OSError as e:
             msg = _("Execution of script %(name)r failed: %(error)s") % {
                 'name': self.name, 'error': e}
             LOG.error(msg)
@@ -407,7 +418,7 @@ class LogRotateScript(BaseObject, MutableSequence):
         @rtype:  bool
         '''
 
-        msg = _("Checking, whether the script %r should be executed.") % (self.name))
+        msg = _("Checking, whether the script %r should be executed.") % (self.name)
         LOG.debug(msg)
 
         if self.do_post or self.do_last:
