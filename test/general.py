@@ -122,7 +122,7 @@ class BaseTestCase(unittest.TestCase):
         LOG.debug("Tmp directory is: %r", self.tmp_dir)
 
         self.test_dir = os.path.relpath(os.path.join(self.base_dir, 'test'))
-        LOG.debug("Tesr directory is: %r", self.test_dir)
+        LOG.debug("Test directory is: %r", self.test_dir)
 
     # -------------------------------------------------------------------------
     def tearDown(self):
