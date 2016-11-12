@@ -25,7 +25,7 @@ from logrotate.common import logrotate_gettext, logrotate_ngettext
 
 from logrotate.base import BaseObjectError, BaseObject
 
-__version__ = '0.2.1'
+__version__ = '0.2.2'
 
 _ = logrotate_gettext
 __ = logrotate_ngettext
@@ -259,17 +259,20 @@ class LogRotateScript(BaseObject):
         @rtype:  bool
         '''
 
-        cmd = self.cmd
-        if cmd is None:
+        if self.cmd is None:
             msg = _("No command to execute defined in script %r.") % (self.name)
             raise LogRotateScriptError(msg)
+
+        command = '\n'.join(self.cmd)
+
         if self.verbose > 3:
-            msg = _("Executing script %(name)r with command: '%(cmd)s'") % {
-                'name': self.name, 'cmd': cmd}
+            msg = _("Executing script %(name)r with command:\n%(cmd)s") % {
+                'name': self.name, 'cmd': command.rstrip()}
             LOG.debug(msg)
         if not force:
             if self.simulate:
                 return True
+
         try:
             retcode = subprocess.call(command, shell=True)
             if self.verbose > 3:
