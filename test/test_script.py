@@ -15,6 +15,7 @@ import locale
 import glob
 import tempfile
 import textwrap
+import inspect
 
 try:
     import unittest2 as unittest
@@ -62,7 +63,7 @@ class ScriptTestCase(BaseTestCase):
         LOG.info("Testing creating a new LogRotateScript object ...")
         from logrotate.script import LogRotateScript
 
-        sname = 'TestScript'
+        sname = 'TestScript-' + inspect.stack()[0][3]
         cmd = 'ls -l --color=always'
 
         script = LogRotateScript(
@@ -83,7 +84,7 @@ class ScriptTestCase(BaseTestCase):
         LOG.info("Testing executing a LogRotateScript object ...")
         from logrotate.script import LogRotateScript
 
-        sname = 'TestScript'
+        sname = 'TestScript-' + inspect.stack()[0][3]
         (fh, filename) = tempfile.mkstemp(prefix='remove-test.', text=True)
         try:
             os.close(fh)
@@ -102,9 +103,10 @@ class ScriptTestCase(BaseTestCase):
                     "Created %s object as dict:\n%s",
                     script.__class__.__name__, pp(script.as_dict()))
             LOG.debug("Trying to execute script %r ...", script.name)
-            script()
+            ret = script()
             LOG.debug("Checking, whether %r was really removed ...", filename)
             self.assertFalse(os.path.isfile(filename))
+            self.assertEqual(ret, 0)
             del script
 
         finally:
@@ -116,6 +118,33 @@ class ScriptTestCase(BaseTestCase):
                 LOG.debug("Removing %r ...", filename)
                 os.remove(filename)
 
+    # -------------------------------------------------------------------------
+    def test_failed_execution(self):
+
+        LOG.info("Testing failed execution of a LogRotateScript object ...")
+        from logrotate.script import LogRotateScript
+        from logrotate.script import ExecutionError
+
+        sname = 'TestScript-' + inspect.stack()[0][3]
+        script = LogRotateScript(name=sname, verbose=self.verbose, appname=self.appname)
+        script.append('exit 5')
+
+        if self.verbose > 2:
+            LOG.debug(
+                "Created %s object as dict:\n%s",
+                script.__class__.__name__, pp(script.as_dict()))
+
+        LOG.debug("Trying to execute failing script %r w/o exception ...", script.name)
+        ret = script()
+        self.assertEqual(ret, 5)
+
+        LOG.debug("Trying to execute failing script %r with an exception ...", script.name)
+        with self.assertRaises(ExecutionError) as cm:
+            ret = script.execute(raise_on_error=True)
+        e = cm.exception
+        LOG.debug("%s raised: %s", e.__class__.__name__, str(e))
+
+        sname = 'TestScript'
 # =============================================================================
 
 if __name__ == '__main__':
@@ -132,6 +161,7 @@ if __name__ == '__main__':
     suite.addTest(ScriptTestCase('test_import', verbose))
     suite.addTest(ScriptTestCase('test_object', verbose))
     suite.addTest(ScriptTestCase('test_execution', verbose))
+    suite.addTest(ScriptTestCase('test_failed_execution', verbose))
 
     runner = unittest.TextTestRunner(verbosity=verbose)
 
