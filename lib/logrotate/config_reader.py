@@ -34,12 +34,14 @@ from logrotate.common import to_str_or_bust as to_str
 
 from logrotate.base import BaseObjectError, BaseObject
 
-from LogRotate.Script import LogRotateScript
+from logrotate.script import LogRotateScript
 
-__version__    = '0.2.1'
+__version__    = '0.2.2'
 
 _ = logrotate_gettext
 __ = logrotate_ngettext
+
+LOG = logging.getLogger(__name__)
 
 
 #========================================================================
@@ -157,16 +159,12 @@ class LogrotateConfigurationError(Exception):
     '''
     Base class for exceptions in this module.
     '''
+    pass
 
 #========================================================================
 
 class LogrotateConfigurationReader(object):
-    '''
-    Class for reading the configuration for Python logrotating
-
-    @author: Frank Brehm
-    @contact: frank@brehm-online.com
-    '''
+    '''Class for reading the configuration for Python logrotating'''
 
     #-------------------------------------------------------
     def __init__( self, config_file,
@@ -213,12 +211,6 @@ class LogrotateConfigurationReader(object):
         '''
         @ivar: test mode - no write actions are made
         @type: bool
-        '''
-
-        self.logger = logging.getLogger('pylogrotate.config')
-        '''
-        @ivar: logger object
-        @type: logging.getLogger
         '''
 
         self.global_option = {}
@@ -318,7 +310,7 @@ class LogrotateConfigurationReader(object):
         @type: dict
         '''
 
-        self.logger.debug( _("Logrotate config reader initialised.") )
+        LOG.debug( _("Logrotate config reader initialised.") )
 
     #------------------------------------------------------------
     def __str__(self):
@@ -351,7 +343,6 @@ class LogrotateConfigurationReader(object):
             'default':          self.default,
             'defined_logfiles': self.defined_logfiles,
             'global_option':    self.global_option,
-            'logger':           self.logger,
             'local_dir':        self.local_dir,
             'new_log':          self.new_log,
             'search_path':      self.search_path,
@@ -376,7 +367,7 @@ class LogrotateConfigurationReader(object):
         if self.verbose > 3:
             msg = _("Resetting default values for directives " +
                     "to hard coded values.")
-            self.logger.debug(msg)
+            LOG.debug(msg)
 
         self.default = {}
 
@@ -438,7 +429,7 @@ class LogrotateConfigurationReader(object):
         pattern = ( pattern_types[pattern_type] % pattern )
         if self.verbose > 3:
             msg = _("New taboo pattern: '%s'.") % (pattern)
-            self.logger.debug(msg)
+            LOG.debug(msg)
 
         self.taboo.append(pattern)
 
@@ -467,7 +458,7 @@ class LogrotateConfigurationReader(object):
                         dir_included[real_dir] = True
                 else:
                     msg = _("'%s' is not a directory.") % (item) 
-                    self.logger.debug(msg)
+                    LOG.debug(msg)
                         
         # Including default path list from python
         def_path = os.defpath
@@ -480,7 +471,7 @@ class LogrotateConfigurationReader(object):
                         dir_included[real_dir] = True
                 else:
                     msg = _("'%s' is not a directory.") % (item) 
-                    self.logger.debug(msg)
+                    LOG.debug(msg)
 
         # Including own defined directories
         for item in ('/usr/local/bin',
@@ -494,7 +485,7 @@ class LogrotateConfigurationReader(object):
                     dir_included[real_dir] = True
             else:
                 msg = _("'%s' is not a directory.") % (item) 
-                self.logger.debug(msg)
+                LOG.debug(msg)
 
         self.search_path = path_list
 
@@ -543,16 +534,16 @@ class LogrotateConfigurationReader(object):
                 msg = _("Search path '%s' doesn't exists or is not "
                          + "a directory.") \
                         % (search_dir)
-                self.logger.debug(msg)
+                LOG.debug(msg)
 
         if found:
             msg = _("Shred command found: '%s'.") % (cmd)
-            self.logger.debug(msg)
+            LOG.debug(msg)
             self.shred_command = cmd
             return True
         else:
             msg = _("Shred command not found, shred disabled.")
-            self.logger.warning(msg)
+            LOG.warning(msg)
             self.shred_command = None
             return False
 
@@ -610,7 +601,7 @@ class LogrotateConfigurationReader(object):
             else:
                 msg = _("Search path '%s' doesn't exists or "
                          + "is not a directory.") % (search_dir)
-                self.logger.debug(msg)
+                LOG.debug(msg)
 
         if found:
             return os.path.abspath(cmd)
@@ -681,7 +672,7 @@ class LogrotateConfigurationReader(object):
 
         pp = pprint.PrettyPrinter(indent=4)
         msg = _("Try reading configuration from '%s' ...") % (configfile)
-        self.logger.debug(msg)
+        LOG.debug(msg)
 
         if not os.path.exists(configfile):
             msg = _("File '%s' doesn't exists.") % (configfile)
@@ -694,7 +685,7 @@ class LogrotateConfigurationReader(object):
         self.config_files[configfile] = True
 
         msg = _("Reading configuration from '%s' ...") % (configfile)
-        self.logger.info(msg)
+        LOG.info(msg)
 
         cfile = None
         try:
@@ -751,7 +742,7 @@ class LogrotateConfigurationReader(object):
                     msg = _("Starting a logfile definition.")
                     msg += " " + ( _("(file '%(file)s', line %(lnr)s)")
                                     % {'file': configfile, 'lnr': linenr})
-                    self.logger.debug(msg)
+                    LOG.debug(msg)
 
                 self._start_logfile_definition( 
                     line            = line,
@@ -789,7 +780,7 @@ class LogrotateConfigurationReader(object):
                 if self.verbose > 3:
                     msg =  _("Split into parts of: '%s'") % (line)
                     msg += ":\n" + pp.pformat(parts)
-                    self.logger.debug(msg)
+                    LOG.debug(msg)
 
                 for pattern in parts:
                     if pattern == '{':
@@ -828,13 +819,13 @@ class LogrotateConfigurationReader(object):
                     msg = _("End of a logfile definition.")
                     msg += " " + ( _("(file '%(file)s', line %(lnr)s)")
                                     % {'file': configfile, 'lnr': linenr})
-                    self.logger.debug(msg)
+                    LOG.debug(msg)
                 if rest:
                     msg = (_("Needless content found at the end of a logfile "
                              "definition found: '%s'.") % (str(rest)))
                     msg += " " + ( _("(file '%(file)s', line %(lnr)s)")
                                     % {'file': configfile, 'lnr': linenr})
-                    self.logger.warning(msg)
+                    LOG.warning(msg)
                 # set a compress ext, if Compress is True
                 if self.new_log['compress']:
                     if not self.new_log['compressext']:
@@ -858,7 +849,7 @@ class LogrotateConfigurationReader(object):
                 if self.verbose > 3:
                     msg =  _("New logfile definition:")
                     msg += "\n" + pp.pformat(self.new_log)
-                    self.logger.debug(msg)
+                    LOG.debug(msg)
                 if found_files > 0:
                     if self.new_log['postrotate']:
                         script = self.new_log['postrotate']
@@ -867,7 +858,7 @@ class LogrotateConfigurationReader(object):
                         else:
                             msg = (_("Postrotate script '%s' not found.")
                                     % (script))
-                            self.logger.error(msg)
+                            LOG.error(msg)
                     if self.new_log['lastaction']:
                         script = self.new_log['lastaction']
                         if self.scripts[script]:
@@ -875,7 +866,7 @@ class LogrotateConfigurationReader(object):
                         else:
                             msg = (_("Lastaction script '%s' not found.")
                                     % (script))
-                            self.logger.error(msg)
+                            LOG.error(msg)
                     self.config.append(self.new_log)
                 in_fd = False
                 in_logfile_list = False
@@ -891,7 +882,7 @@ class LogrotateConfigurationReader(object):
                              + "log file definition.")
                     msg += " " + ( _("(file '%(file)s', line %(lnr)s)")
                                     % {'file': configfile, 'lnr': linenr})
-                    self.logger.warning(msg)
+                    LOG.warning(msg)
                     continue
                 self._do_include(line, rest, configfile, linenr)
                 continue
@@ -911,7 +902,7 @@ class LogrotateConfigurationReader(object):
                              + "type: '%(type)s', name: '%(name)s'.")
                     msg += " " + ( _("(file '%(file)s', line %(lnr)s)")
                                     % {'file': configfile, 'lnr': linenr})
-                    self.logger.debug(msg)
+                    LOG.debug(msg)
                 newscript = self._start_log_script_definition(
                     script_type = script_type,
                     script_name = script_name,
@@ -924,7 +915,7 @@ class LogrotateConfigurationReader(object):
                     in_script = True
                 if self.verbose > 3:
                     msg = _("New log script name: '%s'.") % (newscript)
-                    self.logger.debug(msg)
+                    LOG.debug(msg)
                 continue
 
             # start of an explicite external script definition
@@ -934,14 +925,14 @@ class LogrotateConfigurationReader(object):
                     msg = _("Found start of a external script definition.")
                     msg += " " + ( _("(file '%(file)s', line %(lnr)s)")
                                     % {'file': configfile, 'lnr': linenr})
-                    self.logger.debug(msg)
+                    LOG.debug(msg)
                 rest = match.group(1)
                 if in_fd or in_logfile_list:
                     msg = _("Syntax error: external script definition may "
                              + "not appear inside of a log file definition.")
                     msg += " " + ( _("(file '%(file)s', line %(lnr)s)")
                                     % {'file': configfile, 'lnr': linenr})
-                    self.logger.warning(msg)
+                    LOG.warning(msg)
                     continue
                 newscript = self._ext_script_definition(
                     line, rest, configfile, linenr
@@ -950,14 +941,14 @@ class LogrotateConfigurationReader(object):
                     in_script = True
                 if self.verbose > 3:
                     msg = _("New external script name: '%s'.") % (newscript)
-                    self.logger.debug(msg)
+                    LOG.debug(msg)
                 continue
 
             # all other options
             if not self._option(line, in_fd, configfile, linenr):
                 msg = _("Syntax error in file '%(file)s', line %(line)s") \
                         % {'file': configfile, 'line': linenr}
-                self.logger.warning(msg)
+                LOG.warning(msg)
 
         return True
 
@@ -985,7 +976,7 @@ class LogrotateConfigurationReader(object):
             msg = _("Checking line '%s' for a logrotate option.") % (line)
             msg += " " + (_("(file '%(file)s', line %(lnr)s)")
                             % {'file': filename, 'lnr': linenr})
-            self.logger.debug(msg)
+            LOG.debug(msg)
 
         # where to insert the option?
         directive = self.default
@@ -1003,13 +994,13 @@ class LogrotateConfigurationReader(object):
             val    = match.group(2)
         else:
             msg = _("Could not detect option in line '%s'.") % (line)
-            self.logger.warning(msg)
+            LOG.warning(msg)
             return False
         val = re.sub(r'^\s+$', '', val)
         if self.verbose > 4:
             msg = (_("Found option '%(opt)s' with value '%(val)s'.")
                     % {'opt': option, 'val': val})
-            self.logger.debug(msg)
+            LOG.debug(msg)
 
         # Check for unsupported options
         pattern = r'^(' + '|'.join(unsupported_options) + r')$'
@@ -1018,7 +1009,7 @@ class LogrotateConfigurationReader(object):
             msg = _("Unsupported option '%s'.") % (match.group(1).lower())
             msg += " " + ( _("(file '%(file)s', line %(lnr)s)")
                             % {'file': filename, 'lnr': linenr})
-            self.logger.info(msg)
+            LOG.info(msg)
             return True
 
         # Check for boolean option
@@ -1033,7 +1024,7 @@ class LogrotateConfigurationReader(object):
                         % {'value': val, 'option': option})
                 msg += " " + ( _("(file '%(file)s', line %(lnr)s)")
                                 % {'file': filename, 'lnr': linenr})
-                self.logger.warning(msg)
+                LOG.warning(msg)
             if negated is None:
                 option_value = True
             else:
@@ -1047,7 +1038,7 @@ class LogrotateConfigurationReader(object):
                            })
                 msg += " " + ( _("(file '%(file)s', line %(lnr)s)")
                                 % {'file': filename, 'lnr': linenr})
-                self.logger.debug(msg)
+                LOG.debug(msg)
             directive[key] = option_value
             if key == 'copy' and option_value:
                 if directive['copytruncate']:
@@ -1055,14 +1046,14 @@ class LogrotateConfigurationReader(object):
                             % {'by': 'copy', 'what': 'copytruncate'})
                     msg += " " + ( _("(file '%(file)s', line %(lnr)s)")
                                     % {'file': filename, 'lnr': linenr})
-                    self.logger.warning(msg)
+                    LOG.warning(msg)
                     directive['copytruncate'] = False
                 if directive['create']['enabled']:
                     msg = (_("Option '%(by)s' disables option '%(what)s'.")
                             % {'by': 'copy', 'what': 'create'})
                     msg += " " + ( _("(file '%(file)s', line %(lnr)s)")
                                     % {'file': filename, 'lnr': linenr})
-                    self.logger.warning(msg)
+                    LOG.warning(msg)
                     directive['create']['enabled'] = False
             elif key == 'copytruncate' and option_value:
                 if directive['copy']:
@@ -1070,14 +1061,14 @@ class LogrotateConfigurationReader(object):
                             % {'by': 'copytruncate', 'what': 'copy'})
                     msg += " " + ( _("(file '%(file)s', line %(lnr)s)")
                                     % {'file': filename, 'lnr': linenr})
-                    self.logger.warning(msg)
+                    LOG.warning(msg)
                     directive['copy'] = False
                 if directive['create']['enabled']:
                     msg = (_("Option '%(by)s' disables option '%(what)s'.")
                             % {'by': 'copytruncate', 'what': 'create'})
                     msg += " " + ( _("(file '%(file)s', line %(lnr)s)")
                                     % {'file': filename, 'lnr': linenr})
-                    self.logger.warning(msg)
+                    LOG.warning(msg)
                     directive['create']['enabled'] = False
             return True
 
@@ -1092,7 +1083,7 @@ class LogrotateConfigurationReader(object):
                 if key in options_with_values:
                     if val is None or val == '':
                         msg = _("Option '%s' must have a value.") % (key)
-                        self.logger.warning(msg)
+                        LOG.warning(msg)
                         return False
                 else:
                     if val is None or val == '':
@@ -1103,13 +1094,13 @@ class LogrotateConfigurationReader(object):
                     msg = _("Option '%(option)s' has no "
                              + "integer value: %(msg)s.") \
                             % {'option': key, 'msg': str(e)}
-                    self.logger.warning(msg)
+                    LOG.warning(msg)
                     return False
             if option_value < 0:
                 msg = _("Negative value %(value)s for option '%(option)s' "
                          + "is not allowed.") \
                             % {'value': str(option_value), 'option': key}
-                self.logger.warning(msg)
+                LOG.warning(msg)
                 return False
             if self.verbose > 4:
                 msg = (_("Setting integer option '%(option)s' " +
@@ -1120,7 +1111,7 @@ class LogrotateConfigurationReader(object):
                           })
                 msg += " " + ( _("(file '%(file)s', line %(lnr)s)")
                                 % {'file': filename, 'lnr': linenr})
-                self.logger.debug(msg)
+                LOG.debug(msg)
             directive[key] = option_value
             return True
 
@@ -1134,7 +1125,7 @@ class LogrotateConfigurationReader(object):
                     msg = (_("Senseless option value '%(value)s' " +
                              "after '%(option)s'.")
                             % {'value': val, 'option': option.lower()})
-                    self.logger.warning(msg)
+                    LOG.warning(msg)
                     return False
                 return True
             address_list = get_address_list(val, self.verbose)
@@ -1152,7 +1143,7 @@ class LogrotateConfigurationReader(object):
                       }
                 msg += " " + ( _("(file '%(file)s', line %(lnr)s)")
                                 % {'file': filename, 'lnr': linenr})
-                self.logger.debug(msg)
+                LOG.debug(msg)
             return True
 
         # Check for mailfirst/maillast
@@ -1171,12 +1162,12 @@ class LogrotateConfigurationReader(object):
                           }
                 msg += " " + ( _("(file '%(file)s', line %(lnr)s)")
                                 % {'file': filename, 'lnr': linenr})
-                self.logger.debug(msg)
+                LOG.debug(msg)
             if val is not None and val != '':
                 msg = _("Senseless option value '%(value)s' after "
                          + "'%(option)s'.") \
                         % {'value': val, 'option': option.lower()}
-                self.logger.warning(msg)
+                LOG.warning(msg)
                 return False
             return True
 
@@ -1188,16 +1179,16 @@ class LogrotateConfigurationReader(object):
             if key in options_with_values:
                 if self.verbose > 5:
                     msg = _("Option '%s' must have a value.") % (key)
-                    self.logger.debug(msg)
+                    LOG.debug(msg)
                 if (val is None) or (val == ''):
                     msg = _("Option '%s' without a value.") % (key)
-                    self.logger.debug(msg)
+                    LOG.debug(msg)
                     return False
             if key == 'compresscmd':
                 prog = self.check_compress_command(val)
                 if prog is None:
                     msg =  _("Compress command '%s' not found.") % (val)
-                    self.logger.warning(msg)
+                    LOG.warning(msg)
                     return False
                 val = prog
             if key == 'compressoptions' and val is None:
@@ -1213,29 +1204,29 @@ class LogrotateConfigurationReader(object):
             if in_fd:
                 msg = (_("Option '%s' not allowed inside a logfile directive.")
                         %(key))
-                self.logger.warning(msg)
+                LOG.warning(msg)
                 return False
             if key in options_with_values:
                 if self.verbose > 5:
                     msg = (_("Option '%s' must have a value.") % (key))
-                    self.logger.debug(msg)
+                    LOG.debug(msg)
                 if (val is None) or (re.search(r'^\s*$', val) is not None):
                     msg = _("Option '%s' without a value.") % (key)
-                    self.logger.warning(msg)
+                    LOG.warning(msg)
                     return False
             if key in path_options:
                 if not os.path.abspath(val):
                     msg = (_("Value '%(value)s' for option '%(option)s' " +
                              "is not an absolute path.")
                             % {'value': val, 'option': key})
-                    self.logger.warning(msg)
+                    LOG.warning(msg)
                     return False
             if key == 'mailfrom':
                pair = email.utils.parseaddr(val)
                if not email_valid(pair[1]):
                     msg = (_("Invalid mail address for 'mailfrom' " +
                              "given: '%s'.") % (val))
-                    self.logger.warning(msg)
+                    LOG.warning(msg)
                     return False
                val = pair
             elif key == 'smtpport':
@@ -1244,11 +1235,11 @@ class LogrotateConfigurationReader(object):
                     port = int(val)
                 except ValueError, e:
                     msg = _("Invalid SMTP port '%s' given.") % (val)
-                    self.logger.warning(msg)
+                    LOG.warning(msg)
                     return False
                 if port < 1 or port >= 2**15:
                     msg = _("Invalid SMTP port '%s' given.") % (val)
-                    self.logger.warning(msg)
+                    LOG.warning(msg)
                     return False
                 val = port
             elif key == 'smtptls':
@@ -1269,7 +1260,7 @@ class LogrotateConfigurationReader(object):
                         % {'option': key, 'value': val})
                 msg += " " + ( _("(file '%(file)s', line %(lnr)s)")
                                 % {'file': filename, 'lnr': linenr})
-                self.logger.debug(msg)
+                LOG.debug(msg)
             self.global_option[key] = val
             return True
 
@@ -1284,7 +1275,7 @@ class LogrotateConfigurationReader(object):
                         % {'key': key, 'value': val})
                 msg += " " + ( _("(file '%(file)s', line %(lnr)s)")
                                 % {'file': filename, 'lnr': linenr})
-                self.logger.debug(msg)
+                LOG.debug(msg)
             option_value = 1
             if key in valid_periods:
                 if (val is not None) and (re.search(r'^\s*$', val) is None):
@@ -1293,14 +1284,14 @@ class LogrotateConfigurationReader(object):
                             % {'option': key, 'value': val})
                     msg += " " + ( _("(file '%(file)s', line %(lnr)s)")
                                         % {'file': filename, 'lnr': linenr})
-                    self.logger.warning(msg)
+                    LOG.warning(msg)
                 option_value = valid_periods[key]
             else:
                 try:
                     option_value = period2days(val, verbose = self.verbose)
                 except ValueError, e:
                     msg = _("Invalid period definition: '%s'.") % (val)
-                    self.logger.warning(msg)
+                    LOG.warning(msg)
                     return False
             if self.verbose > 4:
                 msg = (_("Setting '%(what)s' in '%(directive)s' " +
@@ -1311,7 +1302,7 @@ class LogrotateConfigurationReader(object):
                           })
                 msg += " " + ( _("(file '%(file)s', line %(lnr)s)")
                                 % {'file': filename, 'lnr': linenr})
-                self.logger.debug(msg)
+                LOG.debug(msg)
             directive['period'] = option_value
             return True
 
@@ -1329,7 +1320,7 @@ class LogrotateConfigurationReader(object):
                     option_value = period2days(val, verbose = self.verbose)
                 except ValueError, e:
                     msg = _("Invalid maxage definition: '%s'") % (val)
-                    self.logger.warning(msg)
+                    LOG.warning(msg)
                     return False
             if self.verbose > 4:
                 msg = (_("Setting '%(what)s' in '%(directive)s' " +
@@ -1340,7 +1331,7 @@ class LogrotateConfigurationReader(object):
                           })
                 msg += " " + ( _("(file '%(file)s', line %(lnr)s)")
                                 % {'file': filename, 'lnr': linenr})
-                self.logger.debug(msg)
+                LOG.debug(msg)
             directive['maxage'] = option_value
             return True
 
@@ -1359,7 +1350,7 @@ class LogrotateConfigurationReader(object):
                         % (str(negated)))
                 msg += " " + ( _("(file '%(file)s', line %(lnr)s)")
                                 % {'file': filename, 'lnr': linenr})
-                self.logger.debug(msg)
+                LOG.debug(msg)
             values = []
             if val is not None:
                 values = split_parts(val) 
@@ -1378,7 +1369,7 @@ class LogrotateConfigurationReader(object):
                             % {'first_val': first_val, 'value': option_value})
                     msg += " " + ( _("(file '%(file)s', line %(lnr)s)")
                                     % {'file': filename, 'lnr': linenr})
-                    self.logger.debug(msg)
+                    LOG.debug(msg)
                 if option_value in yes_values:
                     use_dateext = True
                 elif option_value in no_values:
@@ -1395,7 +1386,7 @@ class LogrotateConfigurationReader(object):
                           })
                 msg += " " + ( _("(file '%(file)s', line %(lnr)s)")
                                 % {'file': filename, 'lnr': linenr})
-                self.logger.debug(msg)
+                LOG.debug(msg)
             directive['dateext'] = use_dateext
 
             if dateext is not None:
@@ -1408,7 +1399,7 @@ class LogrotateConfigurationReader(object):
                             })
                     msg += " " + ( _("(file '%(file)s', line %(lnr)s)")
                                     % {'file': filename, 'lnr': linenr})
-                    self.logger.debug(msg)
+                    LOG.debug(msg)
                 directive['datepattern'] = dateext
 
             return True
@@ -1425,14 +1416,14 @@ class LogrotateConfigurationReader(object):
                 msg = _("Checking for option '%s' ...") % ('create')
                 msg += " " + ( _("(file '%(file)s', line %(lnr)s)")
                                 % {'file': filename, 'lnr': linenr})
-                self.logger.debug(msg)
+                LOG.debug(msg)
 
             if negated:
                 if self.verbose > 4:
                     msg = _("Removing '%s'.") % ('create')
                     msg += " " + ( _("(file '%(file)s', line %(lnr)s)")
                                     % {'file': filename, 'lnr': linenr})
-                    self.logger.debug(msg)
+                    LOG.debug(msg)
                 directive['create']['enabled'] = False
                 return True
 
@@ -1441,7 +1432,7 @@ class LogrotateConfigurationReader(object):
                          + "has no effect.") % ('copy')
                 msg += " " + ( _("(file '%(file)s', line %(lnr)s)")
                                 % {'file': filename, 'lnr': linenr})
-                self.logger.warning(msg)
+                LOG.warning(msg)
                 directive['create']['enabled'] = False
                 return True
 
@@ -1450,7 +1441,7 @@ class LogrotateConfigurationReader(object):
                          + "has no effect.") % ('copytruncate')
                 msg += " " + ( _("(file '%(file)s', line %(lnr)s)")
                                 % {'file': filename, 'lnr': linenr})
-                self.logger.warning(msg)
+                LOG.warning(msg)
                 directive['create']['enabled'] = False
                 return True
 
@@ -1471,7 +1462,7 @@ class LogrotateConfigurationReader(object):
                             % ('values[0]'))
                     msg += " " + ( _("(file '%(file)s', line %(lnr)s)")
                                 % {'file': filename, 'lnr': linenr})
-                    self.logger.debug(msg)
+                    LOG.debug(msg)
                 mode_octal = values[0]
                 if re.search(r'^0', mode_octal) is None:
                     mode_octal = '0' + mode_octal
@@ -1479,7 +1470,7 @@ class LogrotateConfigurationReader(object):
                     mode = int(mode_octal, 8)
                 except ValueError:
                     msg = _("Invalid create mode '%s'.") % (values[1])
-                    self.logger.warning(msg)
+                    LOG.warning(msg)
                     return False
 
             # Check for Owner (user, uid)
@@ -1490,7 +1481,7 @@ class LogrotateConfigurationReader(object):
                             % (owner_raw))
                     msg += " " + ( _("(file '%(file)s', line %(lnr)s)")
                                 % {'file': filename, 'lnr': linenr})
-                    self.logger.debug(msg)
+                    LOG.debug(msg)
                 if re.search(r'^[1-9]\d*$', owner_raw) is not None:
                     owner = int(owner_raw)
                 else:
@@ -1499,7 +1490,7 @@ class LogrotateConfigurationReader(object):
                     except KeyError:
                         msg = (_("Invalid owner '%(owner)s' in '%(what)s'.")
                                 % {'owner': owner_raw, 'what': 'create'})
-                        self.logger.warning(msg)
+                        LOG.warning(msg)
                         return False
 
             # Check for Group (gid)
@@ -1510,7 +1501,7 @@ class LogrotateConfigurationReader(object):
                             % (group_raw))
                     msg += " " + ( _("(file '%(file)s', line %(lnr)s)")
                                 % {'file': filename, 'lnr': linenr})
-                    self.logger.debug(msg)
+                    LOG.debug(msg)
                 if re.search(r'^[1-9]\d*$', group_raw) is not None:
                     group = int(group_raw)
                 else:
@@ -1519,7 +1510,7 @@ class LogrotateConfigurationReader(object):
                     except KeyError:
                         msg = (_("Invalid group '%(group)s' in '%(what)s'.")
                                     % {'group': group_raw, 'what': 'create'})
-                        self.logger.warning(msg)
+                        LOG.warning(msg)
                         return False
 
             # Give values back ...
@@ -1540,14 +1531,14 @@ class LogrotateConfigurationReader(object):
                 msg = _("Checking for option '%s' ...") % ('olddir')
                 msg += " " + ( _("(file '%(file)s', line %(lnr)s)")
                                 % {'file': filename, 'lnr': linenr})
-                self.logger.debug(msg)
+                LOG.debug(msg)
 
             if negated:
                 if self.verbose > 4:
                     msg = _("Removing '%s'.") % ('olddir')
                     msg += " " + ( _("(file '%(file)s', line %(lnr)s)")
                                 % {'file': filename, 'lnr': linenr})
-                    self.logger.debug(msg)
+                    LOG.debug(msg)
                 directive['olddir']['enabled'] = False
                 return True
 
@@ -1560,7 +1551,7 @@ class LogrotateConfigurationReader(object):
                     (values[0] is None) or
                     (re.search(r'^\s*$', values[0]) is not None)):
                 msg = _("Option '%s' without a value given.") % ('olddir')
-                self.logger.warning(msg)
+                LOG.warning(msg)
                 return False
             directive['olddir']['dirname'] = values[0]
             directive['olddir']['enabled'] = True
@@ -1576,7 +1567,7 @@ class LogrotateConfigurationReader(object):
                              "mode '%s' ...") % (values[1]))
                     msg += " " + ( _("(file '%(file)s', line %(lnr)s)")
                                     % {'file': filename, 'lnr': linenr})
-                    self.logger.debug(msg)
+                    LOG.debug(msg)
                 mode_octal = values[1]
                 if re.search(r'^0', mode_octal) is None:
                     mode_octal = '0' + mode_octal
@@ -1585,7 +1576,7 @@ class LogrotateConfigurationReader(object):
                 except ValueError:
                     msg = (_("Invalid create mode '%s' in 'olddir'.")
                             % (values[1]))
-                    self.logger.debug(msg)
+                    LOG.debug(msg)
                     return False
 
             # Check for Owner (user, uid)
@@ -1596,7 +1587,7 @@ class LogrotateConfigurationReader(object):
                                 % (owner_raw))
                     msg += " " + ( _("(file '%(file)s', line %(lnr)s)")
                                     % {'file': filename, 'lnr': linenr})
-                    self.logger.debug(msg)
+                    LOG.debug(msg)
                 if re.search(r'^[1-9]\d*$', owner_raw) is not None:
                     owner = int(owner_raw)
                 else:
@@ -1605,7 +1596,7 @@ class LogrotateConfigurationReader(object):
                     except KeyError:
                         msg = (_("Invalid owner '%(owner)s' in '%(what)s'.")
                                     % {'owner': owner_raw, 'what': 'olddir'})
-                        self.logger.warning(msg)
+                        LOG.warning(msg)
                         return False
 
             # Check for Group (gid)
@@ -1616,7 +1607,7 @@ class LogrotateConfigurationReader(object):
                             % (group_raw))
                     msg += " " + ( _("(file '%(file)s', line %(lnr)s)")
                                     % {'file': filename, 'lnr': linenr})
-                    self.logger.debug(msg)
+                    LOG.debug(msg)
                 if re.search(r'^[1-9]\d*$', group_raw) is not None:
                     group = int(group_raw)
                 else:
@@ -1625,7 +1616,7 @@ class LogrotateConfigurationReader(object):
                     except KeyError:
                         msg = (_("Invalid group '%(group)s' in '%(what)s'.")
                                     % {'group': group_raw, 'what': 'olddir'})
-                        self.logger.warning(msg)
+                        LOG.warning(msg)
                         return False
 
             # Give values back ...
@@ -1643,17 +1634,17 @@ class LogrotateConfigurationReader(object):
                         % (size_str))
                 msg += " " + ( _("(file '%(file)s', line %(lnr)s)")
                                 % {'file': filename, 'lnr': linenr})
-                self.logger.debug(msg)
+                LOG.debug(msg)
             if size_str is None:
                 msg = _("Failing size definition.")
-                self.logger.warning(msg)
+                LOG.warning(msg)
                 return False
             size_bytes = None
             try:
                 size_bytes = human2bytes(size_str, verbose = self.verbose)
             except ValueError, e:
                 msg = _("Invalid definition for 'size': '%s'.") % (size_str)
-                self.logger.warning(msg)
+                LOG.warning(msg)
                 return False
             if self.verbose > 4:
                 msg = (_("Got a rotation size in '%(directive)s' " +
@@ -1661,7 +1652,7 @@ class LogrotateConfigurationReader(object):
                         % {'directive': directive_str, 'bytes': size_bytes})
                 msg += " " + ( _("(file '%(file)s', line %(lnr)s)")
                                 % {'file': filename, 'lnr': linenr})
-                self.logger.debug(msg)
+                LOG.debug(msg)
             directive['size'] = size_bytes
             return True
 
@@ -1676,12 +1667,12 @@ class LogrotateConfigurationReader(object):
                         % {'type': key, 'value': val})
                 msg += " " + ( _("(file '%(file)s', line %(lnr)s)")
                                 % {'file': filename, 'lnr': linenr})
-                self.logger.debug(msg)
+                LOG.debug(msg)
 
             if in_fd:
                 msg = (_("Option 'taboo%s' not allowed inside " +
                          "a logfile directive.") % (key))
-                self.logger.warning(msg)
+                LOG.warning(msg)
                 return False
 
             values = []
@@ -1695,7 +1686,7 @@ class LogrotateConfigurationReader(object):
 
             if len(values) < 1:
                 msg = _("Option 'taboo%s' needs a value.") % (key)
-                self.logger.warning(msg)
+                LOG.warning(msg)
                 return False
 
             if not extend:
@@ -1707,7 +1698,7 @@ class LogrotateConfigurationReader(object):
 
         # Option not found, I'm angry
         msg = _("Unknown option '%s'.") % (option)
-        self.logger.warning(msg)
+        LOG.warning(msg)
         return False
 
     #------------------------------------------------------------
@@ -1737,7 +1728,7 @@ class LogrotateConfigurationReader(object):
             msg = _("No script name given in a script directive.")
             msg += " " + ( _("(file '%(file)s', line %(lnr)s)")
                             % {'file': filename, 'lnr': linenr})
-            self.logger.warning(msg)
+            LOG.warning(msg)
             return None
 
         # to much arguments to include ...
@@ -1746,7 +1737,7 @@ class LogrotateConfigurationReader(object):
                      + "the first one is used.")
             msg += " " + ( _("(file '%(file)s', line %(lnr)s)")
                             % {'file': filename, 'lnr': linenr})
-            self.logger.warning(msg)
+            LOG.warning(msg)
 
         script_name = values[0]
 
@@ -1755,7 +1746,7 @@ class LogrotateConfigurationReader(object):
                      + "be overwritten.") % (script_name)
             msg += " " + ( _("(file '%(file)s', line %(lnr)s)")
                             % {'file': filename, 'lnr': linenr})
-            self.logger.warning(msg)
+            LOG.warning(msg)
 
         self.scripts[script_name] = LogRotateScript(
             name      = script_name,
@@ -1793,7 +1784,7 @@ class LogrotateConfigurationReader(object):
             msg = _("No file or directory given in a include directive.")
             msg += " " + ( _("(file '%(file)s', line %(lnr)s)")
                             % {'file': filename, 'lnr': linenr})
-            self.logger.warning(msg)
+            LOG.warning(msg)
             return False
 
         # to much arguments to include ...
@@ -1802,7 +1793,7 @@ class LogrotateConfigurationReader(object):
                      + "in a include directive, the first one is used.")
             msg += " " + ( _("(file '%(file)s', line %(lnr)s)")
                             % {'file': filename, 'lnr': linenr})
-            self.logger.warning(msg)
+            LOG.warning(msg)
 
         include = values[0]
 
@@ -1811,7 +1802,7 @@ class LogrotateConfigurationReader(object):
             msg = _("Including object '%s' doesn't exists.") % (include)
             msg += " " + ( _("(file '%(file)s', line %(lnr)s)")
                             % {'file': filename, 'lnr': linenr})
-            self.logger.warning(msg)
+            LOG.warning(msg)
             return False
 
         include = os.path.abspath(include)
@@ -1822,12 +1813,12 @@ class LogrotateConfigurationReader(object):
                      + "file  nor a directory.") % (include)
             msg += " " + ( _("(file '%(file)s', line %(lnr)s)")
                             % {'file': filename, 'lnr': linenr})
-            self.logger.warning(msg)
+            LOG.warning(msg)
             return False
 
         if self.verbose > 1:
             msg = _("Trying to include object '%s' ...") % (include)
-            self.logger.debug(msg)
+            LOG.debug(msg)
 
         # including object is a regular file
         if os.path.isfile(include):
@@ -1835,7 +1826,7 @@ class LogrotateConfigurationReader(object):
                 msg = _("Recursive including of '%s'.") % (include)
                 msg += " " + ( _("(file '%(file)s', line %(lnr)s)")
                                 % {'file': filename, 'lnr': linenr})
-                self.logger.warning(msg)
+                LOG.warning(msg)
                 return False
             return self._read(include)
 
@@ -1849,7 +1840,7 @@ class LogrotateConfigurationReader(object):
         # including object is a directory - include all files
         if self.verbose > 1:
             msg = _("Including directory '%s' ...") % (include)
-            self.logger.debug(msg)
+            LOG.debug(msg)
 
         dir_list = os.listdir(include)
         for item in sorted(dir_list, key=str.lower):
@@ -1858,20 +1849,20 @@ class LogrotateConfigurationReader(object):
             if self.verbose > 2:
                 msg = (_("Including item '%(item)s' ('%(path)s') ...")
                         % {'item': item, 'path': item_path})
-                self.logger.debug(msg)
+                LOG.debug(msg)
 
             # Skip directories
             if os.path.isdir(item_path):
                 if self.verbose > 1:
                     msg = (_("Skip subdirectory '%s' in including.")
                             % (item_path))
-                    self.logger.debug(msg)
+                    LOG.debug(msg)
                 continue
 
             # Skip non regular files
             if not os.path.isfile(item_path):
                 msg = _("Item '%s' is not a regular file.") % (item_path)
-                self.logger.debug(msg)
+                LOG.debug(msg)
                 continue
 
             # Check for taboo pattern
@@ -1883,7 +1874,7 @@ class LogrotateConfigurationReader(object):
                         msg = (_("Item '%(item)s' is matching pattern " +
                                  "'%(pattern)s', skiping.")
                                 % {'item': item, 'pattern': pattern})
-                        self.logger.debug(msg)
+                        LOG.debug(msg)
                     taboo_found = True
                     break
             if taboo_found:
@@ -1894,7 +1885,7 @@ class LogrotateConfigurationReader(object):
                 msg = _("Recursive including of '%s'.") % (item_path)
                 msg += " " + ( _("(file '%(file)s', line %(lnr)s)")
                                 % {'file': filename, 'lnr': linenr})
-                self.logger.warning(msg)
+                LOG.warning(msg)
                 return False
             self._read(item_path)
 
@@ -2038,7 +2029,7 @@ class LogrotateConfigurationReader(object):
 
         if self.verbose > 3:
             msg = _("Starting a new log directive with default values.")
-            self.logger.debug(msg)
+            LOG.debug(msg)
 
         self.new_log = {}
 
@@ -2101,7 +2092,7 @@ class LogrotateConfigurationReader(object):
 
         if len(self.new_log['file_patterns']) <= 0:
             msg = _("No logfile pattern defined.")
-            self.logger.warning(msg)
+            LOG.warning(msg)
             return 0
 
         for pattern in self.new_log['file_patterns']:
@@ -2109,21 +2100,21 @@ class LogrotateConfigurationReader(object):
                 msg = _("Find all logfiles for shell matching "
                          + "pattern '%s' ...") \
                        % (pattern)
-                self.logger.debug(msg)
+                LOG.debug(msg)
             logfiles = glob.glob(pattern)
             if len(logfiles) <= 0:
                 msg = _("No logfile found for pattern '%s'.") % (pattern)
                 if self.new_log['missingok']:
-                    self.logger.debug(msg)
+                    LOG.debug(msg)
                 else:
-                    self.logger.warning(msg)
+                    LOG.warning(msg)
                 continue
             for logfile in logfiles:
                 if self.verbose > 1:
                     msg = (_("Found logfile '%(file)s for pattern " +
                              "'%(pattern)s'.")
                            % {'file': logfile, 'pattern': pattern })
-                    self.logger.debug(msg)
+                    LOG.debug(msg)
                 if logfile in self.defined_logfiles:
                     f = self.defined_logfiles[logfile]
                     msg = ( _("Logfile '%(logfile)s' is even defined "
@@ -2133,7 +2124,7 @@ class LogrotateConfigurationReader(object):
                                 'cfgfile': f['file'],
                                 'rownum': f['rownum']}
                     )
-                    self.logger.warning(msg)
+                    LOG.warning(msg)
                     continue
                 if self.verbose > 1:
                     msg = _("Logfile '%s' will taken.") % (logfile)
