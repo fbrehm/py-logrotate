@@ -29,7 +29,7 @@ from logrotate.common import to_str_or_bust as to_str
 
 from logrotate.base import BaseObjectError, BaseObject
 
-__version__ = '0.3.2'
+__version__ = '0.3.3'
 
 _ = logrotate_gettext
 __ = logrotate_ngettext
@@ -99,8 +99,8 @@ class LogRotateScript(BaseObject, MutableSequence):
         elif isinstance(to_str(commands), str):
             self.append(commands)
         else:
-            msg = _("Invalide type %(t)r of parameter commands %(c)r.") % {
-                't': commands.__class__.__name__, 'c': commands}
+            msg = _("Invalide type %(t)r of parameter %(p)p %(c)r.") % {
+                't': commands.__class__.__name__, 'p': 'commands', 'c': commands}
             raise TypeError(msg)
 
     #------------------------------------------------------------
