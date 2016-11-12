@@ -39,9 +39,14 @@ LOG = logging.getLogger(__name__)
 
 # =============================================================================
 class LogRotateScriptError(BaseObjectError):
-    """
-    Base class for exceptions in this module.
-    """
+    "Base class for exceptions in this module."
+    pass
+
+
+# =============================================================================
+class ExecutionError(LogRotateScriptError):
+    "Error raised, if execution of the script was not successful."
+    pass
 
 
 # =============================================================================
@@ -351,20 +356,23 @@ class LogRotateScript(BaseObject, MutableSequence):
         return self.execute(force=False, expected_retcode=0)
 
     #------------------------------------------------------------
-    def execute(self, force=False, expected_retcode=0):
-        '''
+    def execute(self, force=False, expected_retcode=0, raise_on_error=False):
+        """
         Executes the command as an OS command in a shell.
 
-        @param force: force executing command even
-                      if self.simulate == True
-        @type force:    bool
-        @param expected_retcode: expected returncode of the command
-                                 (should be 0)
-        @type expected_retcode:  int
+        @param force: force executing command even if self.simulate == True
+        @type force: bool
+        @param expected_retcode: expected returncode of the command (should be 0)
+        @type expected_retcode: int
+        @param raise_on_error: don't raise an ExecutionError on a wrong return value
+        @type raise_on_error: bool
 
-        @return: Success of the comand (shell returncode == 0)
-        @rtype:  bool
-        '''
+        @raise ExecutionError: if the execution returns a wrong return value
+                               (!= 0) and raise_on_error was set to True
+
+        @return: Shell return value (Success == 0)
+        @rtype: int
+        """
 
         if not self._commands:
             msg = _("No command to execute defined in script %r.") % (self.name)
@@ -382,25 +390,33 @@ class LogRotateScript(BaseObject, MutableSequence):
 
         try:
             retcode = subprocess.call(command, shell=True)
-            if self.verbose > 3:
-                msg = _("Got returncode for script %(name)r: %(retcode)r") % {
-                    'name': self.name, 'retcode': retcode}
-                LOG.debug(msg)
+            ret_msg = _("Got returncode for script %(name)r: %(retcode)r") % {
+                'name': self.name, 'retcode': retcode}
             if retcode < 0:
                 msg = _("Child in script %(name)r was terminated by signal %(retcode)r.") % {
                     'name': self.name, 'retcode': -retcode}
-                LOG.error(msg)
-                return False
+                if raise_on_error:
+                    raise ExecutionError(msg)
+                else:
+                    LOG.error(msg)
+                return retcode
             if retcode != expected_retcode:
-                return False
-            return True
+                if raise_on_error:
+                    raise ExecutionError(ret_msg)
+                else:
+                    LOG.error(ret_msg)
+                return retcode
+            return retcode
         except OSError as e:
             msg = _("Execution of script %(name)r failed: %(error)s") % {
                 'name': self.name, 'error': e}
-            LOG.error(msg)
-            return False
+            if raise_on_error:
+                raise ExecutionError(msg)
+            else:
+                LOG.error(msg)
+            return 999
 
-        return False
+        return 999
 
     #------------------------------------------------------------
     def check_for_execute(self, force=False, expected_retcode=0):
