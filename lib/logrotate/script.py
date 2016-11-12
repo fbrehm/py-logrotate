@@ -14,6 +14,9 @@ import logging
 import subprocess
 import pprint
 import gettext
+import copy
+
+from collections import MutableSequence
 
 # Third party modules
 import pytz
@@ -22,10 +25,11 @@ import six
 # Own modules
 from logrotate.common import split_parts, pp
 from logrotate.common import logrotate_gettext, logrotate_ngettext
+from logrotate.common import to_str_or_bust as to_str
 
 from logrotate.base import BaseObjectError, BaseObject
 
-__version__ = '0.2.2'
+__version__ = '0.3.1'
 
 _ = logrotate_gettext
 __ = logrotate_ngettext
@@ -41,11 +45,13 @@ class LogRotateScriptError(BaseObjectError):
 
 
 # =============================================================================
-class LogRotateScript(BaseObject):
+class LogRotateScript(BaseObject, MutableSequence):
     "Class for encapsulating a logrotate script (for pre- and postrotate actions)"
 
     #-------------------------------------------------------
-    def __init__(self, name=None, simulate=False, appname=None, verbose=0, base_dir=None):
+    def __init__(
+        self, name=None, simulate=False, commands=None,
+            appname=None, verbose=0, base_dir=None):
         """
         Constructor.
 
@@ -68,7 +74,7 @@ class LogRotateScript(BaseObject):
         self._do_post = False
         self._do_last = False
 
-        self.cmd = []
+        self._commands = []
         '''
         @ivar: List of commands to execute
         @type: list
@@ -76,6 +82,10 @@ class LogRotateScript(BaseObject):
 
         super(LogRotateScript, self).__init__(
             appname=appname, verbose=verbose, version=__version__, base_dir=base_dir)
+
+        if isinstance(commands,(list, tuple)):
+            for cmd in commands:
+                self.append(cmd)
 
     #------------------------------------------------------------
     # Defintion of some properties
@@ -229,19 +239,105 @@ class LogRotateScript(BaseObject):
         res['do_post'] = self.do_post
         res['do_last'] = self.do_last
 
+        res['commands'] = copy.copy(self._commands)
+
         return res
+
+    # -------------------------------------------------------------------------
+    def __len__(self):
+        return len(self._commands)
+
+    # -------------------------------------------------------------------------
+    def __getitem__(self, key):
+        return self._commands[key]
+
+    # -------------------------------------------------------------------------
+    def __setitem__(self, key, value):
+
+        v = to_str(value, force=True)
+        self._commands[key] = v
+
+    # -------------------------------------------------------------------------
+    def __delitem__(self, key):
+
+        del self._commands[key]
+
+    # -------------------------------------------------------------------------
+    def __repr__(self):
+        """Typecasting into a string for reproduction."""
+
+        out = "<%s(" % (self.__class__.__name__)
+
+        fields = []
+        fields.append("name=%r" % (self.name))
+        fields.append("simulate=%r" % (self.simulate))
+        fields.append("appname=%r" % (self.appname))
+        fields.append("verbose=%r" % (self.verbose))
+        fields.append("version=%r" % (self.version))
+        fields.append("base_dir=%r" % (self.base_dir))
+
+        out += ", ".join(fields) + ")>"
+        return out
+
+    # -------------------------------------------------------------------------
+    def index(self, value, *args):
+
+        v = to_str(value, force=True)
+        if len(args) > 2:
+            msg = "Call of index() with a wrong number (%d) of arguments." % (len(args))
+            raise AttributeError(msg)
+
+        i = 0
+        j = None
+        if len(args) >= 1:
+            i = int(args[0])
+        if len(args) >= 2:
+            j = int(args[1])
+        found = False
+        idx = i
+        if len(self._commands) and i < len(self._commands):
+            for cmd in self._commands[i:]:
+                if cmd == v:
+                    found = True
+                    break
+                idx += 1
+                if j is not None and idx >= j:
+                    break
+
+        if not found:
+            msg = "Command %r not found in command list." % (str(v))
+            raise ValueError(msg)
+        return idx
+
+    # -------------------------------------------------------------------------
+    def __contains__(self, cmd):
+        try:
+            self.index(cmd)
+        except ValueError:
+            return False
+
+        return True
+
+    # -------------------------------------------------------------------------
+    def insert(self, i, cmd):
+        v = to_str(cmd, force=True)
+        self._commands.insert(i, v)
+
+    # -------------------------------------------------------------------------
+    def append(self, cmd):
+        v = to_str(cmd, force=True)
+        self._commands.append(v)
 
     #------------------------------------------------------------
     def add_cmd(self, cmd):
-        '''
-        Adding a command to the list self._cmd
+        self.append(cmd)
 
-        @param cmd: the command to add to self._cmd
-        @type cmd:  str
-
-        @return: None
-        '''
-        self.cmd.append(cmd)
+    #------------------------------------------------------------
+    def __call__(self):
+        """
+        Wrapper for self.execute(force=False, expected_retcode=0)
+        """
+        return self.execute(force=False, expected_retcode=0)
 
     #------------------------------------------------------------
     def execute(self, force=False, expected_retcode=0):
@@ -259,11 +355,11 @@ class LogRotateScript(BaseObject):
         @rtype:  bool
         '''
 
-        if self.cmd is None:
+        if not self._commands:
             msg = _("No command to execute defined in script %r.") % (self.name)
             raise LogRotateScriptError(msg)
 
-        command = '\n'.join(self.cmd)
+        command = '\n'.join(self._commands)
 
         if self.verbose > 3:
             msg = _("Executing script %(name)r with command:\n%(cmd)s") % {
@@ -326,7 +422,6 @@ class LogRotateScript(BaseObject):
 
 if __name__ == "__main__":
     pass
-
 
 #========================================================================
 
