@@ -30,7 +30,7 @@ from logrotate.common import to_str_or_bust as to_str
 
 from logrotate.base import BaseObjectError, BaseObject
 
-__version__ = '0.1.1'
+__version__ = '0.1.2'
 
 _ = logrotate_gettext
 __ = logrotate_ngettext
@@ -53,18 +53,18 @@ class LogFileGroup(BaseObject, MutableSequence):
 
     #-------------------------------------------------------
     def __init__(
-        self, config_file=None, first_line_nr=None, simulate=False, patterns=None,
-            taboo_pattern=None, appname=None, verbose=0, base_dir=None):
+        self, config_file=None, line_nr=None, simulate=False, patterns=None,
+            appname=None, verbose=0, base_dir=None):
         """Constructor."""
 
         self._config_file = config_file
-        self._first_line_nr = None
-        if first_line_nr is not None:
-            self._first_line_nr = int(first_line_nr)
+        self._line_nr = None
+        if line_nr is not None:
+            self._line_nr = int(line_nr)
         self._simulate = bool(simulate)
 
         self.patterns = []
-        self.taboo_patterns = []
+        sel._files =[]
 
         super(LogFileGroup, self).__init__(
             appname=appname, verbose=verbose, version=__version__, base_dir=base_dir)
@@ -74,11 +74,63 @@ class LogFileGroup(BaseObject, MutableSequence):
                 for pattern in patterns:
                     self.patterns.append(to_str(pattern, force=True))
             elif isinstance(to_str(patterns), str):
-                self.patterns.append(commands)
+                self.patterns.append(to_str(commands))
             else:
                 msg = _("Invalide type %(t)r of parameter %(p)p %(c)r.") % {
                     't': patterns.__class__.__name__, 'p': 'patterns', 'c': patterns}
                 raise TypeError(msg)
 
+    #------------------------------------------------------------
+    @property
+    def config_file(self):
+        "Filename of the configuration file, where this file group is defined."
+        return self._config_file
+
+    #------------------------------------------------------------
+    @property
+    def line_nr(self):
+        """
+        The number of the beginning line of the definition in the configuration file,
+        where this file group is defined.
+        """
+        return self._line_nr
+
+    #------------------------------------------------------------
+    @property
+    def simulate(self):
+        "Number of logfiles referencing to this script as a postrotate script."
+        return self._simulate
+
+    @simulate.setter
+    def simulate(self, value):
+        self._simulate = bool(value)
+
+    #-------------------------------------------------------
+    def as_dict(self):
+        '''
+        Transforms the elements of the object into a dict
+
+        @return: structure as dict
+        @rtype:  dict
+        '''
+
+        res = super(LogFileGroup, self).as_dict()
+
+        res['config_file'] = self.config_file
+        res['line_nr'] = self.line_nr
+        res['simulate'] = self.simulate
+
+        res['files'] = copy.copy(self._files)
+
+        return res
 
 
+
+#========================================================================
+
+if __name__ == "__main__":
+    pass
+
+#========================================================================
+
+# vim: fileencoding=utf-8 filetype=python ts=4 expandtab
