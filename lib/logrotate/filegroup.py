@@ -39,7 +39,7 @@ from logrotate.common import to_str_or_bust as to_str
 
 from logrotate.base import BaseObjectError, BaseObject
 
-__version__ = '0.2.3'
+__version__ = '0.2.4'
 
 _ = logrotate_gettext
 __ = logrotate_ngettext
@@ -450,7 +450,7 @@ class LogFileGroup(BaseObject, MutableSequence):
             return ValueError(msg)
 
         found = False
-        for re_t in self.taboo_patterns:
+        for re_t in cls.taboo_patterns:
             if pat == re_t.pattern:
                 LOG.debug(_(
                     "Taboo pattern %r already exists in the list "
@@ -471,32 +471,31 @@ class LogFileGroup(BaseObject, MutableSequence):
         cls.taboo_patterns = []
 
         # Standard taboo extensions (suffixes)
-        cls.add_taboo(r'\.rpmnew', 'ext');
-        cls.add_taboo(r'\.rpmorig', 'ext');
-        cls.add_taboo(r'\.rpmsave', 'ext');
-        cls.add_taboo(r',v', 'ext');
-        cls.add_taboo(r'\.swp', 'ext');
-        cls.add_taboo(r'~', 'ext');
-        cls.add_taboo(r'\.bak', 'ext');
-        cls.add_taboo(r'\.old', 'ext');
-        cls.add_taboo(r'\.rej', 'ext');
-        cls.add_taboo(r'\.disabled', 'ext');
-        cls.add_taboo(r'\.dpkg-old', 'ext');
-        cls.add_taboo(r'\.dpkg-dist', 'ext');
-        cls.add_taboo(r'\.dpkg-new', 'ext');
-        cls.add_taboo(r'\.cfsaved', 'ext');
-        cls.add_taboo(r'\.ucf-old', 'ext');
-        cls.add_taboo(r'\.ucf-dist', 'ext');
-        cls.add_taboo(r'\.ucf-new', 'ext');
-        cls.add_taboo(r'\.cfsaved', 'ext');
-        cls.add_taboo(r'\.rhn-cfg-tmp-*', 'ext');
+        cls.add_taboo_pattern(r'\.rpmnew', 'ext');
+        cls.add_taboo_pattern(r'\.rpmorig', 'ext');
+        cls.add_taboo_pattern(r'\.rpmsave', 'ext');
+        cls.add_taboo_pattern(r',v', 'ext');
+        cls.add_taboo_pattern(r'\.swp', 'ext');
+        cls.add_taboo_pattern(r'~', 'ext');
+        cls.add_taboo_pattern(r'\.bak', 'ext');
+        cls.add_taboo_pattern(r'\.old', 'ext');
+        cls.add_taboo_pattern(r'\.rej', 'ext');
+        cls.add_taboo_pattern(r'\.disabled', 'ext');
+        cls.add_taboo_pattern(r'\.dpkg-old', 'ext');
+        cls.add_taboo_pattern(r'\.dpkg-dist', 'ext');
+        cls.add_taboo_pattern(r'\.dpkg-new', 'ext');
+        cls.add_taboo_pattern(r'\.cfsaved', 'ext');
+        cls.add_taboo_pattern(r'\.ucf-old', 'ext');
+        cls.add_taboo_pattern(r'\.ucf-dist', 'ext');
+        cls.add_taboo_pattern(r'\.ucf-new', 'ext');
+        cls.add_taboo_pattern(r'\.rhn-cfg-tmp-*', 'ext');
 
         # Standard taboo prefix
-        cls.add_taboo(r'\.', 'prefix');
+        cls.add_taboo_pattern(r'\.', 'prefix');
 
         # Standard taboo files
-        cls.add_taboo(r'CVS', 'file');
-        cls.add_taboo(r'RCS', 'file');
+        cls.add_taboo_pattern(r'CVS', 'file');
+        cls.add_taboo_pattern(r'RCS', 'file');
 
 
 
