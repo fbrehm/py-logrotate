@@ -124,6 +124,32 @@ class LogFileGroupTestCase(BaseTestCase):
             e = cm.exception
             LOG.debug("%s raised: %s", e.__class__.__name__, str(e))
 
+    # -------------------------------------------------------------------------
+    def test_filelist(self):
+
+        LOG.info("Testing manipulation of the file list of a LogFileGroup object ...")
+        from logrotate.filegroup import LogFileGroup
+
+        group = LogFileGroup(
+            simulate=True, patterns="/var/log/a.log",
+            verbose=self.verbose, appname=self.appname)
+
+        group.append("/var/log/a.log")
+        group.append("/var/log/b.log")
+        self.assertEqual(len(group), 2)
+
+        if "/var/log/c.log" not in group:
+            group.append("/var/log/c.log")
+        self.assertIn("/var/log/c.log", group)
+        self.assertEqual(len(group), 3)
+
+        del group[0]
+        if self.verbose > 2:
+            LOG.debug(
+                "Created %s object as dict:\n%s",
+                group.__class__.__name__, pp(group.as_dict()))
+        self.assertEqual(len(group), 2)
+
 # =============================================================================
 
 if __name__ == '__main__':
@@ -141,6 +167,7 @@ if __name__ == '__main__':
     suite.addTest(LogFileGroupTestCase('test_define_taboo_pattern', verbose))
     suite.addTest(LogFileGroupTestCase('test_object', verbose))
     suite.addTest(LogFileGroupTestCase('test_pattern', verbose))
+    suite.addTest(LogFileGroupTestCase('test_filelist', verbose))
 
     runner = unittest.TextTestRunner(verbosity=verbose)
 
