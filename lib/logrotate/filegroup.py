@@ -39,7 +39,7 @@ from logrotate.common import to_str_or_bust as to_str
 
 from logrotate.base import BaseObjectError, BaseObject
 
-__version__ = '0.2.5'
+__version__ = '0.2.6'
 
 _ = logrotate_gettext
 __ = logrotate_ngettext
@@ -384,28 +384,28 @@ class LogFileGroup(BaseObject, MutableSequence):
         return idx
 
     # -------------------------------------------------------------------------
-    def __contains__(self, cmd):
+    def __contains__(self, filename):
         try:
-            self.index(cmd)
+            self.index(filename)
         except ValueError:
             return False
 
         return True
 
     # -------------------------------------------------------------------------
-    def insert(self, i, cmd):
-        if value is None:
+    def insert(self, i, filename):
+        if filename is None:
             v = None
         else:
-            v = to_str(value, force=True)
+            v = to_str(filename, force=True)
         self._files.insert(i, v)
 
     # -------------------------------------------------------------------------
-    def append(self, cmd):
-        if value is None:
+    def append(self, filename):
+        if filename is None:
             v = None
         else:
-            v = to_str(value, force=True)
+            v = to_str(filename, force=True)
         self._files.append(v)
 
     # -------------------------------------------------------------------------

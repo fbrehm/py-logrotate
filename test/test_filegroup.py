@@ -148,6 +148,10 @@ class LogFileGroupTestCase(BaseTestCase):
             LOG.debug(
                 "Created %s object as dict:\n%s",
                 group.__class__.__name__, pp(group.as_dict()))
+        for filename in group:
+            LOG.debug("Group has file %r.", filename)
+        self.assertEqual(group[0], "/var/log/b.log")
+        self.assertEqual(group[1], "/var/log/c.log")
         self.assertEqual(len(group), 2)
 
 # =============================================================================
