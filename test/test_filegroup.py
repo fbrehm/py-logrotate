@@ -74,6 +74,24 @@ class LogFileGroupTestCase(BaseTestCase):
         for pat in test_patterns:
             self.assertIn(pat, patterns)
 
+    # -------------------------------------------------------------------------
+    def test_object(self):
+
+        LOG.info("Testing creating a new LogFileGroup object ...")
+        from logrotate.filegroup import LogFileGroup
+
+        group = LogFileGroup(
+            simulate=True, verbose=self.verbose, appname=self.appname)
+
+        if self.verbose > 1:
+            LOG.debug(
+                "Created %s object as dict:\n%s",
+                group.__class__.__name__, pp(group.as_dict()))
+        self.assertIsNone(group.config_file)
+        self.assertIsNone(group.line_nr)
+        self.assertTrue(group.simulate)
+        self.assertEqual(len(group), 0)
+
 
 # =============================================================================
 
@@ -90,7 +108,7 @@ if __name__ == '__main__':
 
     suite.addTest(LogFileGroupTestCase('test_import', verbose))
     suite.addTest(LogFileGroupTestCase('test_define_taboo_pattern', verbose))
-    #suite.addTest(LogFileGroupTestCase('test_object', verbose))
+    suite.addTest(LogFileGroupTestCase('test_object', verbose))
 
     runner = unittest.TextTestRunner(verbosity=verbose)
 
