@@ -30,7 +30,7 @@ from logrotate.common import to_str_or_bust as to_str
 
 from logrotate.base import BaseObjectError, BaseObject
 
-__version__ = '0.2.1'
+__version__ = '0.2.2'
 
 _ = logrotate_gettext
 __ = logrotate_ngettext
@@ -194,6 +194,22 @@ class LogFileGroup(BaseObject, MutableSequence):
 
         out += ", ".join(fields) + ")>"
         return out
+
+    # -------------------------------------------------------------------------
+    def __copy__(self):
+        """Wrapper method for copy.copy() to create a complete copy
+        of this logfile group."""
+
+        new_group = LogFileGroup(
+            config_file=self.config_file, line_nr=self.line_nr, simulate=self.simulate,
+            patterns=self.patterns,
+            appname=self.appname, verbose=self.verbose, base_dir=self.base_dir,
+        )
+
+        for fname in self:
+            new_group.append(fname)
+
+        return new_group
 
     # -------------------------------------------------------------------------
     def index(self, value, *args):
