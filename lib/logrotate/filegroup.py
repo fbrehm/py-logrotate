@@ -30,7 +30,7 @@ from logrotate.common import to_str_or_bust as to_str
 
 from logrotate.base import BaseObjectError, BaseObject
 
-__version__ = '0.1.2'
+__version__ = '0.1.3'
 
 _ = logrotate_gettext
 __ = logrotate_ngettext
@@ -57,10 +57,8 @@ class LogFileGroup(BaseObject, MutableSequence):
             appname=None, verbose=0, base_dir=None):
         """Constructor."""
 
-        self._config_file = config_file
+        self._config_file = None
         self._line_nr = None
-        if line_nr is not None:
-            self._line_nr = int(line_nr)
         self._simulate = bool(simulate)
 
         self.patterns = []
@@ -68,6 +66,9 @@ class LogFileGroup(BaseObject, MutableSequence):
 
         super(LogFileGroup, self).__init__(
             appname=appname, verbose=verbose, version=__version__, base_dir=base_dir)
+
+        self.config_file = config_file
+        self.line_nr = line_nr
 
         if patterns:
             if isinstance(patterns, (list, tuple)):
@@ -86,6 +87,10 @@ class LogFileGroup(BaseObject, MutableSequence):
         "Filename of the configuration file, where this file group is defined."
         return self._config_file
 
+    @config_file.setter
+    def config_file(self, value):
+        self._config_file = to_str(value)
+
     #------------------------------------------------------------
     @property
     def line_nr(self):
@@ -94,6 +99,13 @@ class LogFileGroup(BaseObject, MutableSequence):
         where this file group is defined.
         """
         return self._line_nr
+
+    @line_nr.setter
+    def line_nr(self, value):
+        if value is None:
+            self._line_nr = None
+            return
+        self._line_nr = int(value)
 
     #------------------------------------------------------------
     @property
