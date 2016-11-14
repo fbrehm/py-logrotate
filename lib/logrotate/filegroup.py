@@ -30,7 +30,7 @@ from logrotate.common import to_str_or_bust as to_str
 
 from logrotate.base import BaseObjectError, BaseObject
 
-__version__ = '0.1.3'
+__version__ = '0.1.4'
 
 _ = logrotate_gettext
 __ = logrotate_ngettext
@@ -50,6 +50,8 @@ class LogFileGroup(BaseObject, MutableSequence):
     Class for encapsulating a group of logfiles, which are rotatet together
     with the same rules
     """
+
+    status_file = None
 
     #-------------------------------------------------------
     def __init__(
@@ -131,11 +133,130 @@ class LogFileGroup(BaseObject, MutableSequence):
         res['config_file'] = self.config_file
         res['line_nr'] = self.line_nr
         res['simulate'] = self.simulate
+        res['status_file'] = None
+        if self.status_file:
+            res['status_file'] = self.status_file.as_dict()
 
+        res['patterns'] = copy.copy(self.patterns)
         res['files'] = copy.copy(self._files)
 
         return res
 
+    # -------------------------------------------------------------------------
+    def __len__(self):
+        return len(self._files)
+
+    # -------------------------------------------------------------------------
+    def __getitem__(self, key):
+        return self._files[key]
+
+    # -------------------------------------------------------------------------
+    def __setitem__(self, key, value):
+
+        if value is None:
+            v = None
+        else:
+            v = to_str(value, force=True)
+        self._files[key] = v
+
+    # -------------------------------------------------------------------------
+    def __delitem__(self, key):
+
+        del self._files[key]
+
+    # -------------------------------------------------------------------------
+    def __repr__(self):
+        """Typecasting into a string for reproduction."""
+
+        out = "<%s(" % (self.__class__.__name__)
+
+        fields = []
+        fields.append("config_file=%r" % (self.config_file))
+        fields.append("line_nr=%r" % (self.line_nr))
+        fields.append("patterns=%r" % (copy.copy(self.patterns)))
+        fields.append("simulate=%r" % (self.simulate))
+        fields.append("appname=%r" % (self.appname))
+        fields.append("verbose=%r" % (self.verbose))
+        fields.append("version=%r" % (self.version))
+        fields.append("base_dir=%r" % (self.base_dir))
+
+        out += ", ".join(fields) + ")>"
+        return out
+
+    # -------------------------------------------------------------------------
+    def index(self, value, *args):
+
+        if len(args) > 2:
+            msg = "Call of index() with a wrong number (%d) of arguments." % (len(args))
+            raise AttributeError(msg)
+
+        if value is None:
+            v = None
+        else:
+            v = to_str(value, force=True)
+
+        i = 0
+        j = None
+        if len(args) >= 1:
+            i = int(args[0])
+        if len(args) >= 2:
+            j = int(args[1])
+        found = False
+        idx = i
+        if len(self._files) and i < len(self._files):
+            for f in self._files[i:]:
+                if f == v:
+                    found = True
+                    break
+                idx += 1
+                if j is not None and idx >= j:
+                    break
+
+        if not found:
+            msg = "File %r not found in file list." % (str(v))
+            raise ValueError(msg)
+        return idx
+
+    # -------------------------------------------------------------------------
+    def __contains__(self, cmd):
+        try:
+            self.index(cmd)
+        except ValueError:
+            return False
+
+        return True
+
+    # -------------------------------------------------------------------------
+    def insert(self, i, cmd):
+        if value is None:
+            v = None
+        else:
+            v = to_str(value, force=True)
+        self._files.insert(i, v)
+
+    # -------------------------------------------------------------------------
+    def append(self, cmd):
+        if value is None:
+            v = None
+        else:
+            v = to_str(value, force=True)
+        self._files.append(v)
+
+    # -------------------------------------------------------------------------
+    def add_pattern(self, pattern):
+        "Extending list self.patterns by a new file globbing pattern."
+
+        if not pattern or not isinstance(to_str(pattern), str):
+            msg = "Invalid file globbing pattern %r." % (pattern)
+            raise ValueError(msg)
+
+        pat = to_str(pattern)
+        if pat in self.patterns:
+            LOG.warn(
+                _("Pattern %r is already a member of the file globbing pattern list."),
+                pattern)
+            return
+        self.patterns.append(pat)
 
 
 #========================================================================
