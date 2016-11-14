@@ -145,6 +145,7 @@ class ScriptTestCase(BaseTestCase):
         LOG.debug("%s raised: %s", e.__class__.__name__, str(e))
 
         sname = 'TestScript'
+
 # =============================================================================
 
 if __name__ == '__main__':
