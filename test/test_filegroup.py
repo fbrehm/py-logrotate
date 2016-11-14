@@ -59,6 +59,21 @@ class LogFileGroupTestCase(BaseTestCase):
 
         from logrotate.filegroup import LogFileGroup                     # noqa
 
+    # -------------------------------------------------------------------------
+    def test_define_taboo_pattern(self):
+
+        LOG.info("Testing initialisation and modifying of taboo patterns.")
+        from logrotate.filegroup import LogFileGroup
+
+        LogFileGroup.init_taboo_patterns()
+        patterns = []
+        for regex in LogFileGroup.taboo_patterns:
+            patterns.append(regex.pattern)
+        LOG.debug("Found initialised taboo patterns:\n%s", pp(patterns))
+        test_patterns = (r',v$', r'~$', r'^\.', r'^CVS$')
+        for pat in test_patterns:
+            self.assertIn(pat, patterns)
+
 
 # =============================================================================
 
@@ -74,6 +89,7 @@ if __name__ == '__main__':
     suite = unittest.TestSuite()
 
     suite.addTest(LogFileGroupTestCase('test_import', verbose))
+    suite.addTest(LogFileGroupTestCase('test_define_taboo_pattern', verbose))
     #suite.addTest(LogFileGroupTestCase('test_object', verbose))
 
     runner = unittest.TextTestRunner(verbosity=verbose)
