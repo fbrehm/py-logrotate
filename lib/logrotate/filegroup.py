@@ -19,9 +19,18 @@ import glob
 
 from collections import MutableSequence
 
+HAS_LZMA = False
+try:
+    import lzma
+    HAS_LZMA = True
+except ImportError:
+    pass
+
 # Third party modules
 import pytz
 import six
+
+from six.moves import shlex_quote
 
 # Own modules
 from logrotate.common import split_parts, pp
@@ -30,12 +39,22 @@ from logrotate.common import to_str_or_bust as to_str
 
 from logrotate.base import BaseObjectError, BaseObject
 
-__version__ = '0.2.2'
+__version__ = '0.2.3'
 
 _ = logrotate_gettext
 __ = logrotate_ngettext
 
 LOG = logging.getLogger(__name__)
+
+INTERNAL_COMPRESSORS = {
+    'internal_zip': '.zip',
+    'internal_gzip': '.gz',
+    'internal_bzip2': '.bzip2',
+}
+
+if HAS_LZMA:
+    INTERNAL_COMPRESSORS['internal_xz'] = '.xz'
+    INTERNAL_COMPRESSORS['internal_lzma'] = '.lzma'
 
 
 # =============================================================================
@@ -61,9 +80,13 @@ class LogFileGroup(BaseObject, MutableSequence):
     }
     taboo_patterns = []
 
-    #-------------------------------------------------------
+    re_empty = re.compile(r'^\s*$')
+
+    # -------------------------------------------------------
     def __init__(
         self, config_file=None, line_nr=None, simulate=False, patterns=None,
+            compress=False, compresscmd='internal_gzip', compressext=None,
+            compressoptions=None, delaycompress=None,
             appname=None, verbose=0, base_dir=None):
         """Constructor."""
 
@@ -72,7 +95,13 @@ class LogFileGroup(BaseObject, MutableSequence):
         self._simulate = bool(simulate)
 
         self.patterns = []
-        sel._files =[]
+        self._files =[]
+
+        self._compress = bool(compress)
+        self._compresscmd = None
+        self._compressext = None
+        self._compressoptions = None
+        self._delaycompress = None
 
         super(LogFileGroup, self).__init__(
             appname=appname, verbose=verbose, version=__version__, base_dir=base_dir)
@@ -91,7 +120,12 @@ class LogFileGroup(BaseObject, MutableSequence):
                     't': patterns.__class__.__name__, 'p': 'patterns', 'c': patterns}
                 raise TypeError(msg)
 
-    #------------------------------------------------------------
+        self.compresscmd = compresscmd
+        self.compressext = compressext
+        self.compressoptions = compressoptions
+        self.delaycompress = delaycompress
+
+    # ------------------------------------------------------------
     @property
     def config_file(self):
         "Filename of the configuration file, where this file group is defined."
@@ -101,7 +135,7 @@ class LogFileGroup(BaseObject, MutableSequence):
     def config_file(self, value):
         self._config_file = to_str(value)
 
-    #------------------------------------------------------------
+    # ------------------------------------------------------------
     @property
     def line_nr(self):
         """
@@ -117,7 +151,7 @@ class LogFileGroup(BaseObject, MutableSequence):
             return
         self._line_nr = int(value)
 
-    #------------------------------------------------------------
+    # ------------------------------------------------------------
     @property
     def simulate(self):
         "Number of logfiles referencing to this script as a postrotate script."
@@ -127,7 +161,99 @@ class LogFileGroup(BaseObject, MutableSequence):
     def simulate(self, value):
         self._simulate = bool(value)
 
-    #-------------------------------------------------------
+    # ------------------------------------------------------------
+    @property
+    def compress(self):
+        "Should the rotated logfiles compressed after rotation?"
+        return self._compress
+
+    @compress.setter
+    def compress(self, value):
+        self._compress = bool(value)
+
+    # ------------------------------------------------------------
+    @property
+    def compresscmd(self):
+        "The used command to compress rotated files."
+        return self._compresscmd
+
+    @compresscmd.setter
+    def compresscmd(self, value):
+        if value is None:
+            self._compresscmd = 'internal_gzip'
+            return
+        v = to_str(value, force=True)
+        if self.re_empty.search(v):
+            self._compresscmd = 'internal_gzip'
+            return
+        if v.lower().startswith('internal_'):
+            if v.lower() not in INTERNAL_COMPRESSORS:
+                msg = _("Invalid internal compressor %r given.") % (value)
+                raise ValueError(msg)
+            self._compresscmd = v.lower()
+        else:
+            self._compresscmd = value
+
+    # ------------------------------------------------------------
+    @property
+    def compressext(self):
+        """
+        The file extension, which should get rotated files.
+
+        For internal compressors they are handled automatically. Otherwise
+        if not given, '.compressed' is used.
+        """
+        if self._compressext is None:
+            if self.compresscmd.startswith('internal_'):
+                return INTERNAL_COMPRESSORS[self.compresscmd]
+            else:
+                return '.compressed'
+        return self._compressext
+
+    @compressext.setter
+    def compressext(self, value):
+        if value is None:
+            self._compressext = None
+            return
+        v = to_str(value, force=True)
+        if self.re_empty.search(v):
+            self._compressext = None
+        else:
+            self._compressext = v
+
+    # ------------------------------------------------------------
+    @property
+    def compressoptions(self):
+        "Optional arguments options given to external compress commands."
+        return self._compressoptions
+
+    @compressoptions.setter
+    def compressoptions(self, value):
+        if value is None:
+            self._compressoptions = None
+            return
+        if isinstance(value, (list, tuple)):
+            self._compressoptions = copy.copy(value)
+            return
+        self._compressoptions = shlex_quote(to_str(value, force=True))
+
+    # ------------------------------------------------------------
+    @property
+    def delaycompress(self):
+        """
+        Defines, how many rotated files should not compressed after
+        rotation of a logfile.
+        """
+        return self._delaycompress
+
+    @delaycompress.setter
+    def delaycompress(self, value):
+        if value is None:
+            self._delaycompress = None
+            return
+        self._delaycompress = int(value)
+
+    # -------------------------------------------------------------------------
     def as_dict(self):
         '''
         Transforms the elements of the object into a dict
@@ -144,6 +270,12 @@ class LogFileGroup(BaseObject, MutableSequence):
         res['status_file'] = None
         if self.status_file:
             res['status_file'] = self.status_file.as_dict()
+
+        res['compress'] = self.compress
+        res['compresscmd'] = self.compresscmd
+        res['compressext'] = self.compressext
+        res['compressoptions'] = self.compressoptions
+        res['delaycompress'] = self.delaycompress
 
         res['patterns'] = copy.copy(self.patterns)
         res['files'] = copy.copy(self._files)
@@ -206,6 +338,12 @@ class LogFileGroup(BaseObject, MutableSequence):
             appname=self.appname, verbose=self.verbose, base_dir=self.base_dir,
         )
 
+        new_group.compress = self.compress
+        new_group.compresscmd = self.compresscmd
+        new_group.compressext = self._compressext
+        new_group.compressoptions = copy.copy(self.compressoptions)
+        new_group.delaycompress = self.delaycompress
+
         for fname in self:
             new_group.append(fname)
 
@@ -215,7 +353,7 @@ class LogFileGroup(BaseObject, MutableSequence):
     def index(self, value, *args):
 
         if len(args) > 2:
-            msg = "Call of index() with a wrong number (%d) of arguments." % (len(args))
+            msg = _("Call of index() with a wrong number (%d) of arguments.") % (len(args))
             raise AttributeError(msg)
 
         if value is None:
@@ -241,7 +379,7 @@ class LogFileGroup(BaseObject, MutableSequence):
                     break
 
         if not found:
-            msg = "File %r not found in file list." % (str(v))
+            msg = _("File %r not found in file list.") % (str(v))
             raise ValueError(msg)
         return idx
 
@@ -275,7 +413,7 @@ class LogFileGroup(BaseObject, MutableSequence):
         "Extending list self.patterns by a new file globbing pattern."
 
         if not pattern or not isinstance(to_str(pattern), str):
-            msg = "Invalid file globbing pattern %r." % (pattern)
+            msg = _("Invalid file globbing pattern %r.") % (pattern)
             raise ValueError(msg)
 
         pat = to_str(pattern)
@@ -362,11 +500,11 @@ class LogFileGroup(BaseObject, MutableSequence):
 
 
 
-#========================================================================
+# ========================================================================
 
 if __name__ == "__main__":
     pass
 
-#========================================================================
+# ========================================================================
 
 # vim: fileencoding=utf-8 filetype=python ts=4 expandtab
