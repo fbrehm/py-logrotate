@@ -92,6 +92,37 @@ class LogFileGroupTestCase(BaseTestCase):
         self.assertTrue(group.simulate)
         self.assertEqual(len(group), 0)
 
+    # -------------------------------------------------------------------------
+    def test_pattern(self):
+
+        LOG.info("Testing pattern handling of a LogFileGroup object ...")
+        from logrotate.filegroup import LogFileGroup
+
+        with self.assertRaises(TypeError) as cm:
+            group = LogFileGroup(
+                simulate=True, patterns=55, verbose=self.verbose, appname=self.appname)
+        e = cm.exception
+        LOG.debug("%s raised: %s", e.__class__.__name__, str(e))
+
+        group = LogFileGroup(
+            simulate=True, patterns="/var/log/a.log",
+            verbose=self.verbose, appname=self.appname)
+
+        group.add_pattern("/var/log/b.log")
+        group.add_pattern("/var/log/a.log")
+        group.add_pattern("/var/log/b.log")
+        group.add_pattern("/var/log/c*.log")
+        self.assertEqual(len(group.patterns), 3)
+        if self.verbose > 2:
+            LOG.debug("Injected logfile globbing pattern:\n%s", pp(group.patterns))
+
+        wrong_pattern = (None, 12, False, object())
+
+        for pattern in wrong_pattern:
+            with self.assertRaises(ValueError) as cm:
+                ret = group.add_pattern(pattern)
+            e = cm.exception
+            LOG.debug("%s raised: %s", e.__class__.__name__, str(e))
 
 # =============================================================================
 
@@ -109,6 +140,7 @@ if __name__ == '__main__':
     suite.addTest(LogFileGroupTestCase('test_import', verbose))
     suite.addTest(LogFileGroupTestCase('test_define_taboo_pattern', verbose))
     suite.addTest(LogFileGroupTestCase('test_object', verbose))
+    suite.addTest(LogFileGroupTestCase('test_pattern', verbose))
 
     runner = unittest.TextTestRunner(verbosity=verbose)
 
