@@ -39,7 +39,7 @@ from logrotate.common import to_str_or_bust as to_str
 
 from logrotate.base import BaseObjectError, BaseObject
 
-__version__ = '0.2.4'
+__version__ = '0.2.5'
 
 _ = logrotate_gettext
 __ = logrotate_ngettext
@@ -114,9 +114,9 @@ class LogFileGroup(BaseObject, MutableSequence):
                 for pattern in patterns:
                     self.patterns.append(to_str(pattern, force=True))
             elif isinstance(to_str(patterns), str):
-                self.patterns.append(to_str(commands))
+                self.patterns.append(to_str(patterns))
             else:
-                msg = _("Invalide type %(t)r of parameter %(p)p %(c)r.") % {
+                msg = _("Invalid type %(t)r of parameter %(p)s: %(c)r.") % {
                     't': patterns.__class__.__name__, 'p': 'patterns', 'c': patterns}
                 raise TypeError(msg)
 
