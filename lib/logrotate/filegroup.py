@@ -30,7 +30,7 @@ from logrotate.common import to_str_or_bust as to_str
 
 from logrotate.base import BaseObjectError, BaseObject
 
-__version__ = '0.1.4'
+__version__ = '0.2.1'
 
 _ = logrotate_gettext
 __ = logrotate_ngettext
@@ -52,6 +52,14 @@ class LogFileGroup(BaseObject, MutableSequence):
     """
 
     status_file = None
+
+    toboo_pattern_types = {
+        'ext': r'%s$',
+        'suffix': r'%s$',
+        'file': r'^%s$',
+        'prefix': r'^%s',
+    }
+    taboo_patterns = []
 
     #-------------------------------------------------------
     def __init__(
@@ -139,6 +147,10 @@ class LogFileGroup(BaseObject, MutableSequence):
 
         res['patterns'] = copy.copy(self.patterns)
         res['files'] = copy.copy(self._files)
+
+        res['taboo_patterns'] = []
+        for re_taboo in self.taboo_patterns:
+            res['taboo_patterns'].append(re_taboo.pattern)
 
         return res
 
@@ -257,6 +269,81 @@ class LogFileGroup(BaseObject, MutableSequence):
                 pattern)
             return
         self.patterns.append(pat)
+
+    # -------------------------------------------------------------------------
+    @classmethod
+    def add_taboo_pattern(cls, pattern, pattern_type='file'):
+        """
+        Adding a new entry to the list of compiled taboo patterns.
+        """
+
+        if not pattern or not isinstance(to_str(pattern), str):
+            msg = _("Invalid taboo pattern %r given.") % (pattern)
+            raise ValueError(msg)
+
+        ptype = pattern_type.strip().lower()
+        if ptype not in cls.toboo_pattern_types:
+            msg = _("Invalid taboo pattern type %r given.") % (pattern_type)
+            raise ValueError(msg)
+
+        pat = cls.toboo_pattern_types[ptype] % (pattern)
+        re_taboo = None
+        try:
+            re_taboo = re.compile(pat, re.IGNORECASE)
+        except Exception as e:
+            msg = _("Got a %(c)s error on adding taboo pattern %(p)r: %(e)s.") % {
+                'c': e.__class__.__name__, 'p':  pattern, 'e': e}
+            return ValueError(msg)
+
+        found = False
+        for re_t in self.taboo_patterns:
+            if pat == re_t.pattern:
+                LOG.debug(_(
+                    "Taboo pattern %r already exists in the list "
+                    "of taboo patterns."), pat)
+                found = True
+                break
+
+        if not found:
+            cls.taboo_patterns.append(re_taboo)
+
+    # -------------------------------------------------------------------------
+    @classmethod
+    def init_taboo_patterns(cls):
+        "Initialize the list of taboo patterns with some default values."
+
+        LOG.debug(_("Initializing the list of taboo patterns with some default values."))
+
+        cls.taboo_patterns = []
+
+        # Standard taboo extensions (suffixes)
+        cls.add_taboo(r'\.rpmnew', 'ext');
+        cls.add_taboo(r'\.rpmorig', 'ext');
+        cls.add_taboo(r'\.rpmsave', 'ext');
+        cls.add_taboo(r',v', 'ext');
+        cls.add_taboo(r'\.swp', 'ext');
+        cls.add_taboo(r'~', 'ext');
+        cls.add_taboo(r'\.bak', 'ext');
+        cls.add_taboo(r'\.old', 'ext');
+        cls.add_taboo(r'\.rej', 'ext');
+        cls.add_taboo(r'\.disabled', 'ext');
+        cls.add_taboo(r'\.dpkg-old', 'ext');
+        cls.add_taboo(r'\.dpkg-dist', 'ext');
+        cls.add_taboo(r'\.dpkg-new', 'ext');
+        cls.add_taboo(r'\.cfsaved', 'ext');
+        cls.add_taboo(r'\.ucf-old', 'ext');
+        cls.add_taboo(r'\.ucf-dist', 'ext');
+        cls.add_taboo(r'\.ucf-new', 'ext');
+        cls.add_taboo(r'\.cfsaved', 'ext');
+        cls.add_taboo(r'\.rhn-cfg-tmp-*', 'ext');
+
+        # Standard taboo prefix
+        cls.add_taboo(r'\.', 'prefix');
+
+        # Standard taboo files
+        cls.add_taboo(r'CVS', 'file');
+        cls.add_taboo(r'RCS', 'file');
+
 
 
 #========================================================================
