@@ -91,6 +91,21 @@ class LogFileGroupTestCase(BaseTestCase):
         self.assertIsNone(group.line_nr)
         self.assertTrue(group.simulate)
         self.assertEqual(len(group), 0)
+        self.assertEqual(group.rotate_method, 'create')
+
+        LOG.debug("Test setting rotation method to 'copy' ...")
+        group.rotate_method = 'copy'
+        self.assertEqual(group.rotate_method, 'copy')
+
+        LOG.debug("Test setting rotation method to 'copytruncate' ...")
+        group.rotate_method = 'CopyTruncate'
+        self.assertEqual(group.rotate_method, 'copytruncate')
+
+        LOG.debug("Test setting rotation method to an invalid method ...")
+        with self.assertRaises(ValueError) as cm:
+            group.rotate_method = 'bla'
+        e = cm.exception
+        LOG.debug("%s raised: %s", e.__class__.__name__, str(e))
 
     # -------------------------------------------------------------------------
     def test_pattern(self):

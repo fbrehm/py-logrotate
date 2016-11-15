@@ -19,6 +19,8 @@ import glob
 
 from collections import MutableSequence
 
+from enum import Enum, unique
+
 HAS_LZMA = False
 try:
     import lzma
@@ -39,7 +41,7 @@ from logrotate.common import to_str_or_bust as to_str
 
 from logrotate.base import BaseObjectError, BaseObject
 
-__version__ = '0.2.6'
+__version__ = '0.3.1'
 
 _ = logrotate_gettext
 __ = logrotate_ngettext
@@ -64,6 +66,33 @@ class LogFileGroupError(BaseObjectError):
 
 
 # =============================================================================
+@unique
+class RotateMethod(Enum):
+    create = 1
+    copytruncate = 2
+    copy = 3
+
+    # -------------------------------------------------------------------------
+    def __str__(self):
+        return self.name
+
+    # -------------------------------------------------------------------------
+    @classmethod
+    def default(cls):
+        return cls.create
+
+    # -------------------------------------------------------------------------
+    @classmethod
+    def from_str(cls, value):
+        v = to_str(value, force=True).strip().lower()
+        for method in cls:
+            if method.name == v:
+                return method
+        msg = _("Invalid rotation method %r given.") % (value)
+        raise ValueError(msg)
+
+
+# =============================================================================
 class LogFileGroup(BaseObject, MutableSequence):
     """
     Class for encapsulating a group of logfiles, which are rotatet together
@@ -82,11 +111,11 @@ class LogFileGroup(BaseObject, MutableSequence):
 
     re_empty = re.compile(r'^\s*$')
 
-    # -------------------------------------------------------
+    # -------------------------------------------------------------------------
     def __init__(
         self, config_file=None, line_nr=None, simulate=False, patterns=None,
             compress=False, compresscmd='internal_gzip', compressext=None,
-            compressoptions=None, delaycompress=None,
+            compressoptions=None, delaycompress=None, rotate_method=None,
             appname=None, verbose=0, base_dir=None):
         """Constructor."""
 
@@ -102,6 +131,8 @@ class LogFileGroup(BaseObject, MutableSequence):
         self._compressext = None
         self._compressoptions = None
         self._delaycompress = None
+
+        self._rotate_method = RotateMethod.default()
 
         super(LogFileGroup, self).__init__(
             appname=appname, verbose=verbose, version=__version__, base_dir=base_dir)
@@ -124,6 +155,9 @@ class LogFileGroup(BaseObject, MutableSequence):
         self.compressext = compressext
         self.compressoptions = compressoptions
         self.delaycompress = delaycompress
+
+        if rotate_method is not None:
+            self.rotate_method = rotate_method
 
     # ------------------------------------------------------------
     @property
@@ -253,6 +287,21 @@ class LogFileGroup(BaseObject, MutableSequence):
             return
         self._delaycompress = int(value)
 
+    # ------------------------------------------------------------
+    @property
+    def rotate_method(self):
+        """The method, which is used for rotating the current logfiles."""
+        return self._rotate_method.name
+
+    @rotate_method.setter
+    def rotate_method(self, value):
+        if isinstance(value, RotateMethod):
+            self._rotate_method = value
+            return
+        if value is None:
+            self._rotate_method = RotateMethod.default()
+        self._rotate_method = RotateMethod.from_str(value)
+
     # -------------------------------------------------------------------------
     def as_dict(self):
         '''
@@ -276,6 +325,8 @@ class LogFileGroup(BaseObject, MutableSequence):
         res['compressext'] = self.compressext
         res['compressoptions'] = self.compressoptions
         res['delaycompress'] = self.delaycompress
+
+        res['rotate_method'] = self.rotate_method
 
         res['patterns'] = copy.copy(self.patterns)
         res['files'] = copy.copy(self._files)
@@ -319,6 +370,7 @@ class LogFileGroup(BaseObject, MutableSequence):
         fields.append("line_nr=%r" % (self.line_nr))
         fields.append("patterns=%r" % (copy.copy(self.patterns)))
         fields.append("simulate=%r" % (self.simulate))
+        fields.append("rotate_method=%r" % (self.rotate_method))
         fields.append("appname=%r" % (self.appname))
         fields.append("verbose=%r" % (self.verbose))
         fields.append("version=%r" % (self.version))
@@ -334,7 +386,7 @@ class LogFileGroup(BaseObject, MutableSequence):
 
         new_group = LogFileGroup(
             config_file=self.config_file, line_nr=self.line_nr, simulate=self.simulate,
-            patterns=self.patterns,
+            patterns=self.patterns, rotate_method=self.rotate_method,
             appname=self.appname, verbose=self.verbose, base_dir=self.base_dir,
         )
 
