@@ -21,6 +21,8 @@ from collections import MutableSequence
 
 from enum import Enum, unique
 
+from pathlib import Path
+
 HAS_LZMA = False
 try:
     import lzma
@@ -35,16 +37,18 @@ import six
 from six.moves import shlex_quote
 
 # Own modules
-from logrotate.common import split_parts, pp
-from logrotate.common import logrotate_gettext, logrotate_ngettext
-from logrotate.common import to_str_or_bust as to_str
+from fb_tools.common import pp, human2mbytes, to_str
 
-from logrotate.base import BaseObjectError, BaseObject
+from fb_tools.obj import FbBaseObjectError, FbBaseObject
 
-__version__ = '0.3.1'
+from .translate import XLATOR
 
-_ = logrotate_gettext
-__ = logrotate_ngettext
+from .common import split_parts
+
+__version__ = '0.4.1'
+
+_ = XLATOR.gettext
+ngettext = XLATOR.ngettext
 
 LOG = logging.getLogger(__name__)
 
@@ -60,7 +64,7 @@ if HAS_LZMA:
 
 
 # =============================================================================
-class LogFileGroupError(BaseObjectError):
+class LogFileGroupError(FbBaseObjectError):
     "Base class for exceptions in this module."
     pass
 
@@ -84,16 +88,16 @@ class RotateMethod(Enum):
     # -------------------------------------------------------------------------
     @classmethod
     def from_str(cls, value):
-        v = to_str(value, force=True).strip().lower()
+        v = str(to_str(value)).strip().lower()
         for method in cls:
             if method.name == v:
                 return method
-        msg = _("Invalid rotation method %r given.") % (value)
+        msg = _("Invalid rotation method {!r} given.").format(value)
         raise ValueError(msg)
 
 
 # =============================================================================
-class LogFileGroup(BaseObject, MutableSequence):
+class LogFileGroup(FbBaseObject, MutableSequence):
     """
     Class for encapsulating a group of logfiles, which are rotatet together
     with the same rules
@@ -167,7 +171,10 @@ class LogFileGroup(BaseObject, MutableSequence):
 
     @config_file.setter
     def config_file(self, value):
-        self._config_file = to_str(value)
+        if value is None:
+            self._config_file = None
+            return
+        self._config_file = Path(value)
 
     # ------------------------------------------------------------
     @property
@@ -216,7 +223,7 @@ class LogFileGroup(BaseObject, MutableSequence):
         if value is None:
             self._compresscmd = 'internal_gzip'
             return
-        v = to_str(value, force=True)
+        v = str(to_str(value))
         if self.re_empty.search(v):
             self._compresscmd = 'internal_gzip'
             return
@@ -249,7 +256,7 @@ class LogFileGroup(BaseObject, MutableSequence):
         if value is None:
             self._compressext = None
             return
-        v = to_str(value, force=True)
+        v = str(to_str(value))
         if self.re_empty.search(v):
             self._compressext = None
         else:
@@ -269,7 +276,7 @@ class LogFileGroup(BaseObject, MutableSequence):
         if isinstance(value, (list, tuple)):
             self._compressoptions = copy.copy(value)
             return
-        self._compressoptions = shlex_quote(to_str(value, force=True))
+        self._compressoptions = shlex_quote(str(to_str(value)))
 
     # ------------------------------------------------------------
     @property
@@ -303,7 +310,7 @@ class LogFileGroup(BaseObject, MutableSequence):
         self._rotate_method = RotateMethod.from_str(value)
 
     # -------------------------------------------------------------------------
-    def as_dict(self):
+    def as_dict(self, short=True):
         '''
         Transforms the elements of the object into a dict
 
@@ -311,14 +318,14 @@ class LogFileGroup(BaseObject, MutableSequence):
         @rtype:  dict
         '''
 
-        res = super(LogFileGroup, self).as_dict()
+        res = super(LogFileGroup, self).as_dict(short=short)
 
         res['config_file'] = self.config_file
         res['line_nr'] = self.line_nr
         res['simulate'] = self.simulate
         res['status_file'] = None
         if self.status_file:
-            res['status_file'] = self.status_file.as_dict()
+            res['status_file'] = self.status_file.as_dict(short=short)
 
         res['compress'] = self.compress
         res['compresscmd'] = self.compresscmd
@@ -351,7 +358,7 @@ class LogFileGroup(BaseObject, MutableSequence):
         if value is None:
             v = None
         else:
-            v = to_str(value, force=True)
+            v = Path(to_str(value))
         self._files[key] = v
 
     # -------------------------------------------------------------------------
@@ -411,7 +418,7 @@ class LogFileGroup(BaseObject, MutableSequence):
         if value is None:
             v = None
         else:
-            v = to_str(value, force=True)
+            v = Path(to_str(value))
 
         i = 0
         j = None
@@ -449,7 +456,7 @@ class LogFileGroup(BaseObject, MutableSequence):
         if filename is None:
             v = None
         else:
-            v = to_str(filename, force=True)
+            v = Path(to_str(filename))
         self._files.insert(i, v)
 
     # -------------------------------------------------------------------------
@@ -457,7 +464,7 @@ class LogFileGroup(BaseObject, MutableSequence):
         if filename is None:
             v = None
         else:
-            v = to_str(filename, force=True)
+            v = Path(to_str(filename))
         self._files.append(v)
 
     # -------------------------------------------------------------------------
@@ -470,7 +477,7 @@ class LogFileGroup(BaseObject, MutableSequence):
 
         pat = to_str(pattern)
         if pat in self.patterns:
-            LOG.warn(
+            LOG.warning(
                 _("Pattern %r is already a member of the file globbing pattern list."),
                 pattern)
             return

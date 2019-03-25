@@ -18,27 +18,31 @@ import copy
 
 from collections import MutableSequence
 
+from pathlib import Path
+
 # Third party modules
 import pytz
 import six
 
 # Own modules
-from logrotate.common import split_parts, pp
-from logrotate.common import logrotate_gettext, logrotate_ngettext
-from logrotate.common import to_str_or_bust as to_str
+from fb_tools.common import pp, to_str
+from fb_tools.obj import FbBaseObjectError, FbBaseObject
+from fb_tools.handling_obj import HandlingObject
 
-from logrotate.base import BaseObjectError, BaseObject
+from .translate import XLATOR
 
-__version__ = '0.3.4'
+from .common import split_parts
 
-_ = logrotate_gettext
-__ = logrotate_ngettext
+__version__ = '0.4.1'
+
+_ = XLATOR.gettext
+ngettext = XLATOR.ngettext
 
 LOG = logging.getLogger(__name__)
 
 
 # =============================================================================
-class LogRotateScriptError(BaseObjectError):
+class LogRotateScriptError(FbBaseObjectError):
     "Base class for exceptions in this module."
     pass
 
@@ -50,12 +54,12 @@ class ExecutionError(LogRotateScriptError):
 
 
 # =============================================================================
-class LogRotateScript(BaseObject, MutableSequence):
+class LogRotateScript(HandlingObject, MutableSequence):
     "Class for encapsulating a logrotate script (for pre- and postrotate actions)"
 
     #-------------------------------------------------------
     def __init__(
-        self, name=None, simulate=False, commands=None,
+        self, name=None, simulate=False, commands=None, quiet=False, force=None,
             appname=None, verbose=0, base_dir=None):
         """
         Constructor.
@@ -69,7 +73,6 @@ class LogRotateScript(BaseObject, MutableSequence):
         """
 
         self._name = None
-        self._simulate = bool(simulate)
         self._post_files = 0
         self._last_files = 0
         self._done_firstrun = False
@@ -80,7 +83,7 @@ class LogRotateScript(BaseObject, MutableSequence):
         self._do_last = False
 
         if name is not None:
-            self._name = to_str(name, force=True)
+            self._name = to_str(name)
 
         self._commands = []
         '''
@@ -89,7 +92,8 @@ class LogRotateScript(BaseObject, MutableSequence):
         '''
 
         super(LogRotateScript, self).__init__(
-            appname=appname, verbose=verbose, version=__version__, base_dir=base_dir)
+            appname=appname, verbose=verbose, version=__version__, base_dir=base_dir,
+            simulate=simulate, quiet=quiet, force=force)
 
         if isinstance(commands, (list, tuple)):
             for cmd in commands:
@@ -111,16 +115,6 @@ class LogRotateScript(BaseObject, MutableSequence):
     def name(self):
         "Name of the script as an identifier"
         return self._name
-
-    #------------------------------------------------------------
-    @property
-    def simulate(self):
-        "Number of logfiles referencing to this script as a postrotate script."
-        return self._simulate
-
-    @simulate.setter
-    def simulate(self, value):
-        self._simulate = bool(value)
 
     #------------------------------------------------------------
     @property
@@ -234,7 +228,7 @@ class LogRotateScript(BaseObject, MutableSequence):
         return pp(self.as_dict())
 
     #-------------------------------------------------------
-    def as_dict(self):
+    def as_dict(self, short=True):
         '''
         Transforms the elements of the object into a dict
 
@@ -242,10 +236,9 @@ class LogRotateScript(BaseObject, MutableSequence):
         @rtype:  dict
         '''
 
-        res = super(LogRotateScript, self).as_dict()
+        res = super(LogRotateScript, self).as_dict(short=short)
 
         res['name'] = self.name
-        res['simulate'] = self.simulate
         res['post_files'] = self.post_files
         res['last_files'] = self.last_files
         res['done_firstrun'] = self.done_firstrun
@@ -270,7 +263,7 @@ class LogRotateScript(BaseObject, MutableSequence):
     # -------------------------------------------------------------------------
     def __setitem__(self, key, value):
 
-        v = to_str(value, force=True)
+        v = str(to_str(value))
         self._commands[key] = v
 
     # -------------------------------------------------------------------------
@@ -298,7 +291,7 @@ class LogRotateScript(BaseObject, MutableSequence):
     # -------------------------------------------------------------------------
     def index(self, value, *args):
 
-        v = to_str(value, force=True)
+        v = str(to_str(value))
         if len(args) > 2:
             msg = "Call of index() with a wrong number (%d) of arguments." % (len(args))
             raise AttributeError(msg)
@@ -336,12 +329,12 @@ class LogRotateScript(BaseObject, MutableSequence):
 
     # -------------------------------------------------------------------------
     def insert(self, i, cmd):
-        v = to_str(cmd, force=True)
+        v = str(to_str(cmd))
         self._commands.insert(i, v)
 
     # -------------------------------------------------------------------------
     def append(self, cmd):
-        v = to_str(cmd, force=True)
+        v = str(to_str(cmd))
         self._commands.append(v)
 
     #------------------------------------------------------------
@@ -356,7 +349,7 @@ class LogRotateScript(BaseObject, MutableSequence):
         return self.execute(force=False, expected_retcode=0)
 
     #------------------------------------------------------------
-    def execute(self, force=False, expected_retcode=0, raise_on_error=False):
+    def execute(self, force=None, expected_retcode=0, raise_on_error=False):
         """
         Executes the command as an OS command in a shell.
 
@@ -384,29 +377,24 @@ class LogRotateScript(BaseObject, MutableSequence):
             msg = _("Executing script %(name)r with command:\n%(cmd)s") % {
                 'name': self.name, 'cmd': command.rstrip()}
             LOG.debug(msg)
+        if force is None:
+            force = self.force
         if not force:
             if self.simulate:
                 return True
 
         try:
-            retcode = subprocess.call(command, shell=True)
-            ret_msg = _("Got returncode for script %(name)r: %(retcode)r") % {
-                'name': self.name, 'retcode': retcode}
-            if retcode < 0:
-                msg = _("Child in script %(name)r was terminated by signal %(retcode)r.") % {
-                    'name': self.name, 'retcode': -retcode}
-                if raise_on_error:
-                    raise ExecutionError(msg)
-                else:
-                    LOG.error(msg)
-                return retcode
-            if retcode != expected_retcode:
+            completed = self.run([command], shell=True)
+            if self.verbose > 1:
+                LOG.debug(_("Completed process:") + '\n' + pp(completed.__dict__))
+            if completed.returncode != expected_retcode:
+                ret_msg = _("Got returncode for script %(name)r: %(retcode)r") % {
+                    'name': self.name, 'retcode': completed.returncode}
                 if raise_on_error:
                     raise ExecutionError(ret_msg)
                 else:
                     LOG.error(ret_msg)
-                return retcode
-            return retcode
+            return completed.returncode
         except OSError as e:
             msg = _("Execution of script %(name)r failed: %(error)s") % {
                 'name': self.name, 'error': e}

@@ -7,6 +7,7 @@
 @copyright: © 2010 - 2016 by Frank Brehm, Berlin
 @summary: Module for common used functions
 """
+from __future__ import absolute_import, print_function
 
 # Standard modules
 import re
@@ -16,7 +17,6 @@ import locale
 import logging
 import gettext
 import csv
-import pprint
 import email.utils
 
 # Third party modules
@@ -24,14 +24,14 @@ import six
 
 # Own modules
 
-basedir = os.path.realpath(os.path.join(os.path.dirname(__file__), '..', '..'))
-locale_dir = os.path.join(basedir, 'po')
-if not os.path.isdir(locale_dir):
-    locale_dir = None
+from fb_tools.common import pp, human2mbytes
 
-translator = gettext.translation('plogrotate', locale_dir, fallback=True)
+from .translate import XLATOR
 
-__version__ = '0.3.1'
+__version__ = '0.4.1'
+
+_ = XLATOR.gettext
+ngettext = XLATOR.ngettext
 
 RE_WS = re.compile(r'\s+')
 RE_WS_ONLY = re.compile(r'^\s*$')
@@ -52,28 +52,7 @@ RE_EMAIL = re.compile(
 RE_YES = re.compile(r'^\s*(?:y(?:es)?|true|on)\s*$', re.IGNORECASE)
 RE_NO = re.compile(r'^\s*(?:no?|false|off)\s*$', re.IGNORECASE)
 
-
-# =============================================================================
-def logrotate_gettext(message):
-    if six.PY3:
-        return to_str_or_bust(translator.gettext(message))
-    else:
-        return to_str_or_bust(translator.lgettext(message))
-
-
-# =============================================================================
-def logrotate_ngettext(singular, plural, n):
-    if six.PY3:
-        return to_str_or_bust(translator.ngettext(singular, plural, n))
-    else:
-        return to_str_or_bust(translator.lngettext(singular, plural, n))
-
-
-_ = logrotate_gettext
-__ = logrotate_ngettext
-
-logger = logging.getLogger(__name__)
-locale_dir = None
+LOG = logging.getLogger(__name__)
 
 
 # =============================================================================
@@ -99,23 +78,11 @@ class UnbalancedQuotesError(Exception):
     def __str__(self):
 
         if self.quote_char is None:
-            msg = "Unbalanced quotes in %r." % (self.text)
+            msg = _("Unbalanced quotes in {!r}.").format(self.text)
         else:
-            msg = "Unbalanced quote %r in %r." % (self.quote_char, self.text)
+            msg = _("Unbalanced quote {what!r} in {where!r}.").format(
+                what=self.quote_char, where=self.text)
         return msg
-
-
-# =============================================================================
-def pp(value):
-    """
-    Returns a pretty print string of the given value.
-
-    @return: pretty print string
-    @rtype: str
-    """
-
-    pretty_printer = pprint.PrettyPrinter(indent=4)
-    return pretty_printer.pformat(value)
 
 
 # =============================================================================
@@ -203,7 +170,8 @@ def split_parts(text, keep_quotes=False, raise_on_unbalanced=True):
             continue
 
         # Here we should not come to ...
-        msg = "Broken split of %r: %r left." % (text, txt)
+        msg = _("Broken split of {chunk!r}: {left!r} left.").format(
+            chunk=text, left=txt)
         raise Exception(msg)
 
     if last_chunk != '':
@@ -266,7 +234,7 @@ def human2bytes(value, si_conform=True, use_locale_radix=False, as_float=False, 
     """
 
     if value is None:
-        msg = "Given value is None."
+        msg = _("Given value is None.")
         raise ValueError(msg)
 
     radix = '.'
@@ -277,8 +245,8 @@ def human2bytes(value, si_conform=True, use_locale_radix=False, as_float=False, 
     radix = re.escape(radix)
     thousep = re.escape(thousep)
     if verbose > 4:
-        logger.debug(_("Using radix %(radix)r, thousend separator %(sep)r") % {
-            'radix': radix, 'sep': thousep})
+        LOG.debug(_("Using radix {radix!r}, thousend separator {sep!r}").format(
+            radix=radix, sep=thousep))
 
     value_raw = ''
     value_pre = value
@@ -287,7 +255,7 @@ def human2bytes(value, si_conform=True, use_locale_radix=False, as_float=False, 
     if thousep:
         value_pre = re.sub(thousep, '', value)
         if verbose > 3:
-            logger.debug(_("Value without thousend separators: %r."), value_pre)
+            LOG.debug(_("Value without thousend separators: {!r}.").format(value_pre))
 
     pattern = r'^\s*\+?(\d+(?:' + radix + r'\d*)?)\s*(\S+)?'
     match = re.search(pattern, value_pre)
@@ -295,7 +263,7 @@ def human2bytes(value, si_conform=True, use_locale_radix=False, as_float=False, 
         value_raw = match.group(1)
         suffix = match.group(2)
     else:
-        msg = _("Could not determine bytes in %r.") % (value)
+        msg = _("Could not determine bytes in {!r}.").format(value)
         raise ValueError(msg)
 
     if use_locale_radix:
@@ -309,7 +277,7 @@ def human2bytes(value, si_conform=True, use_locale_radix=False, as_float=False, 
     if suffix is None:
         suffix = ''
     if verbose > 4:
-        logger.debug(
+        LOG.debug(
             "Value float: %r, Value long: %r, suffix: %r",
             value_float, value_long, suffix)
 
@@ -356,12 +324,12 @@ def human2bytes(value, si_conform=True, use_locale_radix=False, as_float=False, 
     elif re.search(r'^\s*ZiB(?:yte)?\s*$', suffix, re.IGNORECASE):
         factor = factor_bin ** 7
     else:
-        msg = _("Couldn't detect suffix %r.") % (suffix)
+        msg = _("Couldn't detect suffix {!r}.").format(suffix)
         raise ValueError(msg)
 
     if verbose > 4:
-        msg = _("Found factor %d.") % (factor)
-        logger.debug(msg)
+        msg = _("Found factor {}.").format(factor)
+        LOG.debug(msg)
 
     fbytes = float(factor) * value_float
     if as_float:
@@ -410,7 +378,7 @@ def period2days(period, use_locale_radix=False, verbose=0):
         raise ValueError(_("Given period was empty."))
 
     if verbose > 3:
-        logger.debug(_("Called with %r."), period)
+        LOG.debug(_("Called with {!r}.").format(period))
 
     if period == 'now':
         return float(0)
@@ -425,12 +393,12 @@ def period2days(period, use_locale_radix=False, verbose=0):
         radix = locale.RADIXCHAR
     radix = re.escape(radix)
     if verbose > 3:
-        logger.debug(_("Using radix %r ..."), radix)
+        LOG.debug(_("Using radix {!r} ...").format(radix))
 
     # Search for hours in value
     pattern = r'(\d+(?:' + radix + r'\d*)?)\s*h(?:ours?)?'
     if verbose > 4:
-        logger.debug(_("Pattern %r."), pattern)
+        LOG.debug(_("Pattern %r."), pattern)
     match = re.search(pattern, value, re.IGNORECASE)
     if match:
         hours_str = match.group(1)
@@ -439,15 +407,15 @@ def period2days(period, use_locale_radix=False, verbose=0):
         hours = float(hours_str)
         days += hours / 24
         if verbose > 3:
-            logger.debug(_("Found %.2f hours."), hours)
+            LOG.debug(_("Found {:.2f} hours.").format(hours))
         value = re.sub(pattern, '', value, re.IGNORECASE)
     if verbose > 4:
-        logger.debug(_("Rest after hours: %r."), value)
+        LOG.debug(_("Rest after hours: {!r}.").format(value))
 
     # Search for weeks in value
     pattern = r'(\d+(?:' + radix + r'\d*)?)\s*w(?:eeks?)?'
     if verbose > 4:
-        logger.debug(_("Pattern %r."), pattern)
+        LOG.debug(_("Pattern {!r}.").format(pattern))
     match = re.search(pattern, value, re.IGNORECASE)
     if match:
         weeks_str = match.group(1)
@@ -456,15 +424,15 @@ def period2days(period, use_locale_radix=False, verbose=0):
         weeks = float(weeks_str)
         days += weeks * 7
         if verbose > 3:
-            logger.debug(_("Found %f weeks."), weeks)
+            LOG.debug(_("Found {:f} weeks.").format(weeks))
         value = re.sub(pattern, '', value, re.IGNORECASE)
     if verbose > 4:
-        logger.debug(_("Rest after weeks: %r."), value)
+        LOG.debug(_("Rest after weeks: {!r}.").format(value))
 
     # Search for months in value
     pattern = r'(\d+(?:' + radix + r'\d*)?)\s*m(?:onths?)?'
     if verbose > 4:
-        logger.debug(_("Pattern %r."), pattern)
+        LOG.debug(_("Pattern {!r}.").format(pattern))
     match = re.search(pattern, value, re.IGNORECASE)
     if match:
         months_str = match.group(1)
@@ -473,15 +441,15 @@ def period2days(period, use_locale_radix=False, verbose=0):
         months = float(months_str)
         days += months * 30
         if verbose > 3:
-            logger.debug(_("Found %f months."), months)
+            LOG.debug(_("Found {:f} months.").format(months))
         value = re.sub(pattern, '', value, re.IGNORECASE)
     if verbose > 4:
-        logger.debug(_("Rest after months: %r."), value)
+        LOG.debug(_("Rest after months: {!r}.").format(value))
 
     # Search for years in value
     pattern = r'(\d+(?:' + radix + r'\d*)?)\s*y(?:ears?)?'
     if verbose > 4:
-        logger.debug(_("Pattern %r."), pattern)
+        LOG.debug(_("Pattern {!r}.").format(pattern))
     match = re.search(pattern, value, re.IGNORECASE)
     if match:
         years_str = match.group(1)
@@ -490,15 +458,16 @@ def period2days(period, use_locale_radix=False, verbose=0):
         years = float(years_str)
         days += years * 365
         if verbose > 3:
-            logger.debug(_("Found %f years."), years)
+            LOG.debug(_("Found {:f} years.").format(years))
         value = re.sub(pattern, '', value, re.IGNORECASE)
     if verbose > 4:
-        logger.debug(_("Rest after years: %r."), value)
+        LOG.debug(_("Rest after years: %r."), value)
+        LOG.debug(_("Rest after years: {!r}.").format(value))
 
     # At last search for days in value
     pattern = r'(\d+(?:' + radix + r'\d*)?)\s*(?:d(?:ays?)?)?'
     if verbose > 4:
-        logger.debug(_("Pattern %r."), pattern)
+        LOG.debug(_("Pattern {!r}.").format(pattern))
     match = re.search(pattern, value, re.IGNORECASE)
     if match:
         days_str = match.group(1)
@@ -507,18 +476,18 @@ def period2days(period, use_locale_radix=False, verbose=0):
         days_float = float(days_str)
         days += days_float
         if verbose > 3:
-            logger.debug(_("Found %f days."), days_float)
+            LOG.debug(_("Found %f days."), days_float)
+            LOG.debug(_("Found {:f} days.").format(days_float))
         value = re.sub(pattern, '', value, re.IGNORECASE)
     if verbose > 4:
-        logger.debug(_("Rest after days: %r."), value)
+        LOG.debug(_("Rest after days: {!r}.").format(value))
 
     # warn, if there is a rest
     if not RE_WS_ONLY.search(value):
-        logger.warning(_("Invalid content for a period: %r."), value)
+        LOG.warning(_("Invalid content for a period: {!r}.").format(value))
 
     if verbose > 3:
-        msg = _("Total %f days found.") % (days)
-        logger.debug(_("Total %f days found."), days)
+        LOG.debug(_("Total {!r} days found.").format(days))
 
     return days
 
@@ -551,226 +520,22 @@ def get_address_list(address_str, verbose = 0):
             addr_list.append(address)
 
     if verbose > 3:
-        logger.debug(
-            __(
-                "Found address entry:",
-                "Found address entries:", len(addr_list)
-            ) + "\n" + pp(addr_list))
+        LOG.debug(
+            ngettext("Found address entry:", "Found address entries:", len(addr_list)) +
+            "\n" + pp(addr_list))
 
     for address in addr_list:
         address = re.sub(r',', ' ', address)
         address = re.sub(r'\s+', ' ', address)
         pair = email.utils.parseaddr(address)
         if verbose > 3:
-            logger.debug(_("Got mail address pair:") + "\n" + pp(pair))
+            LOG.debug(_("Got mail address pair:") + "\n" + pp(pair))
         if not email_valid(pair[1]):
-            logger.warning(_("Found invalid mail address %r."), address)
+            LOG.warning(_("Found invalid mail address {!r}.").format(address))
             continue
         addresses.append(pair)
 
     return addresses
-
-
-# =============================================================================
-def to_bool(value):
-    """
-    Converter from string to boolean values (e.g. from configurations)
-    """
-
-    if not value:
-        return False
-    if isinstance(value, bool):
-        return value
-
-    try:
-        v_int = int(value)
-    except ValueError:
-        pass
-    except TypeError:
-        pass
-    else:
-        if v_int == 0:
-            return False
-        else:
-            return True
-
-    v_str = to_str_or_bust(value, force=True)
-
-    if RE_YES.search(v_str):
-        return True
-
-    if RE_NO.search(v_str):
-        return False
-
-    return bool(value)
-
-# =============================================================================
-def to_unicode_or_bust(obj, encoding='utf-8', force=False):
-    """
-    Transforms a string, which is not a unicode string, into a unicode string.
-    All other objects are left untouched.
-
-    @param obj: the object to transform
-    @type obj:  object
-    @param encoding: the encoding to use to decode the object,
-    @type encoding:  str
-
-    @return: the maybe decoded object
-    @rtype:  object
-
-    """
-
-    do_decode = False
-    if six.PY2:
-        if isinstance(obj, str):
-            do_decode = True
-        elif force:
-            return unicode(obj)
-    else:
-        if isinstance(obj, bytes):
-            do_decode = True
-        elif force:
-            return str(obj)
-
-    if do_decode:
-        obj = obj.decode(encoding)
-
-    return obj
-
-
-# =============================================================================
-def encode_or_bust(obj, encoding='utf-8', force=False):
-    """
-    Encodes the given unicode object into the given encoding.
-    In Python 3 a bytes object is returend in this case.
-
-    @param obj: the object to encode
-    @type obj:  object
-    @param encoding: the encoding to use to encode the object,
-    @type encoding:  str
-
-    @return: the maybe encoded object
-    @rtype:  object
-
-    """
-
-    do_encode = False
-    if six.PY2:
-        if isinstance(obj, unicode):
-            do_encode = True
-        elif force:
-            return str(obj)
-    else:
-        if isinstance(obj, str):
-            do_encode = True
-        elif force:
-            return bytes(obj)
-
-    if do_encode:
-        obj = obj.encode(encoding)
-
-    return obj
-
-
-# =============================================================================
-def to_utf8_or_bust(obj, force=False):
-    """
-    Transforms a string, what is a unicode string, into a utf-8 encoded string.
-    All other objects are left untouched.
-    In Python 3 a bytes object is returend in this case.
-
-    @param obj: the object to transform
-    @type obj:  object
-
-    @return: the maybe encoded object
-    @rtype:  object
-
-    """
-
-    return encode_or_bust(obj, 'utf-8', force=force)
-
-
-# =============================================================================
-def to_bytes(obj, encoding='utf-8', force=False):
-    "Wrapper for encode_or_bust()"
-
-    return encode_or_bust(obj, encoding, force=force)
-
-
-# =============================================================================
-def to_str_or_bust(obj, encoding='utf-8', force=False):
-    """
-    Transformes the given string-like object into the str-type according
-    to the current Python version.
-    """
-
-    if six.PY2:
-        return encode_or_bust(obj, encoding, force=force)
-    else:
-        return to_unicode_or_bust(obj, encoding, force=force)
-
-
-# =============================================================================
-def terminal_can_colors(verbose=0):
-    """
-    Method to detect, whether the current terminal (stdout and stderr)
-    is able to perform ANSI color sequences.
-
-    @return: both stdout and stderr can perform ANSI color sequences
-    @rtype: bool
-
-    """
-
-    cur_term = ''
-    if 'TERM' in os.environ:
-        cur_term = os.environ['TERM'].lower().strip()
-
-    colored_term_list = (
-        r'ansi',
-        r'linux.*',
-        r'screen.*',
-        r'[xeak]term.*',
-        r'gnome.*',
-        r'rxvt.*',
-        r'interix',
-    )
-    term_pattern = r'^(?:' + r'|'.join(colored_term_list) + r')$'
-    re_term = re.compile(term_pattern)
-
-    ansi_term = False
-    env_term_has_colors = False
-
-    if cur_term:
-        if cur_term == 'ansi':
-            env_term_has_colors = True
-            ansi_term = True
-        elif re_term.search(cur_term):
-            env_term_has_colors = True
-    if verbose:
-        sys.stderr.write(
-            "ansi_term: %r, env_term_has_colors: %r\n" % (
-                ansi_term, env_term_has_colors))
-
-    has_colors = False
-    if env_term_has_colors:
-        has_colors = True
-    for handle in [sys.stdout, sys.stderr]:
-        if (hasattr(handle, "isatty") and handle.isatty()):
-            if debug:
-                sys.stderr.write("%s is a tty.\n" % (handle.name))
-            if (platform.system() == 'Windows' and not ansi_term):
-                if debug:
-                    sys.stderr.write("platform is Windows and not ansi_term.\n")
-                has_colors = False
-        else:
-            if debug:
-                sys.stderr.write("%s is not a tty.\n" % (handle.name))
-            if ansi_term:
-                pass
-            else:
-                has_colors = False
-
-    return has_colors
 
 
 # =============================================================================

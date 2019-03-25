@@ -9,6 +9,7 @@
           It provides translation object, usable from all other
           modules in this package.
 """
+from __future__ import absolute_import, print_function
 
 # Standard modules
 import os
@@ -16,62 +17,69 @@ import sys
 import logging
 import gettext
 
+from pathlib import Path
+
+from distutils.version import LooseVersion
+
 # Third party modules
 import six
 
+import babel
+from babel.support import Translations
+
 # Own modules
-basedir = os.path.realpath(os.path.join(os.path.dirname(__file__), '..', '..'))
-libdir = os.path.join(basedir, 'lib')
-
-if __name__ == "__main__":
-    sys.path.insert(0, libdir)
-
-from logrotate.common import to_str_or_bust as to_str
-
-locale_dir = os.path.join(basedir, 'po')
-if not os.path.isdir(locale_dir):
-    locale_dir = None
-
 DOMAIN = 'plogrotate'
-mo_file = gettext.find(DOMAIN, locale_dir, all=True)
 
-log = logging.getLogger(__name__)
+LOG = logging.getLogger(__name__)
 
-translator = gettext.translation(DOMAIN, locale_dir, fallback=True)
-"""
-The main gettext-translator object, which can be imported
-from other modules.
-"""
+__version__ = '1.0.1'
 
-gettext.install(DOMAIN, locale_dir)
+__me__ = Path(__file__).resolve()
+__module_dir__ = __me__.parent
+__lib_dir__ = __module_dir__.parent
+__base_dir__ = __lib_dir__.parent
+LOCALE_DIR = __base_dir__.joinpath('po')
+if not LOCALE_DIR.is_dir():
+    LOCALE_DIR = __module_dir__.joinpath('po')
+    if not LOCALE_DIR.is_dir():
+        LOCALE_DIR = None
 
-# =============================================================================
-def logrotate_gettext(message):
-    if six.PY3:
-        return to_str(translator.gettext(message))
-    else:
-        return to_str(translator.lgettext(message))
+DEFAULT_LOCALE_DEF = 'en_US'
+DEFAULT_LOCALE = babel.core.default_locale()
+if not DEFAULT_LOCALE:
+    DEFAULT_LOCALE = DEFAULT_LOCALE_DEF
 
+__mo_file__ = gettext.find(DOMAIN, str(LOCALE_DIR))
+if __mo_file__:
+    try:
+        with open(__mo_file__, 'rb') as F:
+            XLATOR = Translations(F, DOMAIN)
+    except IOError:
+        XLATOR = gettext.NullTranslations()
+else:
+    XLATOR = gettext.NullTranslations()
 
-# =============================================================================
-def logrotate_ngettext(singular, plural, n):
-    if six.PY3:
-        return to_str(translator.ngettext(singular, plural, n))
-    else:
-        return to_str(translator.lngettext(singular, plural, n))
+CUR_BABEL_VERSION = LooseVersion(babel.__version__)
+NEWER_BABEL_VERSION = LooseVersion('2.6.0')
 
-__ = logrotate_ngettext
+SUPPORTED_LANGS = (
+    'de_DE',
+    'en_US'
+)
+
+_ = XLATOR.gettext
 
 # =============================================================================
 
 if __name__ == "__main__":
 
-    print(_("Basedir: %r") % (basedir))
-    print(_("Locales Dir: %r") % (locale_dir))
-    print(_("Domain: %r") % (DOMAIN))
-    print(__("Found .mo-file: %r", "Found .mo-files: %r", len(mo_file)) % (mo_file))
+    print(_("Module directory: {!r}").format(__module_dir__))
+    print(_("Base directory: {!r}").format(__base_dir__))
+    print(_("Locale directory: {!r}").format(LOCALE_DIR))
+    print(_("Locale domain: {!r}").format(DOMAIN))
+    print(_("Found .mo-file: {!r}").format(__mo_file__))
+
 
 # =============================================================================
 
 # vim: tabstop=4 expandtab shiftwidth=4 softtabstop=4
-

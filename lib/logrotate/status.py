@@ -19,6 +19,8 @@ import stat
 
 from datetime import tzinfo, timedelta, datetime, date, time
 
+from pathlib import Path
+
 # Third party modules
 import pytz
 import six
@@ -26,16 +28,18 @@ import six
 from six.moves import shlex_quote
 
 # Own modules
-from logrotate.common import split_parts, pp
-from logrotate.common import logrotate_gettext, logrotate_ngettext
-from logrotate.common import to_str_or_bust as to_str
+from fb_tools.common import pp, to_str
 
-from logrotate.base import BaseObjectError, BaseObject
+from fb_tools.obj import FbBaseObjectError, FbBaseObject
 
-__version__ = '0.3.3'
+from .translate import XLATOR
 
-_ = logrotate_gettext
-__ = logrotate_ngettext
+from .common import split_parts
+
+__version__ = '0.4.1'
+
+_ = XLATOR.gettext
+ngettext = XLATOR.ngettext
 
 LOG = logging.getLogger(__name__)
 DEFAULT_PERMISSIONS = stat.S_IRUSR | stat.S_IWUSR | stat.S_IRGRP | stat.S_IROTH
@@ -45,7 +49,7 @@ UTC = pytz.utc
 
 
 # =============================================================================
-class LogrotateStatusFileError(BaseObjectError):
+class LogrotateStatusFileError(FbBaseObjectError):
     """
     Base class for exceptions in this module.
     """
@@ -53,7 +57,7 @@ class LogrotateStatusFileError(BaseObjectError):
 
 
 # =============================================================================
-class LogrotateStatusEntryError(BaseObjectError):
+class LogrotateStatusEntryError(FbBaseObjectError):
     "Exception class for errors with status file entries."
     pass
 
@@ -65,7 +69,7 @@ class StatusEntryValueError(LogrotateStatusEntryError, ValueError):
 
 
 # =============================================================================
-class StatusFileEntry(BaseObject):
+class StatusFileEntry(FbBaseObject):
     """
     Class for a single status file entry.
     """
@@ -103,7 +107,7 @@ class StatusFileEntry(BaseObject):
         if value is None:
             self._filename = None
             return
-        self._filename = to_str(value, force=True)
+        self._filename = Path(to_str(value))
 
     # -----------------------------------------------------------------------
     @property
@@ -111,7 +115,7 @@ class StatusFileEntry(BaseObject):
         "The filename in a shell-escaped version."
         if self.filename is None:
             return None
-        ret = shlex_quote(self.filename)
+        ret = shlex_quote(str(self.filename))
         if not self.re_quoted.search(ret):
             ret = '"' + ret + '"'
         return ret
@@ -142,7 +146,7 @@ class StatusFileEntry(BaseObject):
         if isinstance(value, date):
             return datetime(value.year, value.month, value.day, tzinfo=UTC)
 
-        v_str = to_str(value, force=True)
+        v_str = str(to_str(value))
 
         match = cls.re_ts_v3.search(v_str)
         if match:
@@ -162,7 +166,7 @@ class StatusFileEntry(BaseObject):
         raise StatusEntryValueError(msg)
 
     # -------------------------------------------------------------------------
-    def as_dict(self):
+    def as_dict(self, short=True):
         """
         Transforms the elements of the object into a dict
 
@@ -170,7 +174,7 @@ class StatusFileEntry(BaseObject):
         @rtype:  dict
         """
 
-        res = super(StatusFileEntry, self).as_dict()
+        res = super(StatusFileEntry, self).as_dict(short=short)
 
         res['filename'] = self.filename
         res['quoted_filename'] = self.quoted_filename
@@ -266,10 +270,10 @@ class StatusFileEntry(BaseObject):
         elif other.filename is None:
             return False
 
-        if self.filename.lower() != other.filename.lower():
-            return self.filename.lower() < other.filename.lower()
+        if str(self.filename).lower() != str(other.filename).lower():
+            return str(self.filename).lower() < str(other.filename).lower()
 
-        return self.filename < other.filename
+        return str(self.filename) < str(other.filename)
 
     # -------------------------------------------------------------------------
     def __gt__(self, other):
@@ -297,7 +301,7 @@ class StatusFileEntry(BaseObject):
 
 
 # =============================================================================
-class StatusFile(BaseObject, collections.MutableMapping):
+class StatusFile(FbBaseObject, collections.MutableMapping):
     """Class for operations with the logrotate state file"""
 
     open_args = {}
@@ -324,7 +328,7 @@ class StatusFile(BaseObject, collections.MutableMapping):
         @type simulate: bool
         """
 
-        self.filename = filename
+        self.filename = Path(filename)
         self._simulate = bool(simulate)
         self._was_read = False
         self._has_changed = False
@@ -403,8 +407,9 @@ class StatusFile(BaseObject, collections.MutableMapping):
     # -----------------------------------------------------------------------
     def __getitem__(self, filename):
 
+        fpath = Path(filename)
         for entry in self._entries:
-            if entry.filename == filename:
+            if entry.filename == fpath:
                 return entry
         raise KeyError(filename)
 
@@ -416,18 +421,19 @@ class StatusFile(BaseObject, collections.MutableMapping):
                 _('Only %(e)s objects can be added to a %(f)s object.') % {
                     'e': 'StatusFileEntry', 'f': self.__class__.__name__})
 
-        if filename != entry.filename:
+        fpath = Path(filename)
+
+        if fpath != entry.filename:
             msg = _(
                 "Filename %(f1)r in given %(o)s object "
                 "does not match given filename %(f2)r.") % {
                 'f1': entry.filename, 'o': entry.__class__.__name__,
-                'f2': filename
-            }
+                'f2': fpath}
             raise ValueError(msg)
 
         found = False
         for i in range(len(self._entries)):
-            if self._entries[i].filename == filename:
+            if self._entries[i].filename == fpath:
                 if self._entries[i].ts != entry.ts:
                     self._entries[i] = entry
                     self._has_changed = True
@@ -439,17 +445,20 @@ class StatusFile(BaseObject, collections.MutableMapping):
 
     # -----------------------------------------------------------------------
     def __contains__(self, filename):
+
+        fpath = Path(filename)
         for entry in self._entries:
-            if entry.filename == filename:
+            if entry.filename == fpath:
                 return True
         return False
 
     # -----------------------------------------------------------------------
     def __delitem__(self, filename):
 
+        fpath = Path(filename)
         for i in range(len(self._entries)):
             entry = self._entries[i]
-            if entry.filename == filename:
+            if entry.filename == fpath:
                 self._entries.pop(i)
                 self._has_changed = True
                 break
@@ -468,11 +477,11 @@ class StatusFile(BaseObject, collections.MutableMapping):
         """Retrieving the current file permissions and store them
             in self.permissions."""
 
-        orig_mode = os.stat(self.filename).st_mode
-        orig_perms = stat.S_IMODE((orig_mode))
+        orig_mode = self.filename.stat().st_mode
+        orig_perms = stat.S_IMODE(orig_mode)
         LOG.debug(
             _("Original permissions of %(fn)r: %(perm)04o") % {
-                'fn': self.filename, 'perm': orig_perms})
+                'fn': str(self.filename), 'perm': orig_perms})
         self.permissions = orig_perms
 
     # -----------------------------------------------------------------------
@@ -481,20 +490,20 @@ class StatusFile(BaseObject, collections.MutableMapping):
 
         self._entries = list()
 
-        if not os.path.exists(self.filename):
-            msg = _("File %r does not exists.") % (self.filename)
-            raise IOError(errno.ENOENT, msg, self.filename)
+        if not self.filename.exists():
+            msg = _("File %r does not exists.") % (str(self.filename))
+            raise IOError(errno.ENOENT, msg, str(self.filename))
 
-        if not os.path.isfile(self.filename):
-            msg = _("Path %r is not a regular file.") % (self.filename)
-            raise IOError(errno.ENOENT, msg, self.filename)
+        if not self.filename.is_file():
+            msg = _("Path %r is not a regular file.") % (str(self.filename))
+            raise IOError(errno.ENOENT, msg, str(self.filename))
 
-        if not os.access(self.filename, os.R_OK):
-            msg = _("No read permissions for %r.") % (self.filename)
-            raise IOError(errno.ENOENT, msg, self.filename)
+        if not os.access(str(self.filename), os.R_OK):
+            msg = _("No read permissions for %r.") % (str(self.filename))
+            raise IOError(errno.ENOENT, msg, str(self.filename))
 
-        LOG.debug(_("Trying to read %r ..."), self.filename)
-        with open(self.filename, 'r', **self.open_args) as fh:
+        LOG.debug(_("Trying to read %r ..."), str(self.filename))
+        with self.filename.open('r', **self.open_args) as fh:
             i = 0
             for line in fh.readlines():
                 i += 1
@@ -531,7 +540,7 @@ class StatusFile(BaseObject, collections.MutableMapping):
         first_line = 'Logrotate State -- Version 3'
 
         if self.simulate:
-            LOG.info(_("Simulating writing %r ..."), self.filename)
+            LOG.info(_("Simulating writing %r ..."), str(self.filename))
             if self.verbose > 2:
                 LOG.debug(_("Writing line %r."), first_line)
                 for entry in sorted(self._entries):
@@ -540,9 +549,9 @@ class StatusFile(BaseObject, collections.MutableMapping):
             self._has_changed = False
             return
 
-        LOG.info(_("Trying to write %r ..."), self.filename)
+        LOG.info(_("Trying to write %r ..."), str(self.filename))
 
-        with open(self.filename, 'w', 1, **self.open_args) as fh:
+        with self.filename.open('w', 1, **self.open_args) as fh:
             if self.verbose > 2:
                 LOG.debug(_("Writing line %r."), first_line)
             fh.write('%s\n' % (first_line))
@@ -558,23 +567,23 @@ class StatusFile(BaseObject, collections.MutableMapping):
     # -----------------------------------------------------------------------
     def ensure_permissions(self, permissions=None):
 
-        if not os.path.exists(self.filename):
-            msg = _("File %r does not exists.") % (self.filename)
+        if not self.filename.exists():
+            msg = _("File %r does not exists.") % (str(self.filename))
             raise IOError(errno.ENOENT, msg, self.filename)
 
         if permissions is None:
             permissions = self.permissions
 
-        LOG.debug(_("Ensuring permissions of %r ..."), self.filename)
-        operms = os.stat(self.filename).st_mode
+        LOG.debug(_("Ensuring permissions of %r ..."), str(self.filename))
+        operms = self.filename.stat().st_mode
         operms = stat.S_IMODE(operms)
         LOG.debug(
             _("Current permissions of %(fn)r: %(cur)04o, expected: %(exp)04o") % {
-            'fn': self.filename, 'cur': operms, 'exp': permissions})
+            'fn': str(self.filename), 'cur': operms, 'exp': permissions})
         if operms != permissions:
             LOG.info(
                 "Setting permissions of %(fn)r to %(perm)04o." % {
-                'fn': self.filename, 'perm': permissions})
+                'fn': str(self.filename), 'perm': permissions})
             if not self.simulate:
                 os.chmod(self.filename, permissions)
 
@@ -601,7 +610,8 @@ class StatusFile(BaseObject, collections.MutableMapping):
         entry = StatusFileEntry(
             filename=filename, ts=ts,
             appname=self.appname, verbose=self.verbose, base_dir=self.base_dir)
-        self[filename] = entry
+        fname = entry.filename
+        self[fname] = entry
 
     # -----------------------------------------------------------------------
     def check_permissions(self):
