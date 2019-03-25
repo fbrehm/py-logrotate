@@ -1,9 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-# $Id$
-# $URL$
-
 '''
 @author: Frank Brehm
 @contact: frank@brehm-online.com
@@ -22,9 +19,20 @@ import os
 import os.path
 from datetime import datetime
 
+from pathlib import Path
+
 # Third party modules
 
 # Own modules
+
+my_path = Path(__file__)
+my_real_path = my_path.resolve()
+base_dir = my_real_path.parent
+libdir = base_dir.joinpath('lib')
+
+sys.path.insert(0, str(libdir))
+
+
 from LogRotate.Getopts import LogrotateOptParser
 from LogRotate.Getopts import LogrotateOptParserError
 
@@ -33,14 +41,10 @@ from LogRotate.Handler import LogrotateHandlerError
 
 import LogRotate.Common
 
-revision = '$Revision$'
-revision = re.sub( r'\$', '', revision )
-revision = re.sub( r'Revision: ', r'r', revision )
-
 __author__    = 'Frank Brehm'
 __copyright__ = '(C) 2011 by Frank Brehm, Berlin'
 __contact__    = 'frank@brehm-online.com'
-__version__    = '0.6.0 ' + revision
+__version__    = '0.6.1 '
 __license__    = 'GPL3'
 
 
@@ -73,14 +77,14 @@ def main():
     pp = pprint.PrettyPrinter(indent=4)
     try:
         opt_parser.getOpts()
-    except LogrotateOptParserError, e:
+    except LogrotateOptParserError as e:
         sys.stderr.write(str(e) + "\n\n")
         opt_parser.parser.print_help(sys.stderr)
         sys.exit(1)
 
     if opt_parser.options.verbose > 6:
-        print _("Options") + ": " + pp.pformat(opt_parser.options)
-        print _("Arguments") + ": " + pp.pformat(opt_parser.args)
+        print(_("Options") + ": " + pp.pformat(opt_parser.options))
+        print(_("Arguments") + ": " + pp.pformat(opt_parser.args))
 
     testmode = False
     if opt_parser.options.test or opt_parser.options.configcheck:
@@ -94,27 +98,26 @@ def main():
             verbose_level = 1
 
     if not testmode:
-        print "\n" + ('#' * 79)
-        print ( _("[%(date)s]: %(prog)s is starting logrotation.") 
-              % {'prog': cur_proc, 'date': datetime.now().isoformat(' '), }
-              ) + "\n"
+        print("\n" + ('#' * 79))
+        print(_("[{date}]: {prog} is starting logrotation.").format(
+            prog=cur_proc, date=datetime.now().isoformat(' ')))
 
     sep_line = '=' * 79
 
     if testmode:
-        print _("Test mode is ON.")
+        print(_("Test mode is ON."))
     if verbose_level > 0:
-        print (_("Verbose mode is ON on level: %d") % (verbose_level))
+        print(_("Verbose mode is ON on level: %d") % (verbose_level))
     if opt_parser.options.force:
-        print _("Force mode is ON.")
+        print(_("Force mode is ON."))
     if opt_parser.options.configcheck:
-        print _("Configuration check only.")
+        print(_("Configuration check only."))
 
     if not opt_parser.options.configcheck:
-        print ""
+        print("")
         if verbose_level > 0:
-            print sep_line + "\n"
-        print _("Stage 1: reading configuration") + "\n"
+            print(sep_line + "\n")
+        print(_("Stage 1: reading configuration") + "\n")
 
     lr_handler = None
     try:
@@ -130,47 +133,46 @@ def main():
             local_dir    = local_dir,
             version      = __version__,
         )
-    except LogrotateHandlerError, e:
+    except LogrotateHandlerError as e:
         sys.stderr.write(str(e) + "\n")
         sys.exit(9)
 
     if opt_parser.options.verbose > 2:
-        print _("Handler object structure") + ':\n' + str(lr_handler)
+        print(_("Handler object structure") + ':\n' + str(lr_handler))
 
     if opt_parser.options.configcheck:
         sys.exit(0)
 
-    print ""
+    print("")
     if verbose_level > 0:
-        print sep_line + "\n"
-    print _("Stage 2: underlying log rotation") + "\n"
+        print(sep_line + "\n")
+    print(_("Stage 2: underlying log rotation") + "\n")
     lr_handler.rotate()
 
-    print ""
+    print("")
     if verbose_level > 0:
-        print sep_line + "\n"
-    print _("Stage 3: sending logfiles per mail") + "\n"
+        print(sep_line + "\n")
+    print(_("Stage 3: sending logfiles per mail") + "\n")
     lr_handler.send_logfiles()
 
-    print ""
+    print("")
     if verbose_level > 0:
-        print sep_line + "\n"
-    print _("Stage 4: deleting of old logfiles") + "\n"
+        print(sep_line + "\n")
+    print(_("Stage 4: deleting of old logfiles") + "\n")
     lr_handler.delete_oldfiles()
 
-    print ""
+    print("")
     if verbose_level > 0:
-        print sep_line + "\n"
-    print _("Stage 5: compression of old log files") + "\n"
+        print(sep_line + "\n")
+    print(_("Stage 5: compression of old log files") + "\n")
     lr_handler.compress()
 
     lr_handler = None
 
     if not testmode:
-        print ""
-        print ( _("[%(date)s]: %(prog)s ended logrotation.") 
-              % {'prog': cur_proc, 'date': datetime.now().isoformat(' '), }
-              ) + "\n"
+        print("")
+        print(_("[{date}]: {prog} ended logrotation.").format(
+            prog=cur_proc, date=datetime.now().isoformat(' ')))
 
     sys.exit(0)
 

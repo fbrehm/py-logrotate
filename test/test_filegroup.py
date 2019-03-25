@@ -17,6 +17,8 @@ import tempfile
 import textwrap
 import inspect
 
+from pathlib import Path
+
 try:
     import unittest2 as unittest
 except ImportError:
@@ -34,7 +36,7 @@ libdir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'lib'))
 sys.path.insert(0, libdir)
 
 # Own modules
-from logrotate.common import pp
+from fb_tools.common import pp, to_bytes, to_bool
 
 from general import BaseTestCase, get_arg_verbose, init_root_logger
 
@@ -151,11 +153,16 @@ class LogFileGroupTestCase(BaseTestCase):
 
         group.append("/var/log/a.log")
         group.append("/var/log/b.log")
+        if self.verbose > 2:
+            LOG.debug(
+                "Created {} object:\n" + pp(group.as_dict()))
         self.assertEqual(len(group), 2)
 
-        if "/var/log/c.log" not in group:
+        if Path("/var/log/c.log") not in group:
             group.append("/var/log/c.log")
-        self.assertIn("/var/log/c.log", group)
+        if self.verbose > 2:
+            LOG.debug("New file list:\n" + pp(group._files))
+        self.assertIn(Path("/var/log/c.log"), group)
         self.assertEqual(len(group), 3)
 
         del group[0]
@@ -165,8 +172,8 @@ class LogFileGroupTestCase(BaseTestCase):
                 group.__class__.__name__, pp(group.as_dict()))
         for filename in group:
             LOG.debug("Group has file %r.", filename)
-        self.assertEqual(group[0], "/var/log/b.log")
-        self.assertEqual(group[1], "/var/log/c.log")
+        self.assertEqual(group[0], Path("/var/log/b.log"))
+        self.assertEqual(group[1], Path("/var/log/c.log"))
         self.assertEqual(len(group), 2)
 
 # =============================================================================

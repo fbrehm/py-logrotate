@@ -19,6 +19,8 @@ import textwrap
 
 from datetime import tzinfo, timedelta, datetime, date, time
 
+from pathlib import Path
+
 try:
     import unittest2 as unittest
 except ImportError:
@@ -206,7 +208,7 @@ class StatusTestCase(BaseTestCase):
             if self.verbose > 2:
                 LOG.debug("Re-created status entry as dict:\n%s", pp(entry.as_dict()))
 
-            self.assertEqual(new_entry.filename, filename)
+            self.assertEqual(new_entry.filename, Path(filename))
 
     # -------------------------------------------------------------------------
     def test_creating_status_file(self):
@@ -247,7 +249,7 @@ class StatusTestCase(BaseTestCase):
                 LOG.debug("New created entry:\n%s", pp(entry.as_dict()))
 
             self.assertEqual(entry.__class__.__name__, StatusFileEntry.__name__)
-            self.assertEqual(entry.filename, test_filename)
+            self.assertEqual(entry.filename, Path(test_filename))
             self.assertEqual(entry.ts, rdate)
 
             status_file.write()
@@ -291,7 +293,7 @@ class StatusTestCase(BaseTestCase):
                 LOG.debug(
                     "Read status file as dict:\n%s",
                     pp(status_file.as_dict()))
-            self.assertEqual(status_file.filename, filename)
+            self.assertEqual(status_file.filename, Path(filename))
             self.assertEqual(status_file.was_read, True)
 
 

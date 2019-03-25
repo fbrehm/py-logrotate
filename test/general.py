@@ -15,14 +15,22 @@ import argparse
 import tempfile
 import shutil
 
+from logging import Formatter
+
+from pathlib import Path
+
 try:
     import unittest2 as unittest
 except ImportError:
     import unittest
 
 # Own modules
-
-from pb_logging.colored import ColoredFormatter
+HAS_COLORED_LOGGING = False
+try:
+    from fb_tools.colored import ColoredFormatter
+    HAS_COLORED_LOGGING = True
+except ImportError:
+    pass
 
 # =============================================================================
 
@@ -62,7 +70,10 @@ def init_root_logger(verbose=0):
             format_str += '%(name)s '
     format_str += '%(levelname)s - %(message)s'
     formatter = None
-    formatter = ColoredFormatter(format_str)
+    if HAS_COLORED_LOGGING:
+        formatter = ColoredFormatter(format_str)
+    else:
+        formatter = Formatter(format_str)
 
     # create log handler for console output
     lh_console = logging.StreamHandler(sys.stderr)
@@ -101,42 +112,43 @@ class BaseTestCase(unittest.TestCase):
     # -------------------------------------------------------------------------
     def create_root_dir(self):
 
-        if self.root_dir and os.path.exists(self.root_dir):
-            if os.path.isdir(self.root_dir) and os.access(self.root_dir, os.W_OK):
+        if self.root_dir and self.root_dir.exists():
+            if self.root_dir.is_dir() and os.access(str(self.root_dir), os.W_OK):
                 return
-            msg = "Path %r exists, but is either not a directory or not writeable." % (
-                self.root_dir)
+            msg = "Path {!r} exists, but is either not a directory or not writeable.".format(
+                str(self.root_dir))
             raise RuntimeError(msg)
 
-        self._root_dir = tempfile.mkdtemp(prefix='chroot-')
-        LOG.debug("Created temporary directory %r for chroot operations.", self.root_dir)
+        self._root_dir = Path(tempfile.mkdtemp(prefix='chroot-'))
+        LOG.debug("Created temporary directory {!r} for chroot operations.".format(
+            str(self.root_dir)))
 
     # -------------------------------------------------------------------------
     def setUp(self):
 
-        self.base_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
-        self.base_dir = os.path.relpath(self.base_dir)
-        LOG.debug("Base directory is: %r", self.base_dir)
+        self.base_dir = Path(__file__).parent.parent.resolve()
+        self.base_dir = self.base_dir.relative_to(Path.cwd())
+        LOG.debug("Base directory is: {!r}".format(str(self.base_dir)))
 
-        self.tmp_dir = os.path.relpath(os.path.join(self.base_dir, 'tmp'))
-        LOG.debug("Tmp directory is: %r", self.tmp_dir)
+        self.tmp_dir = self.base_dir.joinpath('tmp')
+        LOG.debug("Tmp directory is: {!r}".format(str(self.tmp_dir)))
 
-        self.test_dir = os.path.relpath(os.path.join(self.base_dir, 'test'))
-        LOG.debug("Test directory is: %r", self.test_dir)
+        self.test_dir = self.base_dir.joinpath('test')
+        LOG.debug("Test directory is: {!r}".format(str(self.test_dir)))
 
     # -------------------------------------------------------------------------
     def tearDown(self):
 
         if self.root_dir:
-            if not os.path.exists(self.root_dir):
-                LOG.debug("Chroot directory %r seems not to be existing.", self.root_dir)
-            elif not os.path.isdir(self.root_dir):
-                LOG.error("Path %r exists, but is not a directory.", self.root_dir)
-            elif not os.access(self.root_dir, os.W_OK):
-                LOG.error("No write access to chroot directory %r for removing.", self.root_dir)
+            if not self.root_dir.exists():
+                LOG.debug("Chroot directory {!r} seems not to be existing.".format(str(self.root_dir)))
+            elif not self.root_dir.is_dir():
+                LOG.error("Path {!r} exists, but is not a directory.".format(str(self.root_dir)))
+            elif not os.access(str(self.root_dir), os.W_OK):
+                LOG.error("No write access to chroot directory {!r} for removing.".format(str(self.root_dir)))
             else:
-                LOG.debug("Removing chroot directory %r recursive.", self.root_dir)
-                shutil.rmtree(self.root_dir, ignore_errors=True)
+                LOG.debug("Removing chroot directory {!r} recursive.".format(str(self.root_dir)))
+                shutil.rmtree(str(self.root_dir), ignore_errors=True)
             self._root_dir = None
 
 # =============================================================================

@@ -26,9 +26,11 @@ locale.setlocale(locale.LC_ALL, '')
 libdir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'lib'))
 sys.path.insert(0, libdir)
 
+from fb_tools.common import pp
+
 from general import BaseTestCase, get_arg_verbose, init_root_logger
 
-log = logging.getLogger('test_common')
+LOG = logging.getLogger('test_common')
 
 # =============================================================================
 class TestCaseCommon(BaseTestCase):
@@ -40,138 +42,18 @@ class TestCaseCommon(BaseTestCase):
     # -------------------------------------------------------------------------
     def test_import(self):
 
-        log.info("Testing import of logrotate.common ...")
+        LOG.info("Testing import of logrotate.common ...")
         import logrotate.common                                         # noqa
-
-    # -------------------------------------------------------------------------
-    def test_to_unicode(self):
-
-        log.info("Testing to_unicode_or_bust() ...")
-
-        from logrotate.common import to_unicode_or_bust
-
-        data = []
-        data.append((None, None))
-        data.append((1, 1))
-
-        if six.PY2:
-            data.append((u'a', u'a'))
-            data.append(('a', u'a'))
-        else:
-            data.append(('a', 'a'))
-            data.append((b'a', 'a'))
-
-        for pair in data:
-
-            src = pair[0]
-            tgt = pair[1]
-            result = to_unicode_or_bust(src)
-            log.debug(
-                "Testing to_unicode_or_bust(%r) => %r, result %r",
-                src, tgt, result)
-
-            if six.PY2:
-                if isinstance(src, (str, unicode)):
-                    self.assertIsInstance(result, unicode)
-                else:
-                    self.assertNotIsInstance(result, (str, unicode))
-            else:
-                if isinstance(src, (str, bytes)):
-                    self.assertIsInstance(result, str)
-                else:
-                    self.assertNotIsInstance(result, (str, bytes))
-
-            self.assertEqual(tgt, result)
-
-    # -------------------------------------------------------------------------
-    def test_to_utf8(self):
-
-        log.info("Testing to_utf8_or_bust() ...")
-
-        from logrotate.common import to_utf8_or_bust
-
-        data = []
-        data.append((None, None))
-        data.append((1, 1))
-
-        if six.PY2:
-            data.append((u'a', 'a'))
-            data.append(('a', 'a'))
-        else:
-            data.append(('a', b'a'))
-            data.append((b'a', b'a'))
-
-        for pair in data:
-
-            src = pair[0]
-            tgt = pair[1]
-            result = to_utf8_or_bust(src)
-            log.debug(
-                "Testing to_utf8_or_bust(%r) => %r, result %r",
-                src, tgt, result)
-
-            if six.PY2:
-                if isinstance(src, (str, unicode)):
-                    self.assertIsInstance(result, str)
-                else:
-                    self.assertNotIsInstance(result, (str, unicode))
-            else:
-                if isinstance(src, (str, bytes)):
-                    self.assertIsInstance(result, bytes)
-                else:
-                    self.assertNotIsInstance(result, (str, bytes))
-
-            self.assertEqual(tgt, result)
-
-    # -------------------------------------------------------------------------
-    def test_to_str(self):
-
-        log.info("Testing to_str_or_bust() ...")
-
-        from logrotate.common import to_str_or_bust
-
-        data = []
-        data.append((None, None))
-        data.append((1, 1))
-
-        if six.PY2:
-            data.append((u'a', 'a'))
-            data.append(('a', 'a'))
-        else:
-            data.append(('a', 'a'))
-            data.append((b'a', 'a'))
-
-        for pair in data:
-
-            src = pair[0]
-            tgt = pair[1]
-            result = to_str_or_bust(src)
-            log.debug(
-                "Testing to_str_or_bust(%r) => %r, result %r",
-                src, tgt, result)
-
-            if six.PY2:
-                if isinstance(src, (str, unicode)):
-                    self.assertIsInstance(result, str)
-                else:
-                    self.assertNotIsInstance(result, (str, unicode))
-            else:
-                if isinstance(src, (str, bytes)):
-                    self.assertIsInstance(result, str)
-                else:
-                    self.assertNotIsInstance(result, (str, bytes))
-
-            self.assertEqual(tgt, result)
 
     # -------------------------------------------------------------------------
     def test_split_parts(self):
 
-        log.info("Testing split_parts() ...")
+        LOG.info("Testing split_parts() ...")
 
         from logrotate.common import split_parts
         from logrotate.common import UnbalancedQuotesError
 
-        log.debug("Testing simple splitting ...")
+        LOG.debug("Testing simple splitting ...")
         test_pairs = [
             ['', []],
             ['single_word', ['single_word']],
@@ -187,14 +69,14 @@ class TestCaseCommon(BaseTestCase):
             text = pair[0]
             expected = pair[1]
             if self.verbose > 1:
-                log.debug("Testing split_parts(%r) => %s", text, expected)
+                LOG.debug("Testing split_parts(%r) => %s", text, expected)
             result = split_parts(text)
             if self.verbose > 1:
-                log.debug("Got result: %s", result)
+                LOG.debug("Got result: %s", result)
             self.assertIsInstance(result, list)
             self.assertEqual(expected, result)
 
-        log.debug("Testing splitting with keeping quoting characters ...")
+        LOG.debug("Testing splitting with keeping quoting characters ...")
         test_pairs = [
             ['Hello "bla" \'blub\'', ['Hello', '"bla"', "'blub'"]],
             ['"bla\'s blub" cries \'He says "Hello!"\'', ['"bla\'s blub"', 'cries', '\'He says "Hello!"\'']],
@@ -204,36 +86,36 @@ class TestCaseCommon(BaseTestCase):
             text = pair[0]
             expected = pair[1]
             if self.verbose > 1:
-                log.debug("Testing split_parts(%r) => %s", text, expected)
+                LOG.debug("Testing split_parts(%r) => %s", text, expected)
             result = split_parts(text, keep_quotes=True)
             if self.verbose > 1:
-                log.debug("Got result: %s", result)
+                LOG.debug("Got result: %s", result)
             self.assertIsInstance(result, list)
             self.assertEqual(expected, result)
 
-        log.debug("Testing unbalanced quoting ...")
+        LOG.debug("Testing unbalanced quoting ...")
         text = "Hey bro's!"
         expected = ['Hey', "bro's!"]
 
         if self.verbose > 1:
-            log.debug("Testing split_parts(%r) => %s", text, expected)
+            LOG.debug("Testing split_parts(%r) => %s", text, expected)
         result = split_parts(text, raise_on_unbalanced=False)
         if self.verbose > 1:
-            log.debug("Got result: %s", result)
+            LOG.debug("Got result: %s", result)
         self.assertIsInstance(result, list)
         self.assertEqual(expected, result)
 
         if self.verbose > 1:
-            log.debug("Testing raising an exception on unbalanced quotings by %r", text)
+            LOG.debug("Testing raising an exception on unbalanced quotings by %r", text)
         with self.assertRaises(UnbalancedQuotesError) as cm:
             result = split_parts(text)
         e = cm.exception
-        log.debug("%s raised: %s", e.__class__.__name__, e)
+        LOG.debug("%s raised: %s", e.__class__.__name__, e)
 
     # -------------------------------------------------------------------------
     def test_email_valid(self):
 
-        log.info("Testing email_valid() ...")
+        LOG.info("Testing email_valid() ...")
 
         from logrotate.common import email_valid
 
@@ -253,28 +135,36 @@ class TestCaseCommon(BaseTestCase):
             address = pair[0]
             expected = pair[1]
             if self.verbose > 1:
-                log.debug("Testing email_valid(%r) => %s", address, expected)
+                LOG.debug("Testing email_valid(%r) => %s", address, expected)
             result = email_valid(address)
             if self.verbose > 1:
-                log.debug("Got result: %s", result)
+                LOG.debug("Got result: %s", result)
             self.assertIsInstance(result, bool)
             self.assertEqual(expected, result)
 
     # -------------------------------------------------------------------------
     def test_human2bytes(self):
 
-        log.info("Testing human2bytes() from logrotate.common ...")
+        LOG.info("Testing human2bytes() from logrotate.common ...")
 
         from logrotate.common import human2bytes
 
         loc = locale.getlocale()    # get current locale
         encoding = loc[1]
-        log.debug("Current locale is %r.", loc)
+        LOG.debug("Current locale is {!r}r.".format(loc))
         german = ('de_DE', encoding)                                # noqa
 
-        log.debug("Setting to locale 'C' to be secure.")
-        locale.setlocale(locale.LC_ALL, 'C')
-        log.debug("Current locale is now %r.", locale.getlocale())
+        do_switch_locales = True
+        try:
+            locale.setlocale(locale.LC_ALL, german)
+        except Exception as e:
+            LOG.warning("Got a {c}: {e}".format(c=e.__class__.__name__, e=e))
+            do_switch_locales = False
+
+        if do_switch_locales:
+            LOG.debug("Setting to locale 'C' to be secure.")
+            locale.setlocale(locale.LC_ALL, 'C')
+            LOG.debug("Current locale is now %r.", locale.getlocale())
 
         test_pairs_int_si = (
             ('1048576', 1024 ** 2),
@@ -315,10 +205,10 @@ class TestCaseCommon(BaseTestCase):
             src = pair[0]
             expected = pair[1]
             if self.verbose > 1:
-                log.debug("Testing human2bytes(%r) => %d", src, expected)
+                LOG.debug("Testing human2bytes(%r) => %d", src, expected)
             result = human2bytes(src, si_conform=True, verbose=self.verbose)
             if self.verbose > 1:
-                log.debug("Got result: %r", result)
+                LOG.debug("Got result: %r", result)
             if six.PY2:
                 self.assertIsInstance(result, long)
             else:
@@ -326,22 +216,29 @@ class TestCaseCommon(BaseTestCase):
             self.assertEqual(expected, result)
 
         # Switch back to saved locales
-        log.debug("Switching back to saved locales %r.", loc)
-        locale.setlocale(locale.LC_ALL, loc)    # restore saved locale
+        if do_switch_locales:
+            LOG.debug("Switching back to saved locales %r.", loc)
+            locale.setlocale(locale.LC_ALL, loc)    # restore saved locale
 
     # -------------------------------------------------------------------------
     def test_human2bytes_l10n(self):
 
-        log.info("Testing localisation of human2bytes() from logrotate.common ...")
+        LOG.info("Testing localisation of human2bytes() from logrotate.common ...")
 
         loc = locale.getlocale()    # get current locale
         encoding = loc[1]
-        log.debug("Current locale is %r.", loc)
+        LOG.debug("Current locale is %r.", loc)
         german = ('de_DE', encoding)
 
-        log.debug("Setting to locale 'C' to be secure.")
+        try:
+            locale.setlocale(locale.LC_ALL, german)
+        except Exception as e:
+            LOG.warning("Got a {c}: {e}".format(c=e.__class__.__name__, e=e))
+            return True
+
+        LOG.debug("Setting to locale 'C' to be secure.")
         locale.setlocale(locale.LC_ALL, 'C')
-        log.debug("Current locale is now %r.", locale.getlocale())
+        LOG.debug("Current locale is now %r.", locale.getlocale())
 
         from logrotate.common import human2bytes
 
@@ -357,59 +254,59 @@ class TestCaseCommon(BaseTestCase):
             ('1.055,4 GiB', int(10554 * (1024 ** 3) / 10)),
         )
 
-        log.debug("Testing english decimal radix character %r.", '.')
+        LOG.debug("Testing english decimal radix character %r.", '.')
         for pair in pairs_en:
             src = pair[0]
             expected = pair[1]
             if self.verbose > 1:
-                log.debug("Testing localisation of human2bytes(%r) => %d", src, expected)
+                LOG.debug("Testing localisation of human2bytes(%r) => %d", src, expected)
             result = human2bytes(src, si_conform=True, use_locale_radix=True, verbose=self.verbose)
             if self.verbose > 1:
-                log.debug("Got result: %r", result)
+                LOG.debug("Got result: %r", result)
             self.assertIsInstance(result, int)
             self.assertEqual(expected, result)
 
         # Switch to german locales
-        log.debug("Switching to german locale %r.", german)
+        LOG.debug("Switching to german locale %r.", german)
         # use German locale; name might vary with platform
         locale.setlocale(locale.LC_ALL, german)
-        log.debug("Current locale is now %r.", locale.getlocale())
+        LOG.debug("Current locale is now %r.", locale.getlocale())
 
-        log.debug("Testing german decimal radix character %r.", ',')
+        LOG.debug("Testing german decimal radix character %r.", ',')
         for pair in pairs_de:
             src = pair[0]
             expected = pair[1]
             if self.verbose > 1:
-                log.debug("Testing localisation of human2bytes(%r) => %d", src, expected)
+                LOG.debug("Testing localisation of human2bytes(%r) => %d", src, expected)
             result = human2bytes(src, si_conform=True, use_locale_radix=True, verbose=self.verbose)
             if self.verbose > 1:
-                log.debug("Got result: %r", result)
+                LOG.debug("Got result: %r", result)
             self.assertIsInstance(result, int)
             self.assertEqual(expected, result)
 
         # Switch back to english locales
         locale.setlocale(locale.LC_ALL, 'C')    # restore saved locale
 
-        log.debug("Testing english decimal radix character %r again.", '.')
+        LOG.debug("Testing english decimal radix character %r again.", '.')
         for pair in pairs_en:
             src = pair[0]
             expected = pair[1]
             if self.verbose > 1:
-                log.debug("Testing localisation of human2bytes(%r) => %d", src, expected)
+                LOG.debug("Testing localisation of human2bytes(%r) => %d", src, expected)
             result = human2bytes(src, si_conform=True, use_locale_radix=True, verbose=self.verbose)
             if self.verbose > 1:
-                log.debug("Got result: %r", result)
+                LOG.debug("Got result: %r", result)
             self.assertIsInstance(result, int)
             self.assertEqual(expected, result)
 
         # Switch back to saved locales
-        log.debug("Switching back to saved locales %r.", loc)
+        LOG.debug("Switching back to saved locales %r.", loc)
         locale.setlocale(locale.LC_ALL, loc)    # restore saved locale
 
     # -------------------------------------------------------------------------
     def test_period2days(self):
 
-        log.info("Testing period2days() from logrotate.common ...")
+        LOG.info("Testing period2days() from logrotate.common ...")
 
         from logrotate.common import period2days
 
@@ -436,19 +333,19 @@ class TestCaseCommon(BaseTestCase):
             text = pair[0]
             expected = pair[1]
             if self.verbose > 1:
-                log.debug("Testing period2days(%r) => %r", text, expected)
+                LOG.debug("Testing period2days(%r) => %r", text, expected)
             result = period2days(text, verbose=self.verbose)
             if self.verbose > 1:
-                log.debug("Got result: %r", result)
+                LOG.debug("Got result: %r", result)
             self.assertIsInstance(result, float)
             self.assertEqual(expected, result)
 
     # -------------------------------------------------------------------------
     def test_get_address_list(self):
 
-        log.info("Testing get_address_list() from logrotate.common ...")
+        LOG.info("Testing get_address_list() from logrotate.common ...")
 
-        from logrotate.common import get_address_list, pp
+        from logrotate.common import get_address_list
 
         test_pairs = (
             ('', []),
@@ -466,91 +363,11 @@ class TestCaseCommon(BaseTestCase):
             text = pair[0]
             expected = pair[1]
             if self.verbose > 1:
-                log.debug("Testing get_address_list(%r) => %r", text, expected)
+                LOG.debug("Testing get_address_list(%r) => %r", text, expected)
             result = get_address_list(text, verbose=self.verbose)
             if self.verbose > 1:
-                log.debug("Got result: %r", pp(result))
+                LOG.debug("Got result: %r", pp(result))
             self.assertIsInstance(result, list)
-            self.assertEqual(expected, result)
-
-    # -------------------------------------------------------------------------
-    def test_to_bool(self):
-
-        log.info("Testing to_bool() from logrotate.common ...")
-
-        from logrotate.common import to_bool
-
-        class TestClass(object):
-            pass
-        test_object = TestClass()
-
-        class TestClassTrue(object):
-            if six.PY3:
-                def __bool__(self):
-                    return True
-            else:
-                def __nonzero__(self):
-                    return True
-        test_object_true = TestClassTrue()
-
-        class TestClassFalse(object):
-            if six.PY3:
-                def __bool__(self):
-                    return False
-            else:
-                def __nonzero__(self):
-                    return False
-        test_object_false = TestClassFalse()
-
-        class TestClassFilled(object):
-            def __len__(self):
-                return 1
-        test_object_filled = TestClassFilled()
-
-        class TestClassEmpty(object):
-            def __len__(self):
-                return 0
-        test_object_empty = TestClassEmpty()
-
-        test_pairs = (
-            (None, False),
-            (True, True),
-            (False, False),
-            (0, False),
-            (0.0, False),
-            (1, True),
-            (1.0, True),
-            (-1, True),
-            ('', False),
-            ('yes', True),
-            ('YES', True),
-            ('Yes', True),
-            ('y', True),
-            ('no', False),
-            ('NO', False),
-            ('No', False),
-            ('n', False),
-            ('true', True),
-            ('False', False),
-            ('On', True),
-            ('Off', False),
-            (test_object, True),
-            (test_object_true, True),
-            (test_object_false, False),
-            (test_object_filled, True),
-            (test_object_empty, False),
-        )
-
-        for pair in test_pairs:
-
-            src = pair[0]
-            expected = pair[1]
-            if self.verbose > 1:
-                log.debug("Testing to_bool(%r) => %r", src, expected)
-            result = to_bool(src)
-            if self.verbose > 1:
-                log.debug("Got result: %r", result)
-            self.assertIsInstance(result, bool)
             self.assertEqual(expected, result)
 
 
@@ -563,21 +380,17 @@ if __name__ == '__main__':
         verbose = 0
     init_root_logger(verbose)
 
-    log.info("Starting tests ...")
+    LOG.info("Starting tests ...")
 
     suite = unittest.TestSuite()
 
     suite.addTest(TestCaseCommon('test_import', verbose))
-    suite.addTest(TestCaseCommon('test_to_unicode', verbose))
-    suite.addTest(TestCaseCommon('test_to_utf8', verbose))
-    suite.addTest(TestCaseCommon('test_to_str', verbose))
     suite.addTest(TestCaseCommon('test_split_parts', verbose))
     suite.addTest(TestCaseCommon('test_email_valid', verbose))
     suite.addTest(TestCaseCommon('test_human2bytes', verbose))
     suite.addTest(TestCaseCommon('test_human2bytes_l10n', verbose))
     suite.addTest(TestCaseCommon('test_period2days', verbose))
     suite.addTest(TestCaseCommon('test_get_address_list', verbose))
-    suite.addTest(TestCaseCommon('test_to_bool', verbose))
 
     runner = unittest.TextTestRunner(verbosity=verbose)
 
