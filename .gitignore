@@ -10,4 +10,7 @@
 /dist
 local_version.py
 /.tox
+tmp/*
+log/*
+venv*/*
 
