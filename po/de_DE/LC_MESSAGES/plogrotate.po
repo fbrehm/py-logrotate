@@ -1,17 +1,18 @@
-# Translations template for plogrotate.
+# German translations for plogrotate.
 # Copyright (C) 2019 Frank Brehm, Berlin
 # This file is distributed under the same license as the plogrotate project.
 # Frank Brehm <frank.brehm@pixelpark.com>, 2019.
 #
-#, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: plogrotate VERSION\n"
-"Report-Msgid-Bugs-To: frank.brehm@pixelpark.com\n"
+"Project-Id-Version: plogrotate 0.8.0\n"
+"Report-Msgid-Bugs-To: frank.brehm@profitbricks.com\n"
 "POT-Creation-Date: 2019-03-25 18:10+0100\n"
-"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
-"Last-Translator: FULL NAME <frank.brehm@pixelpark.com>\n"
-"Language-Team: LANGUAGE <LL@li.org>\n"
+"PO-Revision-Date: 2019-03-25 17:40+0100\n"
+"Last-Translator: Frank Brehm <frank@brehm-online.com>\n"
+"Language: de\n"
+"Language-Team: de <LL@li.org>\n"
+"Plural-Forms: nplurals=2; plural=(n != 1)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -19,137 +20,137 @@ msgstr ""
 
 #: lib/logrotate/common.py:81
 msgid "Unbalanced quotes in {!r}."
-msgstr ""
+msgstr "Nicht ausbalancierte Anführungszeichen in {!r}."
 
 #: lib/logrotate/common.py:83
 msgid "Unbalanced quote {what!r} in {where!r}."
-msgstr ""
+msgstr "Nicht ausbalancierte Anführungszeichen {what!r} in {where!r}."
 
 #: lib/logrotate/common.py:173
 msgid "Broken split of {chunk!r}: {left!r} left."
-msgstr ""
+msgstr "Kaputte Auftrennung von {chunk!r}: {left!r} blieb übrig."
 
 #: lib/logrotate/common.py:237
 msgid "Given value is None."
-msgstr ""
+msgstr "Der übergebene Wert ist None."
 
 #: lib/logrotate/common.py:248
 msgid "Using radix {radix!r}, thousend separator {sep!r}"
-msgstr ""
+msgstr "Verwendeter Dezimal-Separator {radix!r}, Tausender-Separator {sep!r}"
 
 #: lib/logrotate/common.py:258
 msgid "Value without thousend separators: {!r}."
-msgstr ""
+msgstr "Wert ohne Tausender-Separator: {!r}."
 
 #: lib/logrotate/common.py:266
 msgid "Could not determine bytes in {!r}."
-msgstr ""
+msgstr "Konnte Bytes in {!r} nicht ermitteln"
 
 #: lib/logrotate/common.py:327
 msgid "Couldn't detect suffix {!r}."
-msgstr ""
+msgstr "Konnte Suffix in {!r} nicht ermitteln."
 
 #: lib/logrotate/common.py:331
 msgid "Found factor {}."
-msgstr ""
+msgstr "Faktor {} gefunden."
 
 #: lib/logrotate/common.py:374
 msgid "Given period is None."
-msgstr ""
+msgstr "Die übergebene Periode ist None."
 
 #: lib/logrotate/common.py:378
 msgid "Given period was empty."
-msgstr ""
+msgstr "Die übergebene Periode war leer."
 
 #: lib/logrotate/common.py:381
 msgid "Called with {!r}."
-msgstr ""
+msgstr "Aufgerufen mit {!r}."
 
 #: lib/logrotate/common.py:396
 msgid "Using radix {!r} ..."
-msgstr ""
+msgstr "Verwende Dezimal-Separator {!r} …"
 
 #: lib/logrotate/common.py:401
 #, python-format
 msgid "Pattern %r."
-msgstr ""
+msgstr "Muster %r."
 
 #: lib/logrotate/common.py:410
 msgid "Found {:.2f} hours."
-msgstr ""
+msgstr "Fand {:.2f} Stunden."
 
 #: lib/logrotate/common.py:413
 msgid "Rest after hours: {!r}."
-msgstr ""
+msgstr "Rest nach Stundenermittlung: {!r}."
 
 #: lib/logrotate/common.py:418 lib/logrotate/common.py:435 lib/logrotate/common.py:452
 #: lib/logrotate/common.py:470
 msgid "Pattern {!r}."
-msgstr ""
+msgstr "Muster {!r}."
 
 #: lib/logrotate/common.py:427
 msgid "Found {:f} weeks."
-msgstr ""
+msgstr "Fand {:f} Wochen."
 
 #: lib/logrotate/common.py:430
 msgid "Rest after weeks: {!r}."
-msgstr ""
+msgstr "Rest nach Wochenermittlung: {!r}."
 
 #: lib/logrotate/common.py:444
 msgid "Found {:f} months."
-msgstr ""
+msgstr "Fand {:f} Monate."
 
 #: lib/logrotate/common.py:447
 msgid "Rest after months: {!r}."
-msgstr ""
+msgstr "Rest nach Monatzsermittlung: {!r}."
 
 #: lib/logrotate/common.py:461
 msgid "Found {:f} years."
-msgstr ""
+msgstr "Fand {:f} Jahre."
 
 #: lib/logrotate/common.py:464
 #, python-format
 msgid "Rest after years: %r."
-msgstr ""
+msgstr "Rest nach den Jahresermittlung: %r."
 
 #: lib/logrotate/common.py:465
 msgid "Rest after years: {!r}."
-msgstr ""
+msgstr "Rest nach den Jahresermittlung: {!r}."
 
 #: lib/logrotate/common.py:479
 #, python-format
 msgid "Found %f days."
-msgstr ""
+msgstr "%f Tage gefunden."
 
 #: lib/logrotate/common.py:480
 msgid "Found {:f} days."
-msgstr ""
+msgstr "{:f} Tage gefunden."
 
 #: lib/logrotate/common.py:483
 msgid "Rest after days: {!r}."
-msgstr ""
+msgstr "Rest nach Ermittlung der Tage: {!r}."
 
 #: lib/logrotate/common.py:487
 msgid "Invalid content for a period: {!r}."
-msgstr ""
+msgstr "Ungültiger Inhalt für eine Periode: {!r}."
 
 #: lib/logrotate/common.py:490
 msgid "Total {!r} days found."
-msgstr ""
+msgstr "Insgesamt {!r} Tage gefunden."
 
 #: lib/logrotate/common.py:524
 msgid "Found address entry:"
 msgid_plural "Found address entries:"
-msgstr[0] ""
-msgstr[1] ""
+msgstr[0] "Gefundener Adresseintrag:"
+msgstr[1] "Gefundene Adresseinträge:"
 
 #: lib/logrotate/common.py:532
 msgid "Got mail address pair:"
-msgstr ""
+msgstr "Mailadress-Paar bekommen:"
 
 #: lib/logrotate/common.py:534
 msgid "Found invalid mail address {!r}."
-msgstr ""
+msgstr "Ungültige Mailadresse {!r} gefunden."
 
 #: lib/logrotate/config_reader.py:313
 msgid "Logrotate config reader initialised."
@@ -709,86 +710,86 @@ msgstr ""
 
 #: lib/logrotate/filegroup.py:95
 msgid "Invalid rotation method {!r} given."
-msgstr ""
+msgstr "Ungültige Rotationsmethode {!r} angegeben."
 
 #: lib/logrotate/filegroup.py:154
 #, python-format
 msgid "Invalid type %(t)r of parameter %(p)s: %(c)r."
-msgstr ""
+msgstr "Ungültiger Typ %(t)r des Parameters %(p)s: %(c)r."
 
 #: lib/logrotate/filegroup.py:232
 #, python-format
 msgid "Invalid internal compressor %r given."
-msgstr ""
+msgstr "Ungültiger interner Kopressor %r übergeben."
 
 #: lib/logrotate/filegroup.py:415
 #, python-format
 msgid "Call of index() with a wrong number (%d) of arguments."
-msgstr ""
+msgstr "Aufruf von index() mit einer ungültigen Anzahl (%d) von Argumenten."
 
 #: lib/logrotate/filegroup.py:441
 #, python-format
 msgid "File %r not found in file list."
-msgstr ""
+msgstr "Datei %r nicht in Dateiliste gefunden."
 
 #: lib/logrotate/filegroup.py:475
 #, python-format
 msgid "Invalid file globbing pattern %r."
-msgstr ""
+msgstr "Ungültiges Datei-Globbing-Muster %r."
 
 #: lib/logrotate/filegroup.py:481
 #, python-format
 msgid "Pattern %r is already a member of the file globbing pattern list."
-msgstr ""
+msgstr "Das Muster %r ist bereits Mitlied der Datei-Globbing-Musterliste."
 
 #: lib/logrotate/filegroup.py:494
 #, python-format
 msgid "Invalid taboo pattern %r given."
-msgstr ""
+msgstr "Ungültiges Tabu-Muster %r gegeben."
 
 #: lib/logrotate/filegroup.py:499
 #, python-format
 msgid "Invalid taboo pattern type %r given."
-msgstr ""
+msgstr "Ungültiger Typ %r für ein Tabu-Muster gegeben."
 
 #: lib/logrotate/filegroup.py:507
 #, python-format
 msgid "Got a %(c)s error on adding taboo pattern %(p)r: %(e)s."
-msgstr ""
+msgstr "Bekam einen %(c)s-Fehler beim Hizufügen des Tabumusters %(p)r: %(e)s."
 
 #: lib/logrotate/filegroup.py:514
 #, python-format
 msgid "Taboo pattern %r already exists in the list of taboo patterns."
-msgstr ""
+msgstr "Das Tabu-Muster %r existiert bereits in der Liste der Tabu-Muster."
 
 #: lib/logrotate/filegroup.py:528
 msgid "Initializing the list of taboo patterns with some default values."
-msgstr ""
+msgstr "Initialisiere die Liste der Tabu-Muster mit einigen Vorgabe-Werten."
 
 #: lib/logrotate/script.py:106
 #, python-format
 msgid "Invalid type %(t)r of parameter %(p)s %(c)r."
-msgstr ""
+msgstr "Ungültiger Typ %(t)r des Parameters %(p)s %(c)r."
 
 #: lib/logrotate/script.py:130
 #, python-format
 msgid "Invalid value for property %r given."
-msgstr ""
+msgstr "Ungültiger Wert für Property %r gegeben."
 
 #: lib/logrotate/script.py:144
 #, python-format
 msgid "Invalid value for property '%s' given."
-msgstr ""
+msgstr "Ungültiger Wert für Property '%s' gegeben."
 
 #: lib/logrotate/script.py:216
 #, python-format
 msgid "Logrotate script object '%s' will destroyed."
-msgstr ""
+msgstr "Das Logrotate-Scriptobjekt '%s' wird zerstört."
 
 #: lib/logrotate/script.py:371
 #, python-format
 msgid "No command to execute defined in script %r."
-msgstr ""
+msgstr "Kein Kommando zur Ausführung in Skript %r definiert."
 
 #: lib/logrotate/script.py:377
 #, python-format
@@ -796,34 +797,36 @@ msgid ""
 "Executing script %(name)r with command:\n"
 "%(cmd)s"
 msgstr ""
+"Führe Skript %(name)r mit den Kommandos aus:\n"
+"%(cmd)s"
 
 #: lib/logrotate/script.py:389
 msgid "Completed process:"
-msgstr ""
+msgstr "Fertiggestellter Prozess:"
 
 #: lib/logrotate/script.py:391
 #, python-format
 msgid "Got returncode for script %(name)r: %(retcode)r"
-msgstr ""
+msgstr "Erhaltener Wiedergabewert für Skript %(name)r: %(retcode)r"
 
 #: lib/logrotate/script.py:399
 #, python-format
 msgid "Execution of script %(name)r failed: %(error)s"
-msgstr ""
+msgstr "Die Ausführung des Skripts %(name)r is fehlgeschlagen: %(error)s"
 
 #: lib/logrotate/script.py:425
 #, python-format
 msgid "Checking, whether the script %r should be executed."
-msgstr ""
+msgstr "Überprüfe, ob das Skript %r ausgeführt werden sollte."
 
 #: lib/logrotate/status.py:165
 #, python-format
 msgid "Could not evaluate %r as a datetime object."
-msgstr ""
+msgstr "Konnte %r nicht als datetime-Objekt interpretieren."
 
 #: lib/logrotate/status.py:402
 msgid "Status file object will destroyed."
-msgstr ""
+msgstr "Das Statusdatei-Objekt wird zerstört."
 
 #: lib/logrotate/status.py:421
 #, python-format

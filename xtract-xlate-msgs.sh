@@ -3,28 +3,37 @@
 set -e
 set -u
 
+base_dir=$( dirname $0 )
+cd ${base_dir}
+
 output_dir="po"
-pot_file="${output_dir}/plogrotate.pot"
 domain='plogrotate'
-pkg_version="0.7.0"
+pot_file="${output_dir}/${domain}.pot"
+pkg_version="0.8.0"
+po_with=99
+my_address="${DEBEMAIL:-frank.brehm@pixelpark.com}"
 
-used_locales="de"
+used_locales="de_DE"
 
-cd $(dirname $0)
+pkg_version=$( cat lib/webhooks/__init__.py | \
+                    grep '^[ 	]*__version__' | \
+                    sed -e 's/[ 	]*//g' | \
+                    awk -F= '{print $2}' | \
+                    sed -e "s/^'//" -e "s/'\$//" )
 
-if [[ -f debian/changelog ]] ; then
-    pkg_version=$( head -n 1 debian/changelog | awk '{print $2}' | sed -e 's/[\(\)]//g' )
-fi
+mkdir -pv "${output_dir}"
 
-pybabel extract --keyword '_' --keyword '__' \
+pybabel extract bin/* lib \
         --output "${pot_file}" \
-        --width 99 \
+        -F babel.cfg \
+        --width ${po_with} \
         --sort-by-file \
-        --msgid-bugs-address=frank@brehm-online.com \
-        --copyright-holder "Frank Brehm" \
+        --msgid-bugs-address="${my_address}" \
+        --copyright-holder "Frank Brehm, Berlin" \
         --project "${domain}" \
-        --version "${pkg_version}" \
-        bin lib
+        --version "${pkg_version}"
+
+sed -i -e "s/FIRST AUTHOR/Frank Brehm/g" -e "s/<EMAIL@ADDRESS>/<${my_address}>/g" "${pot_file}"
 
 for l in ${used_locales} ; do
 
@@ -35,8 +44,10 @@ for l in ${used_locales} ; do
                 --input-file "${pot_file}" \
                 --output-dir "${output_dir}" \
                 --locale "${l}" \
-                --width 99 \
-                --ignore-obsolete --previous
+                --width ${po_with} \
+                --ignore-obsolete \
+                --update-header-comment \
+                --previous
 
     else
 
@@ -44,14 +55,9 @@ for l in ${used_locales} ; do
                 --input-file "${pot_file}" \
                 --output-dir "${output_dir}" \
                 --locale "${l}" \
-                --width 99
+                --width ${po_with}
 
     fi
-
-    pybabel compile --domain "${domain}" \
-            --directory "${output_dir}" \
-            --locale "${l}" \
-            --statistics --use-fuzzy
 
 done
 
