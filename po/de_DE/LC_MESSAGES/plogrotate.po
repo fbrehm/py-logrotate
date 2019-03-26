@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: plogrotate 0.8.0\n"
 "Report-Msgid-Bugs-To: frank.brehm@profitbricks.com\n"
-"POT-Creation-Date: 2019-03-26 10:11+0100\n"
-"PO-Revision-Date: 2019-03-26 10:15+0100\n"
+"POT-Creation-Date: 2019-03-26 11:15+0100\n"
+"PO-Revision-Date: 2019-03-26 11:10+0100\n"
 "Last-Translator: Frank Brehm <frank@brehm-online.com>\n"
 "Language: de\n"
 "Language-Team: de <LL@li.org>\n"
@@ -774,119 +774,115 @@ msgid "Checking, whether the script {!r} should be executed."
 msgstr "Überprüfe, ob das Skript {!r} ausgeführt werden sollte."
 
 #: lib/logrotate/status.py:165
-#, python-format
-msgid "Could not evaluate %r as a datetime object."
-msgstr "Konnte %r nicht als datetime-Objekt interpretieren."
+msgid "Could not evaluate {!r} as a datetime object."
+msgstr "Konnte {!r} nicht als datetime-Objekt interpretieren."
+
+#: lib/logrotate/status.py:344
+msgid "Auto reading on init ..."
+msgstr "Automatisches Einlesen bei Initialisierung …"
+
+#: lib/logrotate/status.py:348
+msgid "No auto reading on init ..."
+msgstr "Kein automatisches Einlesen bei Initialisierung …"
 
 #: lib/logrotate/status.py:402
 msgid "Status file object will destroyed."
 msgstr "Das Statusdatei-Objekt wird zerstört."
 
-#: lib/logrotate/status.py:421
-#, python-format
-msgid "Only %(e)s objects can be added to a %(f)s object."
-msgstr ""
+#: lib/logrotate/status.py:420
+msgid "Only {e} objects can be added to a {c} object (given {f} object)."
+msgstr "Nur {e}-Objekte können zu einem {c}-Objekt hinzugefügt werden (gegeben ein {f}-Objekt)."
 
 #: lib/logrotate/status.py:427
-#, python-format
-msgid "Filename %(f1)r in given %(o)s object does not match given filename %(f2)r."
+msgid "Filename {f1!r} in given {o} object does not match given filename {f2!r}."
 msgstr ""
+"Der Dateiname {f1!r} im gegebenen {o}-Objekt stimmt nicht mit dem gegebenen Dateinamen {f2!r} "
+"überein."
 
-#: lib/logrotate/status.py:483
-#, python-format
-msgid "Original permissions of %(fn)r: %(perm)04o"
-msgstr ""
+#: lib/logrotate/status.py:482
+msgid "Original permissions of {fn!r}: {perm::04o}"
+msgstr "Original-Zugriffsrechte auf {fn!r}: {perm::04o}"
 
-#: lib/logrotate/status.py:494 lib/logrotate/status.py:571
-#, python-format
-msgid "File %r does not exists."
-msgstr ""
+#: lib/logrotate/status.py:493 lib/logrotate/status.py:569
+msgid "File does not exists"
+msgstr "Die Datei existiert nicht"
 
-#: lib/logrotate/status.py:498
-#, python-format
-msgid "Path %r is not a regular file."
-msgstr ""
+#: lib/logrotate/status.py:497
+msgid "Path is not a regular file"
+msgstr "Der Pfad ist keine reguläre Datei"
 
-#: lib/logrotate/status.py:502
-#, python-format
-msgid "No read permissions for %r."
-msgstr ""
+#: lib/logrotate/status.py:501
+msgid "No read permissions"
+msgstr "Keine Leserechte"
 
-#: lib/logrotate/status.py:505
-#, python-format
-msgid "Trying to read %r ..."
-msgstr ""
+#: lib/logrotate/status.py:504
+msgid "Trying to read {!r} ..."
+msgstr "Versuche {!r} zu lesen …"
 
-#: lib/logrotate/status.py:513
-#, python-format
-msgid "Idendified version of status file: %d"
-msgstr ""
+#: lib/logrotate/status.py:512
+msgid "Idendified version of status file: {}"
+msgstr "Identifizierte Version der Status-Datei: {}"
 
-#: lib/logrotate/status.py:543
-#, python-format
-msgid "Simulating writing %r ..."
-msgstr ""
+#: lib/logrotate/status.py:520
+msgid "Could not evaluate line {file!r}:{lnr} {line!r}: {e}"
+msgstr "Konnte Zeile {file!r}:{lnr} {line!r} nicht auswerten: {e}"
 
-#: lib/logrotate/status.py:545 lib/logrotate/status.py:548 lib/logrotate/status.py:556
-#: lib/logrotate/status.py:561
-#, python-format
-msgid "Writing line %r."
-msgstr ""
+#: lib/logrotate/status.py:541
+msgid "Simulating writing {!r} ..."
+msgstr "Simuliere das Schreiben von {!r} …"
 
-#: lib/logrotate/status.py:552
-#, python-format
-msgid "Trying to write %r ..."
-msgstr ""
+#: lib/logrotate/status.py:543 lib/logrotate/status.py:546 lib/logrotate/status.py:554
+#: lib/logrotate/status.py:559
+msgid "Writing line {!r}."
+msgstr "Schreibe Zeile {!r}."
 
-#: lib/logrotate/status.py:577
-#, python-format
-msgid "Ensuring permissions of %r ..."
-msgstr ""
+#: lib/logrotate/status.py:550
+msgid "Trying to write {!r} ..."
+msgstr "Versuche {!r} zu schreiben …"
 
-#: lib/logrotate/status.py:581
-#, python-format
-msgid "Current permissions of %(fn)r: %(cur)04o, expected: %(exp)04o"
-msgstr ""
+#: lib/logrotate/status.py:575
+msgid "Ensuring permissions of {!r} ..."
+msgstr "Gewährleiste Zugriffsrechte auf {!r} …"
 
-#: lib/logrotate/status.py:626
-#, python-format
-msgid "Checking permissions of status file %r ..."
-msgstr ""
+#: lib/logrotate/status.py:578
+msgid "Current permissions of {fn!r}: {cur:04o}, expected: {exp:04o}."
+msgstr "Aktuelle Zugriffsrechte auf {fn!r}: {cur:04o}, erwartet: {exp:04o}."
 
-#: lib/logrotate/status.py:632
-#, python-format
-msgid "Access to status file %r is OK."
-msgstr ""
+#: lib/logrotate/status.py:582
+msgid "Setting permissions of {fn!r} to {perm:04o}."
+msgstr "Setze die Zugriffsrechte von {fn!r} auf {perm:04o}."
 
-#: lib/logrotate/status.py:636
-#, python-format
-msgid "No write access to status file %r."
-msgstr ""
+#: lib/logrotate/status.py:624
+msgid "Checking permissions of status file {!r} ..."
+msgstr "Überprüfe Zugriffsrechte auf Statusdatei {!r} …"
 
-#: lib/logrotate/status.py:644
-#, python-format
-msgid "Checking permissions of parent directory %r ..."
-msgstr ""
+#: lib/logrotate/status.py:630
+msgid "Access to status file {!r} is OK."
+msgstr "Der Zugriff auf {!r} in in Ordnung."
 
-#: lib/logrotate/status.py:649
-#, python-format
-msgid "Directory %r doesn't exists."
-msgstr ""
+#: lib/logrotate/status.py:634
+msgid "No write access to status file {!r}."
+msgstr "Kein Schreibzugriff auf Statusdatei {!r}."
 
-#: lib/logrotate/status.py:658
-#, python-format
-msgid "Parent directory %(dir)r of status file %(file)r is not a directory."
-msgstr ""
+#: lib/logrotate/status.py:642
+msgid "Checking permissions of parent directory {!r} ..."
+msgstr "Überprüfe Zugriffsrechte auf übergeordnetes Verzeichnis {!r} …"
 
-#: lib/logrotate/status.py:668
-#, python-format
-msgid "No write access to parent directory %(dir)r of status file %(file)r."
-msgstr ""
+#: lib/logrotate/status.py:647
+msgid "Directory {!r} doesn't exists."
+msgstr "Das Verzeichnis {!r} existiert nicht."
 
-#: lib/logrotate/status.py:676
-#, python-format
-msgid "Permissions to parent directory %r are OK."
-msgstr ""
+#: lib/logrotate/status.py:656
+msgid "Parent directory {d!r} of status file {f!r} is not a directory."
+msgstr "Das übergeordnetes Verzeichnis {d!r} der Statusdatei {f!r} is kein Verzeichnis."
+
+#: lib/logrotate/status.py:666
+msgid "No write access to parent directory {d!r} of status file {f!r}."
+msgstr "Kein Schreibzugriff aud das übergeordnetes Verzeichnis {d!r} der Statusdatei {f!r}."
+
+#: lib/logrotate/status.py:674
+msgid "Permissions to parent directory {!r} are OK."
+msgstr "Die Zugriffsrechte auf übergeordnetes Verzeichnis {!r} sind in Ordnung."
 
 #: lib/logrotate/translate.py:76
 msgid "Module directory: {!r}"

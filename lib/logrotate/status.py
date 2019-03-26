@@ -36,7 +36,7 @@ from .translate import XLATOR
 
 from .common import split_parts
 
-__version__ = '0.4.1'
+__version__ = '0.4.2'
 
 _ = XLATOR.gettext
 ngettext = XLATOR.ngettext
@@ -162,7 +162,7 @@ class StatusFileEntry(FbBaseObject):
                 year=int(match.group('year')), month=int(match.group('month')),
                 day=int(match.group('day')), tzinfo=UTC)
 
-        msg = _("Could not evaluate %r as a datetime object.") % (value)
+        msg = _("Could not evaluate {!r} as a datetime object.").format(value)
         raise StatusEntryValueError(msg)
 
     # -------------------------------------------------------------------------
@@ -341,11 +341,11 @@ class StatusFile(FbBaseObject, collections.MutableMapping):
 
         if auto_read and os.path.exists(self.filename):
             if self.verbose > 2:
-                LOG.debug("Auto reading on init ...")
+                LOG.debug(_("Auto reading on init ..."))
             self.read()
         else:
             if self.verbose > 2:
-                LOG.debug("No auto reading on init ...")
+                LOG.debug(_("No auto reading on init ..."))
 
     # -----------------------------------------------------------
     @property
@@ -417,18 +417,17 @@ class StatusFile(FbBaseObject, collections.MutableMapping):
     def __setitem__(self, filename, entry):
 
         if not isinstance(entry, StatusFileEntry):
-            raise ValueError(
-                _('Only %(e)s objects can be added to a %(f)s object.') % {
-                    'e': 'StatusFileEntry', 'f': self.__class__.__name__})
+            msg = _("Only {e} objects can be added to a {c} object (given {f} object).").format(
+                e='StatusFileEntry', c=self.__class__.__name__, f=entry.__class__.__name__)
+            raise ValueError(msg)
 
         fpath = Path(filename)
 
         if fpath != entry.filename:
             msg = _(
-                "Filename %(f1)r in given %(o)s object "
-                "does not match given filename %(f2)r.") % {
-                'f1': entry.filename, 'o': entry.__class__.__name__,
-                'f2': fpath}
+                "Filename {f1!r} in given {o} object "
+                "does not match given filename {f2!r}.").format(
+                f1=str(entry.filename), o=entry.__class__.__name__, f2=str(fpath))
             raise ValueError(msg)
 
         found = False
@@ -480,8 +479,8 @@ class StatusFile(FbBaseObject, collections.MutableMapping):
         orig_mode = self.filename.stat().st_mode
         orig_perms = stat.S_IMODE(orig_mode)
         LOG.debug(
-            _("Original permissions of %(fn)r: %(perm)04o") % {
-                'fn': str(self.filename), 'perm': orig_perms})
+            _("Original permissions of {fn!r}: {perm::04o}").format(
+                fn=str(self.filename), perm=orig_perms))
         self.permissions = orig_perms
 
     # -----------------------------------------------------------------------
@@ -491,18 +490,18 @@ class StatusFile(FbBaseObject, collections.MutableMapping):
         self._entries = list()
 
         if not self.filename.exists():
-            msg = _("File %r does not exists.") % (str(self.filename))
+            msg = _("File does not exists")
             raise IOError(errno.ENOENT, msg, str(self.filename))
 
         if not self.filename.is_file():
-            msg = _("Path %r is not a regular file.") % (str(self.filename))
+            msg = _("Path is not a regular file")
             raise IOError(errno.ENOENT, msg, str(self.filename))
 
         if not os.access(str(self.filename), os.R_OK):
-            msg = _("No read permissions for %r.") % (str(self.filename))
-            raise IOError(errno.ENOENT, msg, str(self.filename))
+            msg = _("No read permissions")
+            raise IOError(errno.EACCES, msg, str(self.filename))
 
-        LOG.debug(_("Trying to read %r ..."), str(self.filename))
+        LOG.debug(_("Trying to read {!r} ...").format(str(self.filename)))
         with self.filename.open('r', **self.open_args) as fh:
             i = 0
             for line in fh.readlines():
@@ -510,8 +509,7 @@ class StatusFile(FbBaseObject, collections.MutableMapping):
                 match = self.re_first_line.search(line)
                 if match:
                     LOG.debug(
-                        _("Idendified version of status file: %d"),
-                        int(match.group(1)))
+                        _("Idendified version of status file: {}").format(int(match.group(1))))
                     continue
                 try:
                     entry = StatusFileEntry.from_line(
@@ -519,9 +517,9 @@ class StatusFile(FbBaseObject, collections.MutableMapping):
                         base_dir=self.base_dir)
                     self._entries.append(entry)
                 except ValueError as e:
-                    LOG.error(
-                        "Could not evaluate line %(file)r:%(lnr)d %(line)r: %(err)s" % {
-                            'file': self.filename, 'lnr': i, 'line': line, 'err': e})
+                    LOG.error(_(
+                        "Could not evaluate line {file!r}:{lnr} {line!r}: {e}").format(
+                            file=str(self.filename), lnr=i, line=line, e=e))
                     continue
 
         self.get_permissions()
@@ -540,25 +538,25 @@ class StatusFile(FbBaseObject, collections.MutableMapping):
         first_line = 'Logrotate State -- Version 3'
 
         if self.simulate:
-            LOG.info(_("Simulating writing %r ..."), str(self.filename))
+            LOG.info(_("Simulating writing {!r} ...").format(str(self.filename)))
             if self.verbose > 2:
-                LOG.debug(_("Writing line %r."), first_line)
+                LOG.debug(_("Writing line {!r}.").format(first_line))
                 for entry in sorted(self._entries):
                     line = entry.get_line(max_len_filename)
-                    LOG.debug(_("Writing line %r."), line)
+                    LOG.debug(_("Writing line {!r}.").format(line))
             self._has_changed = False
             return
 
-        LOG.info(_("Trying to write %r ..."), str(self.filename))
+        LOG.info(_("Trying to write {!r} ...").format(str(self.filename)))
 
         with self.filename.open('w', 1, **self.open_args) as fh:
             if self.verbose > 2:
-                LOG.debug(_("Writing line %r."), first_line)
+                LOG.debug(_("Writing line {!r}.").format(first_line))
             fh.write('%s\n' % (first_line))
             for entry in sorted(self._entries):
                 line = entry.get_line(max_len_filename)
                 if self.verbose > 2:
-                    LOG.debug(_("Writing line %r."), line)
+                    LOG.debug(_("Writing line {!r}.").format(line))
                 fh.write('%s\n' % (line))
 
         self.ensure_permissions()
@@ -568,22 +566,22 @@ class StatusFile(FbBaseObject, collections.MutableMapping):
     def ensure_permissions(self, permissions=None):
 
         if not self.filename.exists():
-            msg = _("File %r does not exists.") % (str(self.filename))
-            raise IOError(errno.ENOENT, msg, self.filename)
+            msg = _("File does not exists")
+            raise IOError(errno.ENOENT, msg, str(self.filename))
 
         if permissions is None:
             permissions = self.permissions
 
-        LOG.debug(_("Ensuring permissions of %r ..."), str(self.filename))
+        LOG.debug(_("Ensuring permissions of {!r} ...").format(str(self.filename)))
         operms = self.filename.stat().st_mode
         operms = stat.S_IMODE(operms)
-        LOG.debug(
-            _("Current permissions of %(fn)r: %(cur)04o, expected: %(exp)04o") % {
-            'fn': str(self.filename), 'cur': operms, 'exp': permissions})
+        LOG.debug(_(
+            "Current permissions of {fn!r}: {cur:04o}, expected: {exp:04o}.").format(
+                fn=str(self.filename), cur=operms, exp=permissions))
         if operms != permissions:
-            LOG.info(
-                "Setting permissions of %(fn)r to %(perm)04o." % {
-                'fn': str(self.filename), 'perm': permissions})
+            LOG.info(_(
+                "Setting permissions of {fn!r} to {perm:04o}.").format(
+                fn=str(self.filename), perm=permissions))
             if not self.simulate:
                 os.chmod(self.filename, permissions)
 
@@ -623,30 +621,30 @@ class StatusFile(FbBaseObject, collections.MutableMapping):
         @rtype: bool
         '''
 
-        msg = _("Checking permissions of status file %r ...") % (self.filename)
+        msg = _("Checking permissions of status file {!r} ...").format(str(self.filename))
         LOG.debug(msg)
 
-        if os.path.exists(self.filename):
+        if self.filename.exists():
             # Check for write access to the status file
-            if os.access(self.filename, os.W_OK):
-                msg = _("Access to status file %r is OK.") % (self.filename)
+            if os.access(str(self.filename), os.W_OK):
+                msg = _("Access to status file {!r} is OK.").format(str(self.filename))
                 LOG.debug(msg)
                 return True
             else:
-                msg = _("No write access to status file %r.") % (self.filename)
+                msg = _("No write access to status file {!r}.").format(str(self.filename))
                 if self.simulate:
                     LOG.error(msg)
                 else:
                     raise LogrotateStatusFileError(msg)
                 return False
 
-        parent_dir = os.path.dirname(self.filename)
-        msg = _("Checking permissions of parent directory %r ...") % (parent_dir)
+        parent_dir = self.filename.parent
+        msg = _("Checking permissions of parent directory {!r} ...").format(str(parent_dir))
         LOG.debug(msg)
 
         # Check for existence of parent dir
-        if not os.path.exists(parent_dir):
-            msg = _("Directory %r doesn't exists.") % (parent_dir)
+        if not parent_dir.exists():
+            msg = _("Directory {!r} doesn't exists.").format(str(parent_dir))
             if self.simulate:
                 LOG.error(msg)
             else:
@@ -654,9 +652,9 @@ class StatusFile(FbBaseObject, collections.MutableMapping):
             return False
 
         # Check whether parent dir is a directory
-        if not os.path.isdir(parent_dir):
-            msg = _("Parent directory %(dir)r of status file %(file)r is not a directory.") % {
-                'dir': parent_dir, 'file': self.filename}
+        if not parent_dir.is_dir():
+            msg = _("Parent directory {d!r} of status file {f!r} is not a directory.").format(
+                d=str(parent_dir), f=str(self.filename))
             if self.simulate:
                 LOG.error(msg)
             else:
@@ -665,15 +663,15 @@ class StatusFile(FbBaseObject, collections.MutableMapping):
 
         # Check for write access to parent dir
         if not os.access(parent_dir, os.W_OK):
-            msg = _("No write access to parent directory %(dir)r of status file %(file)r.") % {
-                'dir': parent_dir, 'file': self.file_name}
+            msg = _("No write access to parent directory {d!r} of status file {f!r}.").format(
+                d=str(parent_dir), f=str(self.filename))
             if self.simulate:
                 LOG.error(msg)
             else:
                 raise LogrotateStatusFileError(msg)
             return False
 
-        msg = _("Permissions to parent directory %r are OK.") % (parent_dir)
+        msg = _("Permissions to parent directory {!r} are OK.").format(str(parent_dir))
         LOG.debug(msg)
         return True
 

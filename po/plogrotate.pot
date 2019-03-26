@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: plogrotate VERSION\n"
 "Report-Msgid-Bugs-To: frank.brehm@pixelpark.com\n"
-"POT-Creation-Date: 2019-03-26 10:11+0100\n"
+"POT-Creation-Date: 2019-03-26 11:15+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <frank.brehm@pixelpark.com>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -773,118 +773,112 @@ msgid "Checking, whether the script {!r} should be executed."
 msgstr ""
 
 #: lib/logrotate/status.py:165
-#, python-format
-msgid "Could not evaluate %r as a datetime object."
+msgid "Could not evaluate {!r} as a datetime object."
+msgstr ""
+
+#: lib/logrotate/status.py:344
+msgid "Auto reading on init ..."
+msgstr ""
+
+#: lib/logrotate/status.py:348
+msgid "No auto reading on init ..."
 msgstr ""
 
 #: lib/logrotate/status.py:402
 msgid "Status file object will destroyed."
 msgstr ""
 
-#: lib/logrotate/status.py:421
-#, python-format
-msgid "Only %(e)s objects can be added to a %(f)s object."
+#: lib/logrotate/status.py:420
+msgid "Only {e} objects can be added to a {c} object (given {f} object)."
 msgstr ""
 
 #: lib/logrotate/status.py:427
-#, python-format
-msgid "Filename %(f1)r in given %(o)s object does not match given filename %(f2)r."
+msgid "Filename {f1!r} in given {o} object does not match given filename {f2!r}."
 msgstr ""
 
-#: lib/logrotate/status.py:483
-#, python-format
-msgid "Original permissions of %(fn)r: %(perm)04o"
+#: lib/logrotate/status.py:482
+msgid "Original permissions of {fn!r}: {perm::04o}"
 msgstr ""
 
-#: lib/logrotate/status.py:494 lib/logrotate/status.py:571
-#, python-format
-msgid "File %r does not exists."
+#: lib/logrotate/status.py:493 lib/logrotate/status.py:569
+msgid "File does not exists"
 msgstr ""
 
-#: lib/logrotate/status.py:498
-#, python-format
-msgid "Path %r is not a regular file."
+#: lib/logrotate/status.py:497
+msgid "Path is not a regular file"
 msgstr ""
 
-#: lib/logrotate/status.py:502
-#, python-format
-msgid "No read permissions for %r."
+#: lib/logrotate/status.py:501
+msgid "No read permissions"
 msgstr ""
 
-#: lib/logrotate/status.py:505
-#, python-format
-msgid "Trying to read %r ..."
+#: lib/logrotate/status.py:504
+msgid "Trying to read {!r} ..."
 msgstr ""
 
-#: lib/logrotate/status.py:513
-#, python-format
-msgid "Idendified version of status file: %d"
+#: lib/logrotate/status.py:512
+msgid "Idendified version of status file: {}"
 msgstr ""
 
-#: lib/logrotate/status.py:543
-#, python-format
-msgid "Simulating writing %r ..."
+#: lib/logrotate/status.py:520
+msgid "Could not evaluate line {file!r}:{lnr} {line!r}: {e}"
 msgstr ""
 
-#: lib/logrotate/status.py:545 lib/logrotate/status.py:548 lib/logrotate/status.py:556
-#: lib/logrotate/status.py:561
-#, python-format
-msgid "Writing line %r."
+#: lib/logrotate/status.py:541
+msgid "Simulating writing {!r} ..."
 msgstr ""
 
-#: lib/logrotate/status.py:552
-#, python-format
-msgid "Trying to write %r ..."
+#: lib/logrotate/status.py:543 lib/logrotate/status.py:546 lib/logrotate/status.py:554
+#: lib/logrotate/status.py:559
+msgid "Writing line {!r}."
 msgstr ""
 
-#: lib/logrotate/status.py:577
-#, python-format
-msgid "Ensuring permissions of %r ..."
+#: lib/logrotate/status.py:550
+msgid "Trying to write {!r} ..."
 msgstr ""
 
-#: lib/logrotate/status.py:581
-#, python-format
-msgid "Current permissions of %(fn)r: %(cur)04o, expected: %(exp)04o"
+#: lib/logrotate/status.py:575
+msgid "Ensuring permissions of {!r} ..."
 msgstr ""
 
-#: lib/logrotate/status.py:626
-#, python-format
-msgid "Checking permissions of status file %r ..."
+#: lib/logrotate/status.py:578
+msgid "Current permissions of {fn!r}: {cur:04o}, expected: {exp:04o}."
 msgstr ""
 
-#: lib/logrotate/status.py:632
-#, python-format
-msgid "Access to status file %r is OK."
+#: lib/logrotate/status.py:582
+msgid "Setting permissions of {fn!r} to {perm:04o}."
 msgstr ""
 
-#: lib/logrotate/status.py:636
-#, python-format
-msgid "No write access to status file %r."
+#: lib/logrotate/status.py:624
+msgid "Checking permissions of status file {!r} ..."
 msgstr ""
 
-#: lib/logrotate/status.py:644
-#, python-format
-msgid "Checking permissions of parent directory %r ..."
+#: lib/logrotate/status.py:630
+msgid "Access to status file {!r} is OK."
 msgstr ""
 
-#: lib/logrotate/status.py:649
-#, python-format
-msgid "Directory %r doesn't exists."
+#: lib/logrotate/status.py:634
+msgid "No write access to status file {!r}."
 msgstr ""
 
-#: lib/logrotate/status.py:658
-#, python-format
-msgid "Parent directory %(dir)r of status file %(file)r is not a directory."
+#: lib/logrotate/status.py:642
+msgid "Checking permissions of parent directory {!r} ..."
 msgstr ""
 
-#: lib/logrotate/status.py:668
-#, python-format
-msgid "No write access to parent directory %(dir)r of status file %(file)r."
+#: lib/logrotate/status.py:647
+msgid "Directory {!r} doesn't exists."
 msgstr ""
 
-#: lib/logrotate/status.py:676
-#, python-format
-msgid "Permissions to parent directory %r are OK."
+#: lib/logrotate/status.py:656
+msgid "Parent directory {d!r} of status file {f!r} is not a directory."
+msgstr ""
+
+#: lib/logrotate/status.py:666
+msgid "No write access to parent directory {d!r} of status file {f!r}."
+msgstr ""
+
+#: lib/logrotate/status.py:674
+msgid "Permissions to parent directory {!r} are OK."
 msgstr ""
 
 #: lib/logrotate/translate.py:76
