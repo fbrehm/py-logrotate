@@ -20,7 +20,7 @@ from fb_tools.errors import FbError, FbHandlerError, FbAppError
 
 from .translate import XLATOR
 
-__version__ = '0.2.0'
+__version__ = '0.3.0'
 
 _ = XLATOR.gettext
 ngettext = XLATOR.ngettext
@@ -39,11 +39,26 @@ class LogrotateObjectError(FbBaseObjectError, LogrotateError):
 
     pass
 
-#========================================================================
+# =============================================================================
 class LogrotateConfigurationError(LogrotateObjectError):
     """
     Base class for exceptions on reading and evaluating logrotate configuration.
     """
+    pass
+
+
+# =============================================================================
+class LogrotateCfgFatalError(LogrotateConfigurationError):
+    """Exception on reading and evaluating logrotate config, which leads
+        to an abort of the process."""
+    pass
+
+
+# =============================================================================
+class LogrotateCfgNonFatalError(LogrotateConfigurationError):
+    """Exception on reading and evaluating logrotate config, which does not lead
+        to an abort of the process, only the current configfile will
+        not be evaluated."""
     pass
 
 

@@ -66,6 +66,7 @@ class LogrotCfgReaderTestCase(BaseTestCase):
         LOG.info("Testing init of a config reader object ...")
 
         from logrotate.cfg_reader import LogrotateConfigReader
+        from logrotate.filegroup import LogFileGroup
 
         reader = LogrotateConfigReader(
             appname=APPNAME,
@@ -75,6 +76,28 @@ class LogrotCfgReaderTestCase(BaseTestCase):
             c=reader.__class__.__name__, o=reader))
         LOG.debug("{c} object %s:\n{o}".format(
             c=reader.__class__.__name__, o=reader))
+
+        self.assertIsInstance(reader.config_file, Path)
+        self.assertIsInstance(reader.default_group, LogFileGroup)
+        self.assertTrue(reader.default_group.is_default)
+
+    # -------------------------------------------------------------------------
+    def test_read_simple(self):
+
+        LOG.info("Testing reading of a config ...")
+
+        from logrotate.cfg_reader import LogrotateConfigReader
+
+        cfg_file = self.test_dir / 'apache2'
+
+        reader = LogrotateConfigReader(
+            appname=APPNAME, verbose=self.verbose,
+            config_file=cfg_file)
+        if self.verbose > 2:
+            LOG.debug("{c} object %s:\n{o}".format(
+                c=reader.__class__.__name__, o=reader))
+
+        reader.read()
 
 
 # =============================================================================
@@ -92,6 +115,7 @@ if __name__ == '__main__':
 
     suite.addTest(LogrotCfgReaderTestCase('test_import', verbose))
     suite.addTest(LogrotCfgReaderTestCase('test_object', verbose))
+    suite.addTest(LogrotCfgReaderTestCase('test_read_simple', verbose))
 
     runner = unittest.TextTestRunner(verbosity=verbose)
 
