@@ -48,7 +48,7 @@ msgstr "Alle gelesenen Konfigurationsdateien:"
 
 #: lib/logrotate/cfg_reader.py:229
 msgid "Reading configuration from {!r} ..."
-msgstr ""
+msgstr "Lese Konfiguration von {!r} …"
 
 #: lib/logrotate/common.py:145
 msgid "Broken split of {chunk!r}: {left!r} left."
