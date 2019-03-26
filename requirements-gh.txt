@@ -1,0 +1,5 @@
+six
+flake8
+pathlib
+git+https://github.com/fbrehm/python_fb_tools.git@master
+Babel
