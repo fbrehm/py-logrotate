@@ -32,11 +32,13 @@ from fb_tools.common import pp, to_str
 
 from fb_tools.obj import FbBaseObjectError, FbBaseObject
 
+from .errors import LogrotateStatusFileError, LogrotateStatusEntryError, StatusEntryValueError
+
 from .translate import XLATOR
 
 from .common import split_parts
 
-__version__ = '0.4.2'
+__version__ = '0.4.3'
 
 _ = XLATOR.gettext
 ngettext = XLATOR.ngettext
@@ -46,26 +48,6 @@ DEFAULT_PERMISSIONS = stat.S_IRUSR | stat.S_IWUSR | stat.S_IRGRP | stat.S_IROTH
 ENCODING = "utf-8"
 
 UTC = pytz.utc
-
-
-# =============================================================================
-class LogrotateStatusFileError(FbBaseObjectError):
-    """
-    Base class for exceptions in this module.
-    """
-    pass
-
-
-# =============================================================================
-class LogrotateStatusEntryError(FbBaseObjectError):
-    "Exception class for errors with status file entries."
-    pass
-
-
-# =============================================================================
-class StatusEntryValueError(LogrotateStatusEntryError, ValueError):
-    "Exception class for wrong values on status file entries."
-    pass
 
 
 # =============================================================================

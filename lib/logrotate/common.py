@@ -26,6 +26,8 @@ import six
 
 from fb_tools.common import pp, human2mbytes
 
+from .errors import UnbalancedQuotesError
+
 from .translate import XLATOR
 
 __version__ = '0.4.2'
@@ -53,36 +55,6 @@ RE_YES = re.compile(r'^\s*(?:y(?:es)?|true|on)\s*$', re.IGNORECASE)
 RE_NO = re.compile(r'^\s*(?:no?|false|off)\s*$', re.IGNORECASE)
 
 LOG = logging.getLogger(__name__)
-
-
-# =============================================================================
-class UnbalancedQuotesError(Exception):
-    """Exception class for unbalanced quotes in a text."""
-
-    # -------------------------------------------------------------------------
-    def __init__(self, text, quote_char=None):
-        """
-        Constructor.
-
-        @param text: the text with the unbalanced quotes
-        @type text: str
-        @param tries: the quoting character
-        @type tries: str
-
-        """
-
-        self.text = str(text)
-        self.quote_char = quote_char
-
-    # -----------------------------------------------------
-    def __str__(self):
-
-        if self.quote_char is None:
-            msg = _("Unbalanced quotes in {!r}.").format(self.text)
-        else:
-            msg = _("Unbalanced quote {what!r} in {where!r}.").format(
-                what=self.quote_char, where=self.text)
-        return msg
 
 
 # =============================================================================

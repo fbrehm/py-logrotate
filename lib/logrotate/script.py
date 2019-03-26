@@ -29,28 +29,18 @@ from fb_tools.common import pp, to_str
 from fb_tools.obj import FbBaseObjectError, FbBaseObject
 from fb_tools.handling_obj import HandlingObject
 
+from .errors import LogRotateScriptError, ExecutionError
+
 from .translate import XLATOR
 
 from .common import split_parts
 
-__version__ = '0.4.2'
+__version__ = '0.4.3'
 
 _ = XLATOR.gettext
 ngettext = XLATOR.ngettext
 
 LOG = logging.getLogger(__name__)
-
-
-# =============================================================================
-class LogRotateScriptError(FbBaseObjectError):
-    "Base class for exceptions in this module."
-    pass
-
-
-# =============================================================================
-class ExecutionError(LogRotateScriptError):
-    "Error raised, if execution of the script was not successful."
-    pass
 
 
 # =============================================================================

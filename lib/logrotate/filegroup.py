@@ -7,6 +7,7 @@
 @copyright: © 2010 - 2016 by Frank Brehm, Berlin
 @summary: module for a logfile goup object
 """
+from __future__ import absolute_import
 
 # Standard modules
 import re
@@ -39,13 +40,15 @@ from six.moves import shlex_quote
 # Own modules
 from fb_tools.common import pp, human2mbytes, to_str
 
-from fb_tools.obj import FbBaseObjectError, FbBaseObject
+from fb_tools.obj import FbBaseObject
+
+from .errors import LogrotateObjectError
 
 from .translate import XLATOR
 
 from .common import split_parts
 
-__version__ = '0.4.2'
+__version__ = '0.4.3'
 
 _ = XLATOR.gettext
 ngettext = XLATOR.ngettext
@@ -64,7 +67,7 @@ if HAS_LZMA:
 
 
 # =============================================================================
-class LogFileGroupError(FbBaseObjectError):
+class LogFileGroupError(LogrotateObjectError):
     "Base class for exceptions in this module."
     pass
 
