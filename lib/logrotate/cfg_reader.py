@@ -36,7 +36,7 @@ from .errors import LogrotateCfgFatalError, LogrotateCfgNonFatalError
 from .common import split_parts
 from .filegroup import LogFileGroup
 
-__version__ = '0.2.1'
+__version__ = '0.2.2'
 
 _ = XLATOR.gettext
 ngettext = XLATOR.ngettext
@@ -95,6 +95,9 @@ class LogrotateCfgFileAlreadyRead(LogrotateCfgNonFatalError):
 # =============================================================================
 class LogrotateConfigReader(HandlingObject):
     '''Class for reading the configuration for Python logrotating'''
+
+    re_bs_at_end = re.compile(r'\\$')
+    re_comment = re.compile(r'^\s*#.*')
 
     #-------------------------------------------------------
     def __init__(
@@ -228,7 +231,51 @@ class LogrotateConfigReader(HandlingObject):
 
         LOG.info(_("Reading configuration from {!r} ...").format(str(cfg_file)))
 
+        fh = None
+        content = None
+        try:
+            content = self.read_file(cfg_file)
+        except IOError as e:
+            msg = _("Could not read configuration file {f!r}: {e}").format(
+                f=str(cfg_file), e=e)
+            raise LogrotateCfgFatalError(msg)
         self.file_groups[cfg_file] = None
+
+        lines = content.splitlines()
+
+        return self._eval_cfg_lines(lines, cfg_file)
+
+    # -------------------------------------------------------------------------
+    def _eval_cfg_lines(self, lines, cfg_file):
+
+        if self.verbose > 2:
+            LOG.debug(_("Evaluating content of {!r} ...").format(str(cfg_file)))
+
+        linenr = 0
+        in_fd = False
+        in_script = False
+        in_logfile_list = False
+        lastrow = ''
+        newscript = ''
+
+        for line in lines:
+            linenr += 1
+            line = line.strip()
+
+            line = lastrow + line
+            if self.re_bs_at_end.search(line):
+                line = self.re_bs_at_end.sub('', line).strip()
+                lastrow = line
+                continue
+            lastrow = ''
+
+            if self.re_comment.match(line):
+                continue
+
+            if self.verbose > 3:
+                LOG.debug(_("Evaluating line {f!r}:{nr}: {l!r}.").format(
+                    f=str(cfg_file.name), nr=linenr, l=line))
+
         return True
 
 #========================================================================
