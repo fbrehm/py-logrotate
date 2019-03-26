@@ -936,21 +936,21 @@ msgstr ""
 
 #: lib/logrotate/translate.py:76
 msgid "Module directory: {!r}"
-msgstr ""
+msgstr "Modul-Verzeichnis: {!r}"
 
 #: lib/logrotate/translate.py:77
 msgid "Base directory: {!r}"
-msgstr ""
+msgstr "Basis-Verzeichnis: {!r}"
 
 #: lib/logrotate/translate.py:78
 msgid "Locale directory: {!r}"
-msgstr ""
+msgstr "Verzeichnis für Locales: {!r}"
 
 #: lib/logrotate/translate.py:79
 msgid "Locale domain: {!r}"
-msgstr ""
+msgstr "Locale-Domäne: {!r}"
 
 #: lib/logrotate/translate.py:80
 msgid "Found .mo-file: {!r}"
-msgstr ""
+msgstr "Gefundene .mo-Datei: {!r}"
 
