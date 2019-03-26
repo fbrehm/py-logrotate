@@ -48,7 +48,7 @@ from .translate import XLATOR
 
 from .common import split_parts
 
-__version__ = '0.4.3'
+__version__ = '0.5.1'
 
 _ = XLATOR.gettext
 ngettext = XLATOR.ngettext
@@ -123,12 +123,14 @@ class LogFileGroup(FbBaseObject, MutableSequence):
         self, config_file=None, line_nr=None, simulate=False, patterns=None,
             compress=False, compresscmd='internal_gzip', compressext=None,
             compressoptions=None, delaycompress=None, rotate_method=None,
-            appname=None, verbose=0, base_dir=None):
+            is_default=False, appname=None, verbose=0, base_dir=None):
         """Constructor."""
 
         self._config_file = None
         self._line_nr = None
         self._simulate = bool(simulate)
+
+        self._is_default = False
 
         self.patterns = []
         self._files =[]
@@ -144,6 +146,7 @@ class LogFileGroup(FbBaseObject, MutableSequence):
         super(LogFileGroup, self).__init__(
             appname=appname, verbose=verbose, version=__version__, base_dir=base_dir)
 
+        self.is_default = is_default
         self.config_file = config_file
         self.line_nr = line_nr
 
@@ -194,6 +197,16 @@ class LogFileGroup(FbBaseObject, MutableSequence):
             self._line_nr = None
             return
         self._line_nr = int(value)
+
+    # ------------------------------------------------------------
+    @property
+    def is_default(self):
+        "Flag, that this file group is the default file group of the config reader."
+        return self._is_default
+
+    @is_default.setter
+    def is_default(self, value):
+        self._is_default = bool(value)
 
     # ------------------------------------------------------------
     @property
@@ -326,6 +339,7 @@ class LogFileGroup(FbBaseObject, MutableSequence):
         res['config_file'] = self.config_file
         res['line_nr'] = self.line_nr
         res['simulate'] = self.simulate
+        res['is_default'] = self.is_default
         res['status_file'] = None
         if self.status_file:
             res['status_file'] = self.status_file.as_dict(short=short)
@@ -377,6 +391,7 @@ class LogFileGroup(FbBaseObject, MutableSequence):
 
         fields = []
         fields.append("config_file=%r" % (self.config_file))
+        fields.append("is_default=%r" % (self.is_default))
         fields.append("line_nr=%r" % (self.line_nr))
         fields.append("patterns=%r" % (copy.copy(self.patterns)))
         fields.append("simulate=%r" % (self.simulate))
@@ -398,6 +413,7 @@ class LogFileGroup(FbBaseObject, MutableSequence):
             config_file=self.config_file, line_nr=self.line_nr, simulate=self.simulate,
             patterns=self.patterns, rotate_method=self.rotate_method,
             appname=self.appname, verbose=self.verbose, base_dir=self.base_dir,
+            is_default=self.is_default,
         )
 
         new_group.compress = self.compress
