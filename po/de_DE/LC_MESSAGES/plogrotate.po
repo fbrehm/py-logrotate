@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: plogrotate 0.8.0\n"
 "Report-Msgid-Bugs-To: frank.brehm@profitbricks.com\n"
-"POT-Creation-Date: 2019-03-26 11:15+0100\n"
-"PO-Revision-Date: 2019-03-26 11:10+0100\n"
+"POT-Creation-Date: 2019-03-26 11:25+0100\n"
+"PO-Revision-Date: 2019-03-26 11:27+0100\n"
 "Last-Translator: Frank Brehm <frank@brehm-online.com>\n"
 "Language: de\n"
 "Language-Team: de <LL@li.org>\n"
@@ -16,7 +16,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Generated-By: Babel 2.4.0\n"
+"Generated-By: Babel 2.6.0\n"
 
 #: lib/logrotate/common.py:81
 msgid "Unbalanced quotes in {!r}."
@@ -800,8 +800,8 @@ msgstr ""
 "überein."
 
 #: lib/logrotate/status.py:482
-msgid "Original permissions of {fn!r}: {perm::04o}"
-msgstr "Original-Zugriffsrechte auf {fn!r}: {perm::04o}"
+msgid "Original permissions of {fn!r}: {perm:04o}"
+msgstr "Original-Zugriffsrechte auf {fn!r}: {perm:04o}"
 
 #: lib/logrotate/status.py:493 lib/logrotate/status.py:569
 msgid "File does not exists"

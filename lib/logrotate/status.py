@@ -479,7 +479,7 @@ class StatusFile(FbBaseObject, collections.MutableMapping):
         orig_mode = self.filename.stat().st_mode
         orig_perms = stat.S_IMODE(orig_mode)
         LOG.debug(
-            _("Original permissions of {fn!r}: {perm::04o}").format(
+            _("Original permissions of {fn!r}: {perm:04o}").format(
                 fn=str(self.filename), perm=orig_perms))
         self.permissions = orig_perms
 

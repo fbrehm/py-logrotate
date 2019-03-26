@@ -8,14 +8,14 @@ msgid ""
 msgstr ""
 "Project-Id-Version: plogrotate VERSION\n"
 "Report-Msgid-Bugs-To: frank.brehm@pixelpark.com\n"
-"POT-Creation-Date: 2019-03-26 11:15+0100\n"
+"POT-Creation-Date: 2019-03-26 11:25+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <frank.brehm@pixelpark.com>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Generated-By: Babel 2.4.0\n"
+"Generated-By: Babel 2.6.0\n"
 
 #: lib/logrotate/common.py:81
 msgid "Unbalanced quotes in {!r}."
@@ -797,7 +797,7 @@ msgid "Filename {f1!r} in given {o} object does not match given filename {f2!r}.
 msgstr ""
 
 #: lib/logrotate/status.py:482
-msgid "Original permissions of {fn!r}: {perm::04o}"
+msgid "Original permissions of {fn!r}: {perm:04o}"
 msgstr ""
 
 #: lib/logrotate/status.py:493 lib/logrotate/status.py:569
