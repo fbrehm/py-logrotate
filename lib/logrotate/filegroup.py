@@ -45,7 +45,7 @@ from .translate import XLATOR
 
 from .common import split_parts
 
-__version__ = '0.4.1'
+__version__ = '0.4.2'
 
 _ = XLATOR.gettext
 ngettext = XLATOR.ngettext
@@ -151,8 +151,8 @@ class LogFileGroup(FbBaseObject, MutableSequence):
             elif isinstance(to_str(patterns), str):
                 self.patterns.append(to_str(patterns))
             else:
-                msg = _("Invalid type %(t)r of parameter %(p)s: %(c)r.") % {
-                    't': patterns.__class__.__name__, 'p': 'patterns', 'c': patterns}
+                msg = _("Invalid type {t!r} of parameter {par}: {pat!r}.").format(
+                    t=patterns.__class__.__name__, par='patterns', pat=patterns)
                 raise TypeError(msg)
 
         self.compresscmd = compresscmd
@@ -229,7 +229,7 @@ class LogFileGroup(FbBaseObject, MutableSequence):
             return
         if v.lower().startswith('internal_'):
             if v.lower() not in INTERNAL_COMPRESSORS:
-                msg = _("Invalid internal compressor %r given.") % (value)
+                msg = _("Invalid internal compressor {!r} given.").format(value)
                 raise ValueError(msg)
             self._compresscmd = v.lower()
         else:
@@ -412,7 +412,8 @@ class LogFileGroup(FbBaseObject, MutableSequence):
     def index(self, value, *args):
 
         if len(args) > 2:
-            msg = _("Call of index() with a wrong number (%d) of arguments.") % (len(args))
+            msg = _("Call of {what} with a wrong number ({nr}) of arguments.").format(
+                what='index()', nr=len(args))
             raise AttributeError(msg)
 
         if value is None:
@@ -438,7 +439,7 @@ class LogFileGroup(FbBaseObject, MutableSequence):
                     break
 
         if not found:
-            msg = _("File %r not found in file list.") % (str(v))
+            msg = _("File {!r} not found in file list.").format(str(v))
             raise ValueError(msg)
         return idx
 
@@ -472,14 +473,14 @@ class LogFileGroup(FbBaseObject, MutableSequence):
         "Extending list self.patterns by a new file globbing pattern."
 
         if not pattern or not isinstance(to_str(pattern), str):
-            msg = _("Invalid file globbing pattern %r.") % (pattern)
+            msg = _("Invalid file globbing pattern {!r}.").format(pattern)
             raise ValueError(msg)
 
         pat = to_str(pattern)
         if pat in self.patterns:
-            LOG.warning(
-                _("Pattern %r is already a member of the file globbing pattern list."),
-                pattern)
+            LOG.warning(_(
+                "Pattern {!r} is already a member of the file globbing pattern list.").format(
+                pattern))
             return
         self.patterns.append(pat)
 
@@ -491,12 +492,12 @@ class LogFileGroup(FbBaseObject, MutableSequence):
         """
 
         if not pattern or not isinstance(to_str(pattern), str):
-            msg = _("Invalid taboo pattern %r given.") % (pattern)
+            msg = _("Invalid taboo pattern {!r} given.").format(pattern)
             raise ValueError(msg)
 
         ptype = pattern_type.strip().lower()
         if ptype not in cls.toboo_pattern_types:
-            msg = _("Invalid taboo pattern type %r given.") % (pattern_type)
+            msg = _("Invalid taboo pattern type {!r} given.").format(pattern_type)
             raise ValueError(msg)
 
         pat = cls.toboo_pattern_types[ptype] % (pattern)
@@ -504,16 +505,16 @@ class LogFileGroup(FbBaseObject, MutableSequence):
         try:
             re_taboo = re.compile(pat, re.IGNORECASE)
         except Exception as e:
-            msg = _("Got a %(c)s error on adding taboo pattern %(p)r: %(e)s.") % {
-                'c': e.__class__.__name__, 'p':  pattern, 'e': e}
+            msg = _("Got a {c} error on adding taboo pattern {p!r}: {e}.").format(
+                c=e.__class__.__name__, p=pattern, e=e)
             return ValueError(msg)
 
         found = False
         for re_t in cls.taboo_patterns:
             if pat == re_t.pattern:
                 LOG.debug(_(
-                    "Taboo pattern %r already exists in the list "
-                    "of taboo patterns."), pat)
+                    "Taboo pattern {!r} already exists in the list of taboo patterns.").format(
+                    pat))
                 found = True
                 break
 

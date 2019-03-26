@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: plogrotate 0.8.0\n"
 "Report-Msgid-Bugs-To: frank.brehm@profitbricks.com\n"
-"POT-Creation-Date: 2019-03-25 18:10+0100\n"
+"POT-Creation-Date: 2019-03-26 09:54+0100\n"
 "PO-Revision-Date: 2019-03-25 17:40+0100\n"
 "Last-Translator: Frank Brehm <frank@brehm-online.com>\n"
 "Language: de\n"
@@ -16,7 +16,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Generated-By: Babel 2.6.0\n"
+"Generated-By: Babel 2.4.0\n"
 
 #: lib/logrotate/common.py:81
 msgid "Unbalanced quotes in {!r}."
@@ -70,10 +70,10 @@ msgstr "Aufgerufen mit {!r}."
 msgid "Using radix {!r} ..."
 msgstr "Verwende Dezimal-Separator {!r} …"
 
-#: lib/logrotate/common.py:401
-#, python-format
-msgid "Pattern %r."
-msgstr "Muster %r."
+#: lib/logrotate/common.py:401 lib/logrotate/common.py:418 lib/logrotate/common.py:435
+#: lib/logrotate/common.py:452 lib/logrotate/common.py:469
+msgid "Pattern {!r}."
+msgstr "Muster {!r}."
 
 #: lib/logrotate/common.py:410
 msgid "Found {:.2f} hours."
@@ -82,11 +82,6 @@ msgstr "Fand {:.2f} Stunden."
 #: lib/logrotate/common.py:413
 msgid "Rest after hours: {!r}."
 msgstr "Rest nach Stundenermittlung: {!r}."
-
-#: lib/logrotate/common.py:418 lib/logrotate/common.py:435 lib/logrotate/common.py:452
-#: lib/logrotate/common.py:470
-msgid "Pattern {!r}."
-msgstr "Muster {!r}."
 
 #: lib/logrotate/common.py:427
 msgid "Found {:f} weeks."
@@ -109,46 +104,36 @@ msgid "Found {:f} years."
 msgstr "Fand {:f} Jahre."
 
 #: lib/logrotate/common.py:464
-#, python-format
-msgid "Rest after years: %r."
-msgstr "Rest nach den Jahresermittlung: %r."
-
-#: lib/logrotate/common.py:465
 msgid "Rest after years: {!r}."
 msgstr "Rest nach den Jahresermittlung: {!r}."
 
-#: lib/logrotate/common.py:479
-#, python-format
-msgid "Found %f days."
-msgstr "%f Tage gefunden."
-
-#: lib/logrotate/common.py:480
+#: lib/logrotate/common.py:478
 msgid "Found {:f} days."
 msgstr "{:f} Tage gefunden."
 
-#: lib/logrotate/common.py:483
+#: lib/logrotate/common.py:481
 msgid "Rest after days: {!r}."
 msgstr "Rest nach Ermittlung der Tage: {!r}."
 
-#: lib/logrotate/common.py:487
+#: lib/logrotate/common.py:485
 msgid "Invalid content for a period: {!r}."
 msgstr "Ungültiger Inhalt für eine Periode: {!r}."
 
-#: lib/logrotate/common.py:490
+#: lib/logrotate/common.py:488
 msgid "Total {!r} days found."
 msgstr "Insgesamt {!r} Tage gefunden."
 
-#: lib/logrotate/common.py:524
+#: lib/logrotate/common.py:522
 msgid "Found address entry:"
 msgid_plural "Found address entries:"
 msgstr[0] "Gefundener Adresseintrag:"
 msgstr[1] "Gefundene Adresseinträge:"
 
-#: lib/logrotate/common.py:532
+#: lib/logrotate/common.py:530
 msgid "Got mail address pair:"
 msgstr "Mailadress-Paar bekommen:"
 
-#: lib/logrotate/common.py:534
+#: lib/logrotate/common.py:532
 msgid "Found invalid mail address {!r}."
 msgstr "Ungültige Mailadresse {!r} gefunden."
 
@@ -713,56 +698,46 @@ msgid "Invalid rotation method {!r} given."
 msgstr "Ungültige Rotationsmethode {!r} angegeben."
 
 #: lib/logrotate/filegroup.py:154
-#, python-format
-msgid "Invalid type %(t)r of parameter %(p)s: %(c)r."
-msgstr "Ungültiger Typ %(t)r des Parameters %(p)s: %(c)r."
+msgid "Invalid type {t!r} of parameter {par}: {pat!r}."
+msgstr "Ungültiger Typ {t!r} des Parameters {par}: {pat!r}."
 
 #: lib/logrotate/filegroup.py:232
-#, python-format
-msgid "Invalid internal compressor %r given."
-msgstr "Ungültiger interner Kopressor %r übergeben."
+msgid "Invalid internal compressor {!r} given."
+msgstr "Ungültiger interner Kopressor {!r} übergeben."
 
 #: lib/logrotate/filegroup.py:415
-#, python-format
-msgid "Call of index() with a wrong number (%d) of arguments."
-msgstr "Aufruf von index() mit einer ungültigen Anzahl (%d) von Argumenten."
+msgid "Call of {what} with a wrong number ({nr}) of arguments."
+msgstr "Aufruf von {what} mit einer ungültigen Anzahl ({nr}) von Argumenten."
 
-#: lib/logrotate/filegroup.py:441
-#, python-format
-msgid "File %r not found in file list."
-msgstr "Datei %r nicht in Dateiliste gefunden."
+#: lib/logrotate/filegroup.py:442
+msgid "File {!r} not found in file list."
+msgstr "Datei {!r} nicht in Dateiliste gefunden."
 
-#: lib/logrotate/filegroup.py:475
-#, python-format
-msgid "Invalid file globbing pattern %r."
-msgstr "Ungültiges Datei-Globbing-Muster %r."
+#: lib/logrotate/filegroup.py:476
+msgid "Invalid file globbing pattern {!r}."
+msgstr "Ungültiges Datei-Globbing-Muster {!r}."
 
 #: lib/logrotate/filegroup.py:481
-#, python-format
-msgid "Pattern %r is already a member of the file globbing pattern list."
-msgstr "Das Muster %r ist bereits Mitlied der Datei-Globbing-Musterliste."
+msgid "Pattern {!r} is already a member of the file globbing pattern list."
+msgstr "Das Muster %{!r} ist bereits Mitlied der Datei-Globbing-Musterliste."
 
-#: lib/logrotate/filegroup.py:494
-#, python-format
-msgid "Invalid taboo pattern %r given."
-msgstr "Ungültiges Tabu-Muster %r gegeben."
+#: lib/logrotate/filegroup.py:495
+msgid "Invalid taboo pattern {!r} given."
+msgstr "Ungültiges Tabu-Muster {!r} gegeben."
 
-#: lib/logrotate/filegroup.py:499
-#, python-format
-msgid "Invalid taboo pattern type %r given."
-msgstr "Ungültiger Typ %r für ein Tabu-Muster gegeben."
+#: lib/logrotate/filegroup.py:500
+msgid "Invalid taboo pattern type {!r} given."
+msgstr "Ungültiger Typ {!r} für ein Tabu-Muster gegeben."
 
-#: lib/logrotate/filegroup.py:507
-#, python-format
-msgid "Got a %(c)s error on adding taboo pattern %(p)r: %(e)s."
-msgstr "Bekam einen %(c)s-Fehler beim Hizufügen des Tabumusters %(p)r: %(e)s."
+#: lib/logrotate/filegroup.py:508
+msgid "Got a {c} error on adding taboo pattern {p!r}: {e}."
+msgstr "Bekam einen {c}-Fehler beim Hizufügen des Tabumusters {p!r}: {e}."
 
-#: lib/logrotate/filegroup.py:514
-#, python-format
-msgid "Taboo pattern %r already exists in the list of taboo patterns."
-msgstr "Das Tabu-Muster %r existiert bereits in der Liste der Tabu-Muster."
+#: lib/logrotate/filegroup.py:515
+msgid "Taboo pattern {!r} already exists in the list of taboo patterns."
+msgstr "Das Tabu-Muster {!r} existiert bereits in der Liste der Tabu-Muster."
 
-#: lib/logrotate/filegroup.py:528
+#: lib/logrotate/filegroup.py:529
 msgid "Initializing the list of taboo patterns with some default values."
 msgstr "Initialisiere die Liste der Tabu-Muster mit einigen Vorgabe-Werten."
 

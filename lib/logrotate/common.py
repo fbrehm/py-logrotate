@@ -28,7 +28,7 @@ from fb_tools.common import pp, human2mbytes
 
 from .translate import XLATOR
 
-__version__ = '0.4.1'
+__version__ = '0.4.2'
 
 _ = XLATOR.gettext
 ngettext = XLATOR.ngettext
@@ -278,8 +278,8 @@ def human2bytes(value, si_conform=True, use_locale_radix=False, as_float=False, 
         suffix = ''
     if verbose > 4:
         LOG.debug(
-            "Value float: %r, Value long: %r, suffix: %r",
-            value_float, value_long, suffix)
+            "Value float: {vf!r}, Value long: {vl!r}, suffix: {s!r}".format(
+                vf=value_float, vl=value_long, s=suffix))
 
     factor_bin = 1024
     factor_si = 1000
@@ -398,7 +398,7 @@ def period2days(period, use_locale_radix=False, verbose=0):
     # Search for hours in value
     pattern = r'(\d+(?:' + radix + r'\d*)?)\s*h(?:ours?)?'
     if verbose > 4:
-        LOG.debug(_("Pattern %r."), pattern)
+        LOG.debug(_("Pattern {!r}.").format(pattern))
     match = re.search(pattern, value, re.IGNORECASE)
     if match:
         hours_str = match.group(1)
@@ -461,7 +461,6 @@ def period2days(period, use_locale_radix=False, verbose=0):
             LOG.debug(_("Found {:f} years.").format(years))
         value = re.sub(pattern, '', value, re.IGNORECASE)
     if verbose > 4:
-        LOG.debug(_("Rest after years: %r."), value)
         LOG.debug(_("Rest after years: {!r}.").format(value))
 
     # At last search for days in value
@@ -476,7 +475,6 @@ def period2days(period, use_locale_radix=False, verbose=0):
         days_float = float(days_str)
         days += days_float
         if verbose > 3:
-            LOG.debug(_("Found %f days."), days_float)
             LOG.debug(_("Found {:f} days.").format(days_float))
         value = re.sub(pattern, '', value, re.IGNORECASE)
     if verbose > 4:
