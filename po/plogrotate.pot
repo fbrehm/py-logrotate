@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: plogrotate VERSION\n"
 "Report-Msgid-Bugs-To: frank.brehm@pixelpark.com\n"
-"POT-Creation-Date: 2019-03-26 09:54+0100\n"
+"POT-Creation-Date: 2019-03-26 10:11+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <frank.brehm@pixelpark.com>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -696,7 +696,7 @@ msgstr ""
 msgid "Invalid rotation method {!r} given."
 msgstr ""
 
-#: lib/logrotate/filegroup.py:154
+#: lib/logrotate/filegroup.py:154 lib/logrotate/script.py:106
 msgid "Invalid type {t!r} of parameter {par}: {pat!r}."
 msgstr ""
 
@@ -704,7 +704,7 @@ msgstr ""
 msgid "Invalid internal compressor {!r} given."
 msgstr ""
 
-#: lib/logrotate/filegroup.py:415
+#: lib/logrotate/filegroup.py:415 lib/logrotate/script.py:296
 msgid "Call of {what} with a wrong number ({nr}) of arguments."
 msgstr ""
 
@@ -740,55 +740,36 @@ msgstr ""
 msgid "Initializing the list of taboo patterns with some default values."
 msgstr ""
 
-#: lib/logrotate/script.py:106
-#, python-format
-msgid "Invalid type %(t)r of parameter %(p)s %(c)r."
-msgstr ""
-
-#: lib/logrotate/script.py:130
-#, python-format
-msgid "Invalid value for property %r given."
-msgstr ""
-
-#: lib/logrotate/script.py:144
-#, python-format
-msgid "Invalid value for property '%s' given."
+#: lib/logrotate/script.py:130 lib/logrotate/script.py:144
+msgid "Invalid value for property {!r} given."
 msgstr ""
 
 #: lib/logrotate/script.py:216
-#, python-format
-msgid "Logrotate script object '%s' will destroyed."
+msgid "Logrotate script object {!r} will be destroyed."
 msgstr ""
 
-#: lib/logrotate/script.py:371
-#, python-format
-msgid "No command to execute defined in script %r."
+#: lib/logrotate/script.py:372
+msgid "No command to execute defined in script {!r}."
 msgstr ""
 
-#: lib/logrotate/script.py:377
-#, python-format
-msgid ""
-"Executing script %(name)r with command:\n"
-"%(cmd)s"
-msgstr ""
-
-#: lib/logrotate/script.py:389
-msgid "Completed process:"
+#: lib/logrotate/script.py:379
+msgid "Executing script {!r} with command:"
 msgstr ""
 
 #: lib/logrotate/script.py:391
-#, python-format
-msgid "Got returncode for script %(name)r: %(retcode)r"
+msgid "Completed process:"
 msgstr ""
 
-#: lib/logrotate/script.py:399
-#, python-format
-msgid "Execution of script %(name)r failed: %(error)s"
+#: lib/logrotate/script.py:393
+msgid "Got returncode for script {s!r}: {ret!r}."
 msgstr ""
 
-#: lib/logrotate/script.py:425
-#, python-format
-msgid "Checking, whether the script %r should be executed."
+#: lib/logrotate/script.py:401
+msgid "Execution of script {s!r} failed: {e}"
+msgstr ""
+
+#: lib/logrotate/script.py:426
+msgid "Checking, whether the script {!r} should be executed."
 msgstr ""
 
 #: lib/logrotate/status.py:165

@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: plogrotate 0.8.0\n"
 "Report-Msgid-Bugs-To: frank.brehm@profitbricks.com\n"
-"POT-Creation-Date: 2019-03-26 09:54+0100\n"
-"PO-Revision-Date: 2019-03-25 17:40+0100\n"
+"POT-Creation-Date: 2019-03-26 10:11+0100\n"
+"PO-Revision-Date: 2019-03-26 10:15+0100\n"
 "Last-Translator: Frank Brehm <frank@brehm-online.com>\n"
 "Language: de\n"
 "Language-Team: de <LL@li.org>\n"
@@ -697,7 +697,7 @@ msgstr ""
 msgid "Invalid rotation method {!r} given."
 msgstr "Ungültige Rotationsmethode {!r} angegeben."
 
-#: lib/logrotate/filegroup.py:154
+#: lib/logrotate/filegroup.py:154 lib/logrotate/script.py:106
 msgid "Invalid type {t!r} of parameter {par}: {pat!r}."
 msgstr "Ungültiger Typ {t!r} des Parameters {par}: {pat!r}."
 
@@ -705,7 +705,7 @@ msgstr "Ungültiger Typ {t!r} des Parameters {par}: {pat!r}."
 msgid "Invalid internal compressor {!r} given."
 msgstr "Ungültiger interner Kopressor {!r} übergeben."
 
-#: lib/logrotate/filegroup.py:415
+#: lib/logrotate/filegroup.py:415 lib/logrotate/script.py:296
 msgid "Call of {what} with a wrong number ({nr}) of arguments."
 msgstr "Aufruf von {what} mit einer ungültigen Anzahl ({nr}) von Argumenten."
 
@@ -741,58 +741,37 @@ msgstr "Das Tabu-Muster {!r} existiert bereits in der Liste der Tabu-Muster."
 msgid "Initializing the list of taboo patterns with some default values."
 msgstr "Initialisiere die Liste der Tabu-Muster mit einigen Vorgabe-Werten."
 
-#: lib/logrotate/script.py:106
-#, python-format
-msgid "Invalid type %(t)r of parameter %(p)s %(c)r."
-msgstr "Ungültiger Typ %(t)r des Parameters %(p)s %(c)r."
-
-#: lib/logrotate/script.py:130
-#, python-format
-msgid "Invalid value for property %r given."
-msgstr "Ungültiger Wert für Property %r gegeben."
-
-#: lib/logrotate/script.py:144
-#, python-format
-msgid "Invalid value for property '%s' given."
-msgstr "Ungültiger Wert für Property '%s' gegeben."
+#: lib/logrotate/script.py:130 lib/logrotate/script.py:144
+msgid "Invalid value for property {!r} given."
+msgstr "Ungültiger Wert der Property {!r} gegeben."
 
 #: lib/logrotate/script.py:216
-#, python-format
-msgid "Logrotate script object '%s' will destroyed."
-msgstr "Das Logrotate-Scriptobjekt '%s' wird zerstört."
+msgid "Logrotate script object {!r} will be destroyed."
+msgstr "Das Logrotate-Scriptobjekt {!r} wird zerstört."
 
-#: lib/logrotate/script.py:371
-#, python-format
-msgid "No command to execute defined in script %r."
-msgstr "Kein Kommando zur Ausführung in Skript %r definiert."
+#: lib/logrotate/script.py:372
+msgid "No command to execute defined in script {!r}."
+msgstr "Kein Kommando zur Ausführung in Skript {!r} definiert."
 
-#: lib/logrotate/script.py:377
-#, python-format
-msgid ""
-"Executing script %(name)r with command:\n"
-"%(cmd)s"
-msgstr ""
-"Führe Skript %(name)r mit den Kommandos aus:\n"
-"%(cmd)s"
+#: lib/logrotate/script.py:379
+msgid "Executing script {!r} with command:"
+msgstr "Führe Skript {!r} mit den Kommandos aus:"
 
-#: lib/logrotate/script.py:389
+#: lib/logrotate/script.py:391
 msgid "Completed process:"
 msgstr "Fertiggestellter Prozess:"
 
-#: lib/logrotate/script.py:391
-#, python-format
-msgid "Got returncode for script %(name)r: %(retcode)r"
-msgstr "Erhaltener Wiedergabewert für Skript %(name)r: %(retcode)r"
+#: lib/logrotate/script.py:393
+msgid "Got returncode for script {s!r}: {ret!r}."
+msgstr "Erhaltener Wiedergabewert für Skript {s!r}: {ret!r}."
 
-#: lib/logrotate/script.py:399
-#, python-format
-msgid "Execution of script %(name)r failed: %(error)s"
-msgstr "Die Ausführung des Skripts %(name)r is fehlgeschlagen: %(error)s"
+#: lib/logrotate/script.py:401
+msgid "Execution of script {s!r} failed: {e}"
+msgstr "Die Ausführung des Skripts {s!r} ist fehlgeschlagen: {e}"
 
-#: lib/logrotate/script.py:425
-#, python-format
-msgid "Checking, whether the script %r should be executed."
-msgstr "Überprüfe, ob das Skript %r ausgeführt werden sollte."
+#: lib/logrotate/script.py:426
+msgid "Checking, whether the script {!r} should be executed."
+msgstr "Überprüfe, ob das Skript {!r} ausgeführt werden sollte."
 
 #: lib/logrotate/status.py:165
 #, python-format

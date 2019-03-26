@@ -33,7 +33,7 @@ from .translate import XLATOR
 
 from .common import split_parts
 
-__version__ = '0.4.1'
+__version__ = '0.4.2'
 
 _ = XLATOR.gettext
 ngettext = XLATOR.ngettext
@@ -103,8 +103,8 @@ class LogRotateScript(HandlingObject, MutableSequence):
         elif isinstance(to_str(commands), str):
             self.append(commands)
         else:
-            msg = _("Invalid type %(t)r of parameter %(p)s %(c)r.") % {
-                't': commands.__class__.__name__, 'p': 'commands', 'c': commands}
+            msg = _("Invalid type {t!r} of parameter {par}: {pat!r}.").format(
+                    t=commands.__class__.__name__, par='commands', pat=commands)
             raise TypeError(msg)
 
     #------------------------------------------------------------
@@ -127,7 +127,7 @@ class LogRotateScript(HandlingObject, MutableSequence):
         if isinstance(value, int):
             self._post_files = value
             return
-        msg = _("Invalid value for property %r given.") % ('post_files')
+        msg = _("Invalid value for property {!r} given.").format('post_files')
         raise LogRotateScriptError(msg)
 
     #------------------------------------------------------------
@@ -141,7 +141,7 @@ class LogRotateScript(HandlingObject, MutableSequence):
         if isinstance(value, int):
             self._last_files = value
             return
-        msg = _("Invalid value for property '%s' given.") % ('last_files')
+        msg = _("Invalid value for property {!r} given.").format('last_files')
         raise LogRotateScriptError(msg)
 
     #------------------------------------------------------------
@@ -213,7 +213,7 @@ class LogRotateScript(HandlingObject, MutableSequence):
         '''
 
         if self.verbose > 2:
-            msg = _("Logrotate script object '%s' will destroyed.") % (self.name)
+            msg = _("Logrotate script object {!r} will be destroyed.").format(self.name)
             LOG.debug(msg)
 
         self.check_for_execute()
@@ -293,7 +293,8 @@ class LogRotateScript(HandlingObject, MutableSequence):
 
         v = str(to_str(value))
         if len(args) > 2:
-            msg = "Call of index() with a wrong number (%d) of arguments." % (len(args))
+            msg = _("Call of {what} with a wrong number ({nr}) of arguments.").format(
+                what='index()', nr=len(args))
             raise AttributeError(msg)
 
         i = 0
@@ -314,7 +315,7 @@ class LogRotateScript(HandlingObject, MutableSequence):
                     break
 
         if not found:
-            msg = "Command %r not found in command list." % (str(v))
+            msg = "Command {!r} not found in command list.".format(str(v))
             raise ValueError(msg)
         return idx
 
@@ -368,14 +369,15 @@ class LogRotateScript(HandlingObject, MutableSequence):
         """
 
         if not self._commands:
-            msg = _("No command to execute defined in script %r.") % (self.name)
+            msg = _("No command to execute defined in script {!r}.").format(self.name)
             raise LogRotateScriptError(msg)
 
         command = '\n'.join(self._commands)
 
         if self.verbose > 2:
-            msg = _("Executing script %(name)r with command:\n%(cmd)s") % {
-                'name': self.name, 'cmd': command.rstrip()}
+            msg = (
+                _("Executing script {!r} with command:").format(self.name)
+                + '\n' +command.rstrip())
             LOG.debug(msg)
         if force is None:
             force = self.force
@@ -388,16 +390,15 @@ class LogRotateScript(HandlingObject, MutableSequence):
             if self.verbose > 1:
                 LOG.debug(_("Completed process:") + '\n' + pp(completed.__dict__))
             if completed.returncode != expected_retcode:
-                ret_msg = _("Got returncode for script %(name)r: %(retcode)r") % {
-                    'name': self.name, 'retcode': completed.returncode}
+                ret_msg = _("Got returncode for script {s!r}: {ret!r}.").format(
+                    s=self.name, ret=completed.returncode)
                 if raise_on_error:
                     raise ExecutionError(ret_msg)
                 else:
                     LOG.error(ret_msg)
             return completed.returncode
         except OSError as e:
-            msg = _("Execution of script %(name)r failed: %(error)s") % {
-                'name': self.name, 'error': e}
+            msg = _("Execution of script {s!r} failed: {e}").format(s=self.name, e=e)
             if raise_on_error:
                 raise ExecutionError(msg)
             else:
@@ -422,7 +423,7 @@ class LogRotateScript(HandlingObject, MutableSequence):
         @rtype:  bool
         '''
 
-        msg = _("Checking, whether the script %r should be executed.") % (self.name)
+        msg = _("Checking, whether the script {!r} should be executed.").format(self.name)
         LOG.debug(msg)
 
         if self.do_post or self.do_last:
