@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: plogrotate VERSION\n"
 "Report-Msgid-Bugs-To: frank.brehm@pixelpark.com\n"
-"POT-Creation-Date: 2019-03-26 11:25+0100\n"
+"POT-Creation-Date: 2019-03-26 16:37+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <frank.brehm@pixelpark.com>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,122 +17,146 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 2.6.0\n"
 
-#: lib/logrotate/common.py:81
-msgid "Unbalanced quotes in {!r}."
+#: lib/logrotate/cfg_reader.py:53 lib/logrotate/status.py:475 lib/logrotate/status.py:551
+msgid "File does not exists"
 msgstr ""
 
-#: lib/logrotate/common.py:83
-msgid "Unbalanced quote {what!r} in {where!r}."
+#: lib/logrotate/cfg_reader.py:64
+msgid "Path is a directory"
 msgstr ""
 
-#: lib/logrotate/common.py:173
+#: lib/logrotate/cfg_reader.py:75
+msgid "File is not readable"
+msgstr ""
+
+#: lib/logrotate/cfg_reader.py:91
+msgid "Config file {!r} was already read."
+msgstr ""
+
+#: lib/logrotate/cfg_reader.py:139
+msgid "The filename of the config file may not be None."
+msgstr ""
+
+#: lib/logrotate/cfg_reader.py:156
+msgid "Initializing default file group ..."
+msgstr ""
+
+#: lib/logrotate/cfg_reader.py:206
+msgid "All read config files:"
+msgstr ""
+
+#: lib/logrotate/cfg_reader.py:229
+msgid "Reading configuration from {!r} ..."
+msgstr ""
+
+#: lib/logrotate/common.py:145
 msgid "Broken split of {chunk!r}: {left!r} left."
 msgstr ""
 
-#: lib/logrotate/common.py:237
+#: lib/logrotate/common.py:209
 msgid "Given value is None."
 msgstr ""
 
-#: lib/logrotate/common.py:248
+#: lib/logrotate/common.py:220
 msgid "Using radix {radix!r}, thousend separator {sep!r}"
 msgstr ""
 
-#: lib/logrotate/common.py:258
+#: lib/logrotate/common.py:230
 msgid "Value without thousend separators: {!r}."
 msgstr ""
 
-#: lib/logrotate/common.py:266
+#: lib/logrotate/common.py:238
 msgid "Could not determine bytes in {!r}."
 msgstr ""
 
-#: lib/logrotate/common.py:327
+#: lib/logrotate/common.py:299
 msgid "Couldn't detect suffix {!r}."
 msgstr ""
 
-#: lib/logrotate/common.py:331
+#: lib/logrotate/common.py:303
 msgid "Found factor {}."
 msgstr ""
 
-#: lib/logrotate/common.py:374
+#: lib/logrotate/common.py:346
 msgid "Given period is None."
 msgstr ""
 
-#: lib/logrotate/common.py:378
+#: lib/logrotate/common.py:350
 msgid "Given period was empty."
 msgstr ""
 
-#: lib/logrotate/common.py:381
+#: lib/logrotate/common.py:353
 msgid "Called with {!r}."
 msgstr ""
 
-#: lib/logrotate/common.py:396
+#: lib/logrotate/common.py:368
 msgid "Using radix {!r} ..."
 msgstr ""
 
-#: lib/logrotate/common.py:401 lib/logrotate/common.py:418 lib/logrotate/common.py:435
-#: lib/logrotate/common.py:452 lib/logrotate/common.py:469
+#: lib/logrotate/common.py:373 lib/logrotate/common.py:390 lib/logrotate/common.py:407
+#: lib/logrotate/common.py:424 lib/logrotate/common.py:441
 msgid "Pattern {!r}."
 msgstr ""
 
-#: lib/logrotate/common.py:410
+#: lib/logrotate/common.py:382
 msgid "Found {:.2f} hours."
 msgstr ""
 
-#: lib/logrotate/common.py:413
+#: lib/logrotate/common.py:385
 msgid "Rest after hours: {!r}."
 msgstr ""
 
-#: lib/logrotate/common.py:427
+#: lib/logrotate/common.py:399
 msgid "Found {:f} weeks."
 msgstr ""
 
-#: lib/logrotate/common.py:430
+#: lib/logrotate/common.py:402
 msgid "Rest after weeks: {!r}."
 msgstr ""
 
-#: lib/logrotate/common.py:444
+#: lib/logrotate/common.py:416
 msgid "Found {:f} months."
 msgstr ""
 
-#: lib/logrotate/common.py:447
+#: lib/logrotate/common.py:419
 msgid "Rest after months: {!r}."
 msgstr ""
 
-#: lib/logrotate/common.py:461
+#: lib/logrotate/common.py:433
 msgid "Found {:f} years."
 msgstr ""
 
-#: lib/logrotate/common.py:464
+#: lib/logrotate/common.py:436
 msgid "Rest after years: {!r}."
 msgstr ""
 
-#: lib/logrotate/common.py:478
+#: lib/logrotate/common.py:450
 msgid "Found {:f} days."
 msgstr ""
 
-#: lib/logrotate/common.py:481
+#: lib/logrotate/common.py:453
 msgid "Rest after days: {!r}."
 msgstr ""
 
-#: lib/logrotate/common.py:485
+#: lib/logrotate/common.py:457
 msgid "Invalid content for a period: {!r}."
 msgstr ""
 
-#: lib/logrotate/common.py:488
+#: lib/logrotate/common.py:460
 msgid "Total {!r} days found."
 msgstr ""
 
-#: lib/logrotate/common.py:522
+#: lib/logrotate/common.py:494
 msgid "Found address entry:"
 msgid_plural "Found address entries:"
 msgstr[0] ""
 msgstr[1] ""
 
-#: lib/logrotate/common.py:530
+#: lib/logrotate/common.py:502
 msgid "Got mail address pair:"
 msgstr ""
 
-#: lib/logrotate/common.py:532
+#: lib/logrotate/common.py:504
 msgid "Found invalid mail address {!r}."
 msgstr ""
 
@@ -692,192 +716,196 @@ msgstr ""
 msgid "Logfile '%s' will taken."
 msgstr ""
 
-#: lib/logrotate/filegroup.py:95
+#: lib/logrotate/errors.py:120
+msgid "Unbalanced quotes in {!r}."
+msgstr ""
+
+#: lib/logrotate/errors.py:122
+msgid "Unbalanced quote {what!r} in {where!r}."
+msgstr ""
+
+#: lib/logrotate/filegroup.py:98
 msgid "Invalid rotation method {!r} given."
 msgstr ""
 
-#: lib/logrotate/filegroup.py:154 lib/logrotate/script.py:106
+#: lib/logrotate/filegroup.py:160 lib/logrotate/script.py:96
 msgid "Invalid type {t!r} of parameter {par}: {pat!r}."
 msgstr ""
 
-#: lib/logrotate/filegroup.py:232
+#: lib/logrotate/filegroup.py:248
 msgid "Invalid internal compressor {!r} given."
 msgstr ""
 
-#: lib/logrotate/filegroup.py:415 lib/logrotate/script.py:296
+#: lib/logrotate/filegroup.py:434 lib/logrotate/script.py:286
 msgid "Call of {what} with a wrong number ({nr}) of arguments."
 msgstr ""
 
-#: lib/logrotate/filegroup.py:442
+#: lib/logrotate/filegroup.py:461
 msgid "File {!r} not found in file list."
 msgstr ""
 
-#: lib/logrotate/filegroup.py:476
+#: lib/logrotate/filegroup.py:495
 msgid "Invalid file globbing pattern {!r}."
 msgstr ""
 
-#: lib/logrotate/filegroup.py:481
+#: lib/logrotate/filegroup.py:500
 msgid "Pattern {!r} is already a member of the file globbing pattern list."
 msgstr ""
 
-#: lib/logrotate/filegroup.py:495
+#: lib/logrotate/filegroup.py:514
 msgid "Invalid taboo pattern {!r} given."
 msgstr ""
 
-#: lib/logrotate/filegroup.py:500
+#: lib/logrotate/filegroup.py:519
 msgid "Invalid taboo pattern type {!r} given."
 msgstr ""
 
-#: lib/logrotate/filegroup.py:508
+#: lib/logrotate/filegroup.py:527
 msgid "Got a {c} error on adding taboo pattern {p!r}: {e}."
 msgstr ""
 
-#: lib/logrotate/filegroup.py:515
+#: lib/logrotate/filegroup.py:534
 msgid "Taboo pattern {!r} already exists in the list of taboo patterns."
 msgstr ""
 
-#: lib/logrotate/filegroup.py:529
+#: lib/logrotate/filegroup.py:548
 msgid "Initializing the list of taboo patterns with some default values."
 msgstr ""
 
-#: lib/logrotate/script.py:130 lib/logrotate/script.py:144
+#: lib/logrotate/script.py:120 lib/logrotate/script.py:134
 msgid "Invalid value for property {!r} given."
 msgstr ""
 
-#: lib/logrotate/script.py:216
+#: lib/logrotate/script.py:206
 msgid "Logrotate script object {!r} will be destroyed."
 msgstr ""
 
-#: lib/logrotate/script.py:372
+#: lib/logrotate/script.py:362
 msgid "No command to execute defined in script {!r}."
 msgstr ""
 
-#: lib/logrotate/script.py:379
+#: lib/logrotate/script.py:369
 msgid "Executing script {!r} with command:"
 msgstr ""
 
-#: lib/logrotate/script.py:391
+#: lib/logrotate/script.py:381
 msgid "Completed process:"
 msgstr ""
 
-#: lib/logrotate/script.py:393
+#: lib/logrotate/script.py:383
 msgid "Got returncode for script {s!r}: {ret!r}."
 msgstr ""
 
-#: lib/logrotate/script.py:401
+#: lib/logrotate/script.py:391
 msgid "Execution of script {s!r} failed: {e}"
 msgstr ""
 
-#: lib/logrotate/script.py:426
+#: lib/logrotate/script.py:416
 msgid "Checking, whether the script {!r} should be executed."
 msgstr ""
 
-#: lib/logrotate/status.py:165
+#: lib/logrotate/status.py:147
 msgid "Could not evaluate {!r} as a datetime object."
 msgstr ""
 
-#: lib/logrotate/status.py:344
+#: lib/logrotate/status.py:326
 msgid "Auto reading on init ..."
 msgstr ""
 
-#: lib/logrotate/status.py:348
+#: lib/logrotate/status.py:330
 msgid "No auto reading on init ..."
 msgstr ""
 
-#: lib/logrotate/status.py:402
+#: lib/logrotate/status.py:384
 msgid "Status file object will destroyed."
 msgstr ""
 
-#: lib/logrotate/status.py:420
+#: lib/logrotate/status.py:402
 msgid "Only {e} objects can be added to a {c} object (given {f} object)."
 msgstr ""
 
-#: lib/logrotate/status.py:427
+#: lib/logrotate/status.py:409
 msgid "Filename {f1!r} in given {o} object does not match given filename {f2!r}."
 msgstr ""
 
-#: lib/logrotate/status.py:482
+#: lib/logrotate/status.py:464
 msgid "Original permissions of {fn!r}: {perm:04o}"
 msgstr ""
 
-#: lib/logrotate/status.py:493 lib/logrotate/status.py:569
-msgid "File does not exists"
-msgstr ""
-
-#: lib/logrotate/status.py:497
+#: lib/logrotate/status.py:479
 msgid "Path is not a regular file"
 msgstr ""
 
-#: lib/logrotate/status.py:501
+#: lib/logrotate/status.py:483
 msgid "No read permissions"
 msgstr ""
 
-#: lib/logrotate/status.py:504
+#: lib/logrotate/status.py:486
 msgid "Trying to read {!r} ..."
 msgstr ""
 
-#: lib/logrotate/status.py:512
+#: lib/logrotate/status.py:494
 msgid "Idendified version of status file: {}"
 msgstr ""
 
-#: lib/logrotate/status.py:520
+#: lib/logrotate/status.py:502
 msgid "Could not evaluate line {file!r}:{lnr} {line!r}: {e}"
 msgstr ""
 
-#: lib/logrotate/status.py:541
+#: lib/logrotate/status.py:523
 msgid "Simulating writing {!r} ..."
 msgstr ""
 
-#: lib/logrotate/status.py:543 lib/logrotate/status.py:546 lib/logrotate/status.py:554
-#: lib/logrotate/status.py:559
+#: lib/logrotate/status.py:525 lib/logrotate/status.py:528 lib/logrotate/status.py:536
+#: lib/logrotate/status.py:541
 msgid "Writing line {!r}."
 msgstr ""
 
-#: lib/logrotate/status.py:550
+#: lib/logrotate/status.py:532
 msgid "Trying to write {!r} ..."
 msgstr ""
 
-#: lib/logrotate/status.py:575
+#: lib/logrotate/status.py:557
 msgid "Ensuring permissions of {!r} ..."
 msgstr ""
 
-#: lib/logrotate/status.py:578
+#: lib/logrotate/status.py:560
 msgid "Current permissions of {fn!r}: {cur:04o}, expected: {exp:04o}."
 msgstr ""
 
-#: lib/logrotate/status.py:582
+#: lib/logrotate/status.py:564
 msgid "Setting permissions of {fn!r} to {perm:04o}."
 msgstr ""
 
-#: lib/logrotate/status.py:624
+#: lib/logrotate/status.py:606
 msgid "Checking permissions of status file {!r} ..."
 msgstr ""
 
-#: lib/logrotate/status.py:630
+#: lib/logrotate/status.py:612
 msgid "Access to status file {!r} is OK."
 msgstr ""
 
-#: lib/logrotate/status.py:634
+#: lib/logrotate/status.py:616
 msgid "No write access to status file {!r}."
 msgstr ""
 
-#: lib/logrotate/status.py:642
+#: lib/logrotate/status.py:624
 msgid "Checking permissions of parent directory {!r} ..."
 msgstr ""
 
-#: lib/logrotate/status.py:647
+#: lib/logrotate/status.py:629
 msgid "Directory {!r} doesn't exists."
 msgstr ""
 
-#: lib/logrotate/status.py:656
+#: lib/logrotate/status.py:638
 msgid "Parent directory {d!r} of status file {f!r} is not a directory."
 msgstr ""
 
-#: lib/logrotate/status.py:666
+#: lib/logrotate/status.py:648
 msgid "No write access to parent directory {d!r} of status file {f!r}."
 msgstr ""
 
-#: lib/logrotate/status.py:674
+#: lib/logrotate/status.py:656
 msgid "Permissions to parent directory {!r} are OK."
 msgstr ""
 
