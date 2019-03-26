@@ -20,7 +20,7 @@ from fb_tools.errors import FbError, FbHandlerError, FbAppError
 
 from .translate import XLATOR
 
-__version__ = '0.1.0'
+__version__ = '0.2.0'
 
 _ = XLATOR.gettext
 ngettext = XLATOR.ngettext
@@ -37,6 +37,13 @@ class LogrotateError(FbError):
 class LogrotateObjectError(FbBaseObjectError, LogrotateError):
     """ Base error class useable by all objects. """
 
+    pass
+
+#========================================================================
+class LogrotateConfigurationError(LogrotateObjectError):
+    """
+    Base class for exceptions on reading and evaluating logrotate configuration.
+    """
     pass
 
 

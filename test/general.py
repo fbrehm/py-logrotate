@@ -128,6 +128,8 @@ class BaseTestCase(unittest.TestCase):
 
         self.base_dir = Path(__file__).parent.parent.resolve()
         self.base_dir = self.base_dir.relative_to(Path.cwd())
+        if self.verbose:
+            print()
         LOG.debug("Base directory is: {!r}".format(str(self.base_dir)))
 
         self.tmp_dir = self.base_dir.joinpath('tmp')
