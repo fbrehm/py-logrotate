@@ -49,7 +49,7 @@ from .translate import XLATOR
 
 from .common import split_parts
 
-__version__ = '0.6.3'
+__version__ = '0.6.4'
 
 _ = XLATOR.gettext
 ngettext = XLATOR.ngettext
@@ -138,6 +138,10 @@ class LogFileGroup(FbBaseObject, MutableSequence):
             'property': 'missing_ok', 'value': True, 'exclude': ['nomissingok']},
         'nomissingok': {
             'property': 'missing_ok', 'value': False, 'exclude': ['missingok']},
+        'sharedscripts': {
+            'property': 'sharedscripts', 'value': True, 'exclude': ['nosharedscripts']},
+        'nosharedscripts': {
+            'property': 'sharedscripts', 'value': False, 'exclude': ['sharedscripts']},
     }
 
     # -------------------------------------------------------------------------
@@ -166,6 +170,7 @@ class LogFileGroup(FbBaseObject, MutableSequence):
 
         self._if_empty = True
         self._missing_ok = False
+        self._sharedscripts = False
 
         self.applied_directives = {}
 
@@ -279,6 +284,16 @@ class LogFileGroup(FbBaseObject, MutableSequence):
     @missing_ok.setter
     def missing_ok(self, value):
         self._missing_ok = bool(value)
+
+    # ------------------------------------------------------------
+    @property
+    def sharedscripts(self):
+        "Don't complain, if no files were found for the given file pattern."
+        return self._sharedscripts
+
+    @sharedscripts.setter
+    def sharedscripts(self, value):
+        self._sharedscripts = bool(value)
 
     # ------------------------------------------------------------
     @property
@@ -405,6 +420,7 @@ class LogFileGroup(FbBaseObject, MutableSequence):
 
         res['if_empty'] = self.if_empty
         res['missing_ok'] = self.missing_ok
+        res['sharedscripts'] = self.sharedscripts
 
         res['rotate_method'] = self.rotate_method
 
@@ -482,6 +498,7 @@ class LogFileGroup(FbBaseObject, MutableSequence):
 
         new_group.if_empty = self.if_empty
         new_group.missing_ok = self.missing_ok
+        new_group.sharedscripts = self.sharedscripts
 
         for fname in self:
             new_group.append(fname)
