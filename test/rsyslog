@@ -1,6 +1,8 @@
 compress
 notifempty
 missingok
+delaycompress
+rotate 4
 
 /var/log/syslog /var/log/messages
 {
@@ -12,7 +14,7 @@ missingok
 	dateext
 	olddir /var/log/.old
 	nocompress
-	delaycompress
+	nodelaycompress
 	postrotate
 		invoke-rc.d rsyslog rotate >/dev/null
 	endscript
@@ -32,7 +34,6 @@ missingok
 /var/log/rsyslog.log
 /var/log/debug
 {
-	rotate 4
 	daily
 	missingok
 	notifempty
@@ -40,7 +41,7 @@ missingok
 	dateext
 	olddir /var/log/.old
 	compress
-	delaycompress
+	delaycompress 0
 	sharedscripts
 	postrotate
 		invoke-rc.d rsyslog rotate >/dev/null
@@ -53,7 +54,7 @@ missingok
 	missingok
 	notifempty
 	size 4M
-	delaycompress
+	delaycompress 2
 	dateext
 	compress
 	olddir /var/log/syslog.d/.old

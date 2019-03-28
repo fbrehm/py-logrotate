@@ -49,7 +49,7 @@ from .translate import XLATOR
 
 from .common import split_parts
 
-__version__ = '0.6.4'
+__version__ = '0.6.5'
 
 _ = XLATOR.gettext
 ngettext = XLATOR.ngettext
@@ -123,25 +123,46 @@ class LogFileGroup(FbBaseObject, MutableSequence):
 
     unary_directives = {
         'compress': {
-            'property': 'compress', 'value': True, 'exclude': ['nocompress']},
+            'property': 'compress', 'value': True,
+            'exclude': ['nocompress']},
         'nocompress': {
-            'property': 'compress', 'value': False, 'exclude': ['compress']},
+            'property': 'compress', 'value': False,
+            'exclude': ['compress', 'delaycompress']},
         'copy': {
-            'property': 'rotate_method', 'value': 'copy', 'exclude': ['copytruncate', 'create']},
+            'property': 'rotate_method', 'value': 'copy',
+            'exclude': ['copytruncate', 'create', 'sharedscripts']},
         'copytruncate': {
-            'property': 'rotate_method', 'value': 'copytruncate', 'exclude': ['copy', 'create']},
+            'property': 'rotate_method', 'value': 'copytruncate',
+            'exclude': ['copy', 'create', 'sharedscripts']},
         'ifempty': {
-            'property': 'if_empty', 'value': True, 'exclude': ['notifempty']},
+            'property': 'if_empty', 'value': True,
+            'exclude': ['notifempty']},
         'notifempty': {
-            'property': 'if_empty', 'value': False, 'exclude': ['ifempty']},
+            'property': 'if_empty', 'value': False,
+            'exclude': ['ifempty']},
         'missingok': {
-            'property': 'missing_ok', 'value': True, 'exclude': ['nomissingok']},
+            'property': 'missing_ok', 'value': True,
+            'exclude': ['nomissingok']},
         'nomissingok': {
-            'property': 'missing_ok', 'value': False, 'exclude': ['missingok']},
+            'property': 'missing_ok', 'value': False,
+            'exclude': ['missingok']},
         'sharedscripts': {
-            'property': 'sharedscripts', 'value': True, 'exclude': ['nosharedscripts']},
+            'property': 'sharedscripts', 'value': True,
+            'exclude': ['nosharedscripts', 'copy', 'copytruncate']},
         'nosharedscripts': {
-            'property': 'sharedscripts', 'value': False, 'exclude': ['sharedscripts']},
+            'property': 'sharedscripts', 'value': False,
+            'exclude': ['sharedscripts']},
+        'nodelaycompress': {
+            'property': 'delaycompress', 'value': None,
+            'exclude': ['delaycompress',]},
+    }
+
+    integer_directives = {
+        'delaycompress': {
+            'property': 'delaycompress', 'default': 1,
+            'exclude': ['nocompress', 'nodelaycompress',]},
+        'rotate': {
+            'property': 'rotate', 'default': None, 'exclude': []},
     }
 
     # -------------------------------------------------------------------------
@@ -174,6 +195,7 @@ class LogFileGroup(FbBaseObject, MutableSequence):
 
         self.applied_directives = {}
 
+        self._rotate = 0
         self._rotate_method = RotateMethod.default()
 
         super(LogFileGroup, self).__init__(
@@ -379,6 +401,18 @@ class LogFileGroup(FbBaseObject, MutableSequence):
 
     # ------------------------------------------------------------
     @property
+    def rotate(self):
+        """
+        Defines, how many rotated files should be held before they are removed.
+        """
+        return self._rotate
+
+    @rotate.setter
+    def rotate(self, value):
+        self._rotate = int(value)
+
+    # ------------------------------------------------------------
+    @property
     def rotate_method(self):
         """The method, which is used for rotating the current logfiles."""
         return self._rotate_method.name
@@ -422,6 +456,7 @@ class LogFileGroup(FbBaseObject, MutableSequence):
         res['missing_ok'] = self.missing_ok
         res['sharedscripts'] = self.sharedscripts
 
+        res['rotate'] = self.rotate
         res['rotate_method'] = self.rotate_method
 
         res['patterns'] = copy.copy(self.patterns)
@@ -499,6 +534,8 @@ class LogFileGroup(FbBaseObject, MutableSequence):
         new_group.if_empty = self.if_empty
         new_group.missing_ok = self.missing_ok
         new_group.sharedscripts = self.sharedscripts
+
+        new_group.rotate = self.rotate
 
         for fname in self:
             new_group.append(fname)
@@ -725,6 +762,8 @@ class LogFileGroup(FbBaseObject, MutableSequence):
         directive = line_parts[0].lower()
         if directive in self.unary_directives:
             return self.apply_unary_directive(line, line_parts, cfg_file, linenr)
+        if directive in self.integer_directives:
+            return self.apply_integer_directive(line, line_parts, cfg_file, linenr)
 
         return False
 
@@ -732,9 +771,6 @@ class LogFileGroup(FbBaseObject, MutableSequence):
     def apply_unary_directive(self, line, line_parts, cfg_file, linenr):
 
         directive = line_parts[0].lower()
-
-        if self.verbose > 3:
-            LOG.debug(_("Already applied directives:") + '\n' + pp(self.applied_directives))
 
         prop = self.unary_directives[directive]['property']
         val = self.unary_directives[directive]['value']
@@ -769,6 +805,68 @@ class LogFileGroup(FbBaseObject, MutableSequence):
         setattr(self, prop, val)
 
         return True
+
+    # -------------------------------------------------------------------------
+    def apply_integer_directive(self, line, line_parts, cfg_file, linenr):
+
+        directive = line_parts[0].lower()
+
+        prop = self.integer_directives[directive]['property']
+        excludes = [directive]
+        if self.integer_directives[directive]['exclude']:
+            for excl in self.integer_directives[directive]['exclude']:
+                excludes.append(excl)
+
+        val = None
+        default = None
+        if 'default' in self.integer_directives[directive]:
+            default = self.integer_directives[directive]['default']
+
+        if len(line_parts) < 2:
+            if default is None:
+                LOG.error(_(
+                    "Necessary integer value for directive {d!r} in {lf!r}:{lnr} not given: "
+                    "{line}").format(d=directive, lf=str(cfg_file), lnr=linenr, line=line))
+                return False
+            else:
+                val = default
+        else:
+            try:
+                val = int(line_parts[1])
+            except (ValueError, TypeError) as e:
+                msg = _(
+                    "Invalid value {v!r} for directive {d!r} in {lf!r}:{lnr}: {e}").format(
+                    v=line_parts[1], d=directive, lf=str(cfg_file), lnr=linenr, e=e)
+                LOG.error(msg)
+                return False
+
+        if len(line_parts) > 2:
+            LOG.error(self.msg_pointless.format(
+                d=directive, lf=str(cfg_file), lnr=linenr, line=line))
+            return False
+
+        for exclude in excludes:
+            if exclude in self.applied_directives:
+                args = {
+                    'lf': str(cfg_file), 'lnr': linenr, 'd': directive,
+                    'ex': exclude, 'of': str(self.applied_directives[exclude][0]),
+                    'ol': self.applied_directives[exclude][1], 'line': line}
+                LOG.error(_(
+                    "Error in {lf!r}:{lnr}: directive {d!r} was already set as {ex!r} in "
+                    "{of!r}:{ol}: {line}").format(**args))
+                return False
+        if self.verbose > 2:
+            if self.is_default:
+                LOG.debug(_(
+                    "Setting default file group property {p!r} to {v!r}.").format(p=prop, v=val))
+            else:
+                LOG.debug(_(
+                    "Setting file group property {p!r} to {v!r}.").format(p=prop, v=val))
+        self.applied_directives[directive] = (cfg_file, linenr)
+        setattr(self, prop, val)
+
+        return True
+
 
 # ========================================================================
 
