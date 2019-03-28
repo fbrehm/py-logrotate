@@ -49,7 +49,7 @@ from .translate import XLATOR
 
 from .common import split_parts
 
-__version__ = '0.6.1'
+__version__ = '0.6.2'
 
 _ = XLATOR.gettext
 ngettext = XLATOR.ngettext
@@ -130,6 +130,10 @@ class LogFileGroup(FbBaseObject, MutableSequence):
             'property': 'rotate_method', 'value': 'copy', 'exclude': ['copytruncate', 'create']},
         'copytruncate': {
             'property': 'rotate_method', 'value': 'copytruncate', 'exclude': ['copy', 'create']},
+        'ifempty': {
+            'property': 'if_empty', 'value': True, 'exclude': ['notifempty']},
+        'notifempty': {
+            'property': 'if_empty', 'value': False, 'exclude': ['ifempty']},
     }
 
     # -------------------------------------------------------------------------
@@ -155,6 +159,7 @@ class LogFileGroup(FbBaseObject, MutableSequence):
         self._compressext = None
         self._compressoptions = None
         self._delaycompress = None
+        self._if_empty = True
 
         self.applied_directives = {}
 
@@ -248,6 +253,16 @@ class LogFileGroup(FbBaseObject, MutableSequence):
     @compress.setter
     def compress(self, value):
         self._compress = bool(value)
+
+    # ------------------------------------------------------------
+    @property
+    def if_empty(self):
+        "Should empty logfiles be rotated?"
+        return self._if_empty
+
+    @if_empty.setter
+    def if_empty(self, value):
+        self._if_empty = bool(value)
 
     # ------------------------------------------------------------
     @property
@@ -371,6 +386,8 @@ class LogFileGroup(FbBaseObject, MutableSequence):
         res['compressext'] = self.compressext
         res['compressoptions'] = self.compressoptions
         res['delaycompress'] = self.delaycompress
+
+        res['if_empty'] = self.if_empty
 
         res['rotate_method'] = self.rotate_method
 
@@ -705,7 +722,12 @@ class LogFileGroup(FbBaseObject, MutableSequence):
                     "{of!r}:{ol}: {line}").format(**args))
                 return False
         if self.verbose > 2:
-            LOG.debug(_("Setting file group property {p!r} to {v!r}.").format(p=prop, v=val))
+            if self.is_default:
+                LOG.debug(_(
+                    "Setting default file group property {p!r} to {v!r}.").format(p=prop, v=val))
+            else:
+                LOG.debug(_(
+                    "Setting file group property {p!r} to {v!r}.").format(p=prop, v=val))
         self.applied_directives[directive] = (cfg_file, linenr)
         setattr(self, prop, val)
 
