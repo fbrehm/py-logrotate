@@ -1,11 +1,12 @@
 compress
 notifempty
+missingok
 
 /var/log/syslog /var/log/messages
 {
 	rotate 7
 	daily
-	missingok
+	nomissingok
 	ifempty
 	minsize 4M
 	dateext

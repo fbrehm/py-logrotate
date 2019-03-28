@@ -49,7 +49,7 @@ from .translate import XLATOR
 
 from .common import split_parts
 
-__version__ = '0.6.2'
+__version__ = '0.6.3'
 
 _ = XLATOR.gettext
 ngettext = XLATOR.ngettext
@@ -134,6 +134,10 @@ class LogFileGroup(FbBaseObject, MutableSequence):
             'property': 'if_empty', 'value': True, 'exclude': ['notifempty']},
         'notifempty': {
             'property': 'if_empty', 'value': False, 'exclude': ['ifempty']},
+        'missingok': {
+            'property': 'missing_ok', 'value': True, 'exclude': ['nomissingok']},
+        'nomissingok': {
+            'property': 'missing_ok', 'value': False, 'exclude': ['missingok']},
     }
 
     # -------------------------------------------------------------------------
@@ -159,7 +163,9 @@ class LogFileGroup(FbBaseObject, MutableSequence):
         self._compressext = None
         self._compressoptions = None
         self._delaycompress = None
+
         self._if_empty = True
+        self._missing_ok = False
 
         self.applied_directives = {}
 
@@ -263,6 +269,16 @@ class LogFileGroup(FbBaseObject, MutableSequence):
     @if_empty.setter
     def if_empty(self, value):
         self._if_empty = bool(value)
+
+    # ------------------------------------------------------------
+    @property
+    def missing_ok(self):
+        "Don't complain, if no files were found for the given file pattern."
+        return self._missing_ok
+
+    @missing_ok.setter
+    def missing_ok(self, value):
+        self._missing_ok = bool(value)
 
     # ------------------------------------------------------------
     @property
@@ -388,6 +404,7 @@ class LogFileGroup(FbBaseObject, MutableSequence):
         res['delaycompress'] = self.delaycompress
 
         res['if_empty'] = self.if_empty
+        res['missing_ok'] = self.missing_ok
 
         res['rotate_method'] = self.rotate_method
 
@@ -462,6 +479,9 @@ class LogFileGroup(FbBaseObject, MutableSequence):
         new_group.delaycompress = self.delaycompress
         new_group.definition_started = self.definition_started
         new_group.applied_directives = {}
+
+        new_group.if_empty = self.if_empty
+        new_group.missing_ok = self.missing_ok
 
         for fname in self:
             new_group.append(fname)
