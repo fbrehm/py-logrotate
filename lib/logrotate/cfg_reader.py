@@ -36,7 +36,7 @@ from .errors import LogrotateCfgFatalError, LogrotateCfgNonFatalError
 from .common import split_parts
 from .filegroup import LogFileGroup
 
-__version__ = '0.2.5'
+__version__ = '0.2.6'
 
 _ = XLATOR.gettext
 ngettext = XLATOR.ngettext
@@ -298,7 +298,7 @@ class LogrotateConfigReader(HandlingObject):
                 path = Path(line_parts[0])
             except:
                 pass
-            if self.verbose > 3:
+            if self.verbose > 4:
                 LOG.debug(_("Possible path at begin: {!r}.").format(path))
             if path and path.is_absolute():
                 self._eval_path_line(line, line_parts, cfg_file, linenr)
@@ -311,6 +311,11 @@ class LogrotateConfigReader(HandlingObject):
             if line_parts[0] == '}':
                 self._eval_closing_block_line(line, line_parts, cfg_file, linenr)
                 continue
+
+            if self.current_group is not None:
+                self.current_group.apply_directive(line, line_parts, cfg_file, linenr)
+            else:
+                self.default_group.apply_directive(line, line_parts, cfg_file, linenr)
 
         return True
 

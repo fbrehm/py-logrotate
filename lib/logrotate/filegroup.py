@@ -49,7 +49,7 @@ from .translate import XLATOR
 
 from .common import split_parts
 
-__version__ = '0.5.3'
+__version__ = '0.6.1'
 
 _ = XLATOR.gettext
 ngettext = XLATOR.ngettext
@@ -119,6 +119,19 @@ class LogFileGroup(FbBaseObject, MutableSequence):
 
     re_empty = re.compile(r'^\s*$')
 
+    msg_pointless = _("Pointless option(s) for directive {d!r} in {lf!r}:{lnr}: {line}")
+
+    unary_directives = {
+        'compress': {
+            'property': 'compress', 'value': True, 'exclude': ['nocompress']},
+        'nocompress': {
+            'property': 'compress', 'value': False, 'exclude': ['compress']},
+        'copy': {
+            'property': 'rotate_method', 'value': 'copy', 'exclude': ['copytruncate', 'create']},
+        'copytruncate': {
+            'property': 'rotate_method', 'value': 'copytruncate', 'exclude': ['copy', 'create']},
+    }
+
     # -------------------------------------------------------------------------
     def __init__(
         self, config_file=None, line_nr=None, simulate=False, patterns=None,
@@ -142,6 +155,8 @@ class LogFileGroup(FbBaseObject, MutableSequence):
         self._compressext = None
         self._compressoptions = None
         self._delaycompress = None
+
+        self.applied_directives = {}
 
         self._rotate_method = RotateMethod.default()
 
@@ -295,7 +310,7 @@ class LogFileGroup(FbBaseObject, MutableSequence):
         if value is None:
             self._compressoptions = None
             return
-        if isinstance(value, (list, tuple)):
+        if is_sequence(value):
             self._compressoptions = copy.copy(value)
             return
         self._compressoptions = shlex_quote(str(to_str(value)))
@@ -429,6 +444,7 @@ class LogFileGroup(FbBaseObject, MutableSequence):
         new_group.compressoptions = copy.copy(self.compressoptions)
         new_group.delaycompress = self.delaycompress
         new_group.definition_started = self.definition_started
+        new_group.applied_directives = {}
 
         for fname in self:
             new_group.append(fname)
@@ -641,6 +657,59 @@ class LogFileGroup(FbBaseObject, MutableSequence):
                     continue
                 self.append(path)
 
+    # -------------------------------------------------------------------------
+    def apply_directive(self, line, line_parts, cfg_file, linenr):
+
+        if self.verbose > 2:
+            msg = ''
+            if self.is_default:
+                msg = _("Trying to apply option line {!r} to a default file group.")
+            else:
+                msg = _("Trying to apply option line {!r} to a file group.")
+            LOG.debug(msg.format(line))
+
+        directive = line_parts[0].lower()
+        if directive in self.unary_directives:
+            return self.apply_unary_directive(line, line_parts, cfg_file, linenr)
+
+        return False
+
+    # -------------------------------------------------------------------------
+    def apply_unary_directive(self, line, line_parts, cfg_file, linenr):
+
+        directive = line_parts[0].lower()
+
+        if self.verbose > 3:
+            LOG.debug(_("Already applied directives:") + '\n' + pp(self.applied_directives))
+
+        prop = self.unary_directives[directive]['property']
+        val = self.unary_directives[directive]['value']
+        excludes = [directive]
+        if self.unary_directives[directive]['exclude']:
+            for excl in self.unary_directives[directive]['exclude']:
+                excludes.append(excl)
+
+        if len(line_parts) > 1:
+            LOG.error(self.msg_pointless.format(
+                d=directive, lf=str(cfg_file), lnr=linenr, line=line))
+            return False
+
+        for exclude in excludes:
+            if exclude in self.applied_directives:
+                args = {
+                    'lf': str(cfg_file), 'lnr': linenr, 'd': directive,
+                    'ex': exclude, 'of': str(self.applied_directives[exclude][0]),
+                    'ol': self.applied_directives[exclude][1], 'line': line}
+                LOG.error(_(
+                    "Error in {lf!r}:{lnr}: directive {d!r} was already set as {ex!r} in "
+                    "{of!r}:{ol}: {line}").format(**args))
+                return False
+        if self.verbose > 2:
+            LOG.debug(_("Setting file group property {p!r} to {v!r}.").format(p=prop, v=val))
+        self.applied_directives[directive] = (cfg_file, linenr)
+        setattr(self, prop, val)
+
+        return True
 
 # ========================================================================
 
