@@ -36,7 +36,7 @@ from .errors import LogrotateCfgFatalError, LogrotateCfgNonFatalError
 from .common import split_parts
 from .filegroup import LogFileGroup
 
-__version__ = '0.2.4'
+__version__ = '0.2.5'
 
 _ = XLATOR.gettext
 ngettext = XLATOR.ngettext
@@ -134,6 +134,7 @@ class LogrotateConfigReader(HandlingObject):
 
         self.config_file = config_file
 
+        LogFileGroup.init_taboo_patterns()
         self._init_default_group()
 
         self.initialized = True
@@ -213,6 +214,8 @@ class LogrotateConfigReader(HandlingObject):
         cfg_file = self.config_file.resolve()
         if not self._read(cfg_file):
             return False
+
+        self.resolve_globbings()
 
         if self.verbose > 2:
             out = []
@@ -393,6 +396,23 @@ class LogrotateConfigReader(HandlingObject):
         self.current_group.definition_started = False
         self.file_groups.append(self.current_group)
         self.current_group = None
+
+    # -------------------------------------------------------------------------
+    def resolve_globbings(self):
+
+        all_logfiles = {}
+
+        LOG.debug("Resolving globbing patterns in all file groups ...")
+        for file_group in self.file_groups:
+            file_group.resolve_patterns()
+            for lfile in file_group:
+                if lfile in all_logfiles:
+                    msg = _(
+                        "Double declaration of logfile {lf!r} in {f1!r} and {f2!r}.").format(
+                        lf=str(lfile), f1=str(all_logfiles[lfile]), f2=str(file_group.config_file))
+                    LOG.error(msg)
+                    continue
+                all_logfiles[lfile] = file_group.config_file
 
 
 # =============================================================================

@@ -88,14 +88,17 @@ class LogrotCfgReaderTestCase(BaseTestCase):
 
         from logrotate.cfg_reader import LogrotateConfigReader
 
-        cfg_file = self.test_dir / 'apache2'
+        cft_stems = ('apache2', 'rsyslog')
+        for stem in cft_stems:
 
-        reader = LogrotateConfigReader(
-            appname=APPNAME, verbose=self.verbose,
-            config_file=cfg_file)
-        if self.verbose > 2:
-            LOG.debug("{c} object %s:\n{o}".format(
-                c=reader.__class__.__name__, o=reader))
+            cfg_file = self.test_dir / stem
+
+            reader = LogrotateConfigReader(
+                appname=APPNAME, verbose=self.verbose,
+                config_file=cfg_file)
+            if self.verbose > 2:
+                LOG.debug("{c} object %s:\n{o}".format(
+                    c=reader.__class__.__name__, o=reader))
 
         reader.read()
 

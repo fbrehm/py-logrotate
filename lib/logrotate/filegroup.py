@@ -49,7 +49,7 @@ from .translate import XLATOR
 
 from .common import split_parts
 
-__version__ = '0.5.2'
+__version__ = '0.5.3'
 
 _ = XLATOR.gettext
 ngettext = XLATOR.ngettext
@@ -516,6 +516,10 @@ class LogFileGroup(FbBaseObject, MutableSequence):
         self._files.append(v)
 
     # -------------------------------------------------------------------------
+    def clear(self):
+        self._files = []
+
+    # -------------------------------------------------------------------------
     def add_patterns(self, patterns):
         "Extending list self.patterns by a new file globbing pattern."
 
@@ -614,6 +618,28 @@ class LogFileGroup(FbBaseObject, MutableSequence):
         cls.add_taboo_pattern(r'CVS', 'file');
         cls.add_taboo_pattern(r'RCS', 'file');
 
+    # -------------------------------------------------------------------------
+    def resolve_patterns(self):
+
+        if self.verbose > 1:
+            LOG.debug(_("Resolving globbing pattern in file group."))
+        self.clear()
+
+        for pattern in self.patterns:
+
+            files = glob.glob(str(pattern))
+            if not files:
+                if self.verbose > 2:
+                    LOG.debug(_("Did not found a file for pattern {!r}.").format(pattern))
+                continue
+
+            for lfile in files:
+                path = Path(lfile).resolve()
+                if path in self:
+                    LOG.error(_("Multiple definition of logfile {f!r} in {cf!r}.").format(
+                        f=str(path), c=str(self.config_file)))
+                    continue
+                self.append(path)
 
 
 # ========================================================================

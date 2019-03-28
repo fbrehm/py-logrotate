@@ -1,0 +1,62 @@
+/var/log/syslog /var/log/messages
+{
+	rotate 7
+	daily
+	missingok
+	notifempty
+	minsize 4M
+	dateext
+	olddir /var/log/.old
+	compress
+	delaycompress
+	compress
+	postrotate
+		invoke-rc.d rsyslog rotate >/dev/null
+	endscript
+}
+
+/var/log/all.log
+/var/log/mail.info
+/var/log/mail.warn
+/var/log/mail.err
+/var/log/mail.log
+/var/log/daemon.log
+/var/log/kern.log
+/var/log/auth.log
+/var/log/user.log
+/var/log/lpr.log
+/var/log/cron.log
+/var/log/rsyslog.log
+/var/log/debug
+{
+	rotate 4
+	daily
+	missingok
+	notifempty
+	minsize 4M
+	dateext
+	olddir /var/log/.old
+	compress
+	delaycompress
+	sharedscripts
+	postrotate
+		invoke-rc.d rsyslog rotate >/dev/null
+	endscript
+}
+
+/var/log/syslog.d/*.log {
+	rotate 10
+	weekly
+	missingok
+	notifempty
+	size 4M
+	delaycompress
+	dateext
+	compress
+	olddir /var/log/syslog.d/.old
+	sharedscripts
+	postrotate
+		invoke-rc.d rsyslog rotate > /dev/null
+	endscript
+}
+
