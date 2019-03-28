@@ -36,7 +36,7 @@ from .errors import LogrotateCfgFatalError, LogrotateCfgNonFatalError
 from .common import split_parts
 from .filegroup import LogFileGroup
 
-__version__ = '0.2.2'
+__version__ = '0.2.3'
 
 _ = XLATOR.gettext
 ngettext = XLATOR.ngettext
@@ -99,6 +99,13 @@ class LogrotateConfigReader(HandlingObject):
     re_bs_at_end = re.compile(r'\\$')
     re_comment = re.compile(r'^\s*#.*')
 
+    msg_block_already_started = _(
+        "Found opening curly bracket in file {f!r}:{nr} after another opening curly bracket.")
+    msg_pointless_open_bracket = _(
+        "Pointless content found (l!r} after opening curly bracket in file {f!r}:{nr}.")
+    msg_pointless_closing_bracket = _(
+        "Pointless content found (l!r} after closing curly bracket in file {f!r}:{nr}.")
+
     #-------------------------------------------------------
     def __init__(
         self, config_file=DEFAULT_CONFIG_FILE, name=None, simulate=False, quiet=False,
@@ -115,6 +122,7 @@ class LogrotateConfigReader(HandlingObject):
         """
 
         self._config_file = None
+        self.current_group = None
         self.default_group = None
         self._has_read = False
         self.file_groups = {}
@@ -201,6 +209,7 @@ class LogrotateConfigReader(HandlingObject):
             raise LogrotateCfgFileNotExistsError(self.config_file)
 
         self._init_all_objects()
+        self.current_group = None
         cfg_file = self.config_file.resolve()
         if not self._read(cfg_file):
             return False
@@ -252,11 +261,11 @@ class LogrotateConfigReader(HandlingObject):
             LOG.debug(_("Evaluating content of {!r} ...").format(str(cfg_file)))
 
         linenr = 0
-        in_fd = False
         in_script = False
         in_logfile_list = False
         lastrow = ''
         newscript = ''
+        self.current_group = None
 
         for line in lines:
             linenr += 1
@@ -264,22 +273,126 @@ class LogrotateConfigReader(HandlingObject):
 
             line = lastrow + line
             if self.re_bs_at_end.search(line):
-                line = self.re_bs_at_end.sub('', line).strip()
+                line = self.re_bs_at_end.sub('', line)
                 lastrow = line
                 continue
             lastrow = ''
+            if not line:
+                continue
 
             if self.re_comment.match(line):
                 continue
 
+            line_parts = split_parts(line)
             if self.verbose > 3:
-                LOG.debug(_("Evaluating line {f!r}:{nr}: {l!r}.").format(
-                    f=str(cfg_file.name), nr=linenr, l=line))
+                LOG.debug(_("Evaluating line {f!r}:{nr}: {l!r}").format(
+                    f=str(cfg_file.name), nr=linenr, l=line) + '\n' + pp(line_parts))
+
+            path = None
+            try:
+                path = Path(line_parts[0])
+            except:
+                pass
+            if self.verbose > 3:
+                LOG.debug(_("Possible path at begin: {!r}.").format(path))
+            if path and path.is_absolute():
+                self._eval_path_line(line, line_parts, cfg_file, linenr)
+                continue
+
+            if line_parts[0] == '{':
+                self._eval_open_block_line(line, line_parts, cfg_file, linenr)
+                continue
+
+            if line_parts[0] == '}':
+                self._eval_closing_block_line(line, line_parts, cfg_file, linenr)
+                continue
 
         return True
 
-#========================================================================
+    # -------------------------------------------------------------------------
+    def _eval_path_line(self, line, line_parts, cfg_file, linenr):
 
+        if self.verbose > 2:
+            LOG.debug(_(
+                "Evaluating line with a path at begin in {f!r}:{nr}: {l!r}").format(
+                l=line, f=str(cfg_file), nr=linenr))
+
+        if self.current_group is None:
+            self.current_group = self.default_group.spawn_new()
+        if self.verbose > 3:
+            LOG.debug(_("New spawned file group:") + '\n' + pp(self.current_group.as_dict()))
+        if self.current_group.definition_started:
+            msg = _(
+                "Logfile patttern definitions inside a definition block (in file "
+                "{f!r}:{nr}) are not allowed.").format(f=str(cfg_file), nr=linenr)
+            raise LogrotateCfgFatalError(msg)
+        while len(line_parts):
+            part = line_parts.pop(0)
+            if part == '{':
+                if self.current_group.definition_started:
+                    raise LogrotateCfgFatalError(
+                        self.msg_block_already_started.format(f=str(cfg_file), nr=linenr))
+                self.current_group.definition_started = True
+                if len(line_parts):
+                    LOG.error(self.msg_pointless_open_bracket.format(
+                        l=line, f=str(cfg_file), nr=linenr))
+                break
+            self.current_group.add_pattern(part)
+        if self.verbose > 3:
+            LOG.debug(_("Current file group:") + '\n' + pp(self.current_group.as_dict()))
+
+    # -------------------------------------------------------------------------
+    def _eval_open_block_line(self, line, line_parts, cfg_file, linenr):
+
+        if self.verbose > 2:
+            LOG.debug(_(
+                "Evaluating line with a opening curly bracket in {f!r}:{nr}: {l!r}").format(
+                l=line, f=str(cfg_file), nr=linenr))
+
+        if self.current_group is None:
+            msg = _(
+                "Found opening curly bracket in file {f!r}:{nr} without previous "
+                "definition of files to rotate.").format(f=str(cfg_file), nr=linenr)
+            raise LogrotateCfgFatalError(msg)
+        if self.current_group.definition_started:
+            raise LogrotateCfgFatalError(
+                self.msg_block_already_started.format(f=str(cfg_file), nr=linenr))
+        if len(line_parts) > 1:
+            LOG.error(self.msg_pointless_open_bracket.format(l=line, f=str(cfg_file), nr=linenr))
+
+        self.current_group.definition_started = True
+
+    # -------------------------------------------------------------------------
+    def _eval_closing_block_line(self, line, line_parts, cfg_file, linenr):
+
+        if self.verbose > 2:
+            LOG.debug(_(
+                "Evaluating line with a closing curly bracket in {f!r}:{nr}: {l!r}").format(
+                l=line, f=str(cfg_file), nr=linenr))
+
+        if self.verbose > 3:
+            LOG.debug(_("Current file group:") + '\n' + pp(self.current_group.as_dict()))
+        if self.current_group is None:
+            msg = _(
+                "Found closing curly bracket in file {f!r}:{nr} without previous "
+                "definition of files to rotate.").format(f=str(cfg_file), nr=linenr)
+            raise LogrotateCfgFatalError(msg)
+        if self.verbose > 2:
+            LOG.debug(_("Finishing file group:") + '\n' + pp(self.current_group.as_dict()))
+        if not self.current_group.definition_started:
+            msg = _(
+                "Found closing curly bracket in file {f!r}:{nr} without previous "
+                "opening curly bracket.").format(f=str(cfg_file), nr=linenr)
+            raise LogrotateCfgFatalError(msg)
+        if len(line_parts) > 1:
+            LOG.error(self.msg_pointless_closing_bracket.format(
+                l=line, f=str(cfg_file), nr=linenr))
+        self.current_group.definition_started = False
+        self.file_groups[cfg_file] = self.current_group
+        self.current_group = None
+
+
+# =============================================================================
 if __name__ == "__main__":
     pass
 

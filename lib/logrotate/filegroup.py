@@ -38,17 +38,18 @@ import six
 from six.moves import shlex_quote
 
 # Own modules
-from fb_tools.common import pp, human2mbytes, to_str
+from fb_tools.common import pp, human2mbytes, to_str, is_sequence
 
 from fb_tools.obj import FbBaseObject
 
 from .errors import LogrotateObjectError
+from .errors import LogrotateCfgFatalError, LogrotateCfgNonFatalError
 
 from .translate import XLATOR
 
 from .common import split_parts
 
-__version__ = '0.5.1'
+__version__ = '0.5.2'
 
 _ = XLATOR.gettext
 ngettext = XLATOR.ngettext
@@ -131,6 +132,7 @@ class LogFileGroup(FbBaseObject, MutableSequence):
         self._simulate = bool(simulate)
 
         self._is_default = False
+        self._definition_started = False
 
         self.patterns = []
         self._files =[]
@@ -151,15 +153,7 @@ class LogFileGroup(FbBaseObject, MutableSequence):
         self.line_nr = line_nr
 
         if patterns:
-            if isinstance(patterns, (list, tuple)):
-                for pattern in patterns:
-                    self.patterns.append(to_str(pattern, force=True))
-            elif isinstance(to_str(patterns), str):
-                self.patterns.append(to_str(patterns))
-            else:
-                msg = _("Invalid type {t!r} of parameter {par}: {pat!r}.").format(
-                    t=patterns.__class__.__name__, par='patterns', pat=patterns)
-                raise TypeError(msg)
+            self.add_patterns(patterns)
 
         self.compresscmd = compresscmd
         self.compressext = compressext
@@ -207,6 +201,18 @@ class LogFileGroup(FbBaseObject, MutableSequence):
     @is_default.setter
     def is_default(self, value):
         self._is_default = bool(value)
+
+    # ------------------------------------------------------------
+    @property
+    def definition_started(self):
+        "Flag, that the definition of the file group was started inside the configuration."
+        if self.is_default:
+            return True
+        return self._definition_started
+
+    @definition_started.setter
+    def definition_started(self, value):
+        self._definition_started = bool(value)
 
     # ------------------------------------------------------------
     @property
@@ -340,6 +346,7 @@ class LogFileGroup(FbBaseObject, MutableSequence):
         res['line_nr'] = self.line_nr
         res['simulate'] = self.simulate
         res['is_default'] = self.is_default
+        res['definition_started'] = self.definition_started
         res['status_file'] = None
         if self.status_file:
             res['status_file'] = self.status_file.as_dict(short=short)
@@ -421,9 +428,30 @@ class LogFileGroup(FbBaseObject, MutableSequence):
         new_group.compressext = self._compressext
         new_group.compressoptions = copy.copy(self.compressoptions)
         new_group.delaycompress = self.delaycompress
+        new_group.definition_started = self.definition_started
 
         for fname in self:
             new_group.append(fname)
+
+        return new_group
+
+    # -------------------------------------------------------------------------
+    def spawn_new(self):
+        """Creates a new file group as a copy of the current file group.
+            If current group is not a default group, a LogFileGroupError is raised.
+        """
+
+        if not self.is_default:
+            msg = _("Method {} may only be used on a default file group.").format(
+                'spawn_new()')
+            raise LogFileGroupError(msg)
+
+        if self.verbose > 2:
+            LOG.debug(_("Spawning a new file group from a default file group."))
+
+        new_group = copy.copy(self)
+        new_group.is_default = False
+        new_group.definition_started = False
 
         return new_group
 
@@ -488,20 +516,30 @@ class LogFileGroup(FbBaseObject, MutableSequence):
         self._files.append(v)
 
     # -------------------------------------------------------------------------
-    def add_pattern(self, pattern):
+    def add_patterns(self, patterns):
         "Extending list self.patterns by a new file globbing pattern."
 
-        if not pattern or not isinstance(to_str(pattern), str):
-            msg = _("Invalid file globbing pattern {!r}.").format(pattern)
-            raise ValueError(msg)
+        if is_sequence(patterns):
+            for pattern in patterns:
+                self.add_pattern(pattern)
+        else:
+            self.add_pattern(patterns)
 
-        pat = to_str(pattern)
-        if pat in self.patterns:
-            LOG.warning(_(
-                "Pattern {!r} is already a member of the file globbing pattern list.").format(
-                pattern))
-            return
-        self.patterns.append(pat)
+    # -------------------------------------------------------------------------
+    def add_pattern(self, pattern):
+
+        try:
+            path = Path(pattern)
+        except TypeError as e:
+            msg = _("Could not add file pattern {p!r}: {e}").format(
+                p=pattern, e=e)
+            raise LogrotateCfgNonFatalError(msg)
+
+        if not path.is_absolute():
+            msg = _("A logfile pattern must be an absolute path: {!r}").format(str(path))
+            raise LogrotateCfgNonFatalError(msg)
+
+        self.patterns.append(path)
 
     # -------------------------------------------------------------------------
     @classmethod
