@@ -36,7 +36,7 @@ from .errors import LogrotateCfgFatalError, LogrotateCfgNonFatalError
 from .common import split_parts
 from .filegroup import LogFileGroup
 
-__version__ = '0.2.3'
+__version__ = '0.2.4'
 
 _ = XLATOR.gettext
 ngettext = XLATOR.ngettext
@@ -125,7 +125,7 @@ class LogrotateConfigReader(HandlingObject):
         self.current_group = None
         self.default_group = None
         self._has_read = False
-        self.file_groups = {}
+        self.file_groups = []
         self.scripts = []
 
         super(LogrotateConfigReader, self).__init__(
@@ -175,7 +175,7 @@ class LogrotateConfigReader(HandlingObject):
     def _init_all_objects(self):
 
         self._init_default_group()
-        self.file_groups = {}
+        self.file_groups = []
         self.scripts = []
 
     # -------------------------------------------------------------------------
@@ -215,7 +215,10 @@ class LogrotateConfigReader(HandlingObject):
             return False
 
         if self.verbose > 2:
-            LOG.debug(_("All read config files:") + '\n' + pp(self.file_groups))
+            out = []
+            for fg in self.file_groups:
+                out.append(fg.as_dict())
+            LOG.debug(_("All read config files:") + '\n' + pp(out))
 
         self.has_read = True
         return True
@@ -248,7 +251,6 @@ class LogrotateConfigReader(HandlingObject):
             msg = _("Could not read configuration file {f!r}: {e}").format(
                 f=str(cfg_file), e=e)
             raise LogrotateCfgFatalError(msg)
-        self.file_groups[cfg_file] = None
 
         lines = content.splitlines()
 
@@ -319,6 +321,7 @@ class LogrotateConfigReader(HandlingObject):
 
         if self.current_group is None:
             self.current_group = self.default_group.spawn_new()
+            self.current_group.config_file = cfg_file
         if self.verbose > 3:
             LOG.debug(_("New spawned file group:") + '\n' + pp(self.current_group.as_dict()))
         if self.current_group.definition_started:
@@ -377,7 +380,7 @@ class LogrotateConfigReader(HandlingObject):
                 "Found closing curly bracket in file {f!r}:{nr} without previous "
                 "definition of files to rotate.").format(f=str(cfg_file), nr=linenr)
             raise LogrotateCfgFatalError(msg)
-        if self.verbose > 2:
+        if self.verbose > 3:
             LOG.debug(_("Finishing file group:") + '\n' + pp(self.current_group.as_dict()))
         if not self.current_group.definition_started:
             msg = _(
@@ -388,7 +391,7 @@ class LogrotateConfigReader(HandlingObject):
             LOG.error(self.msg_pointless_closing_bracket.format(
                 l=line, f=str(cfg_file), nr=linenr))
         self.current_group.definition_started = False
-        self.file_groups[cfg_file] = self.current_group
+        self.file_groups.append(self.current_group)
         self.current_group = None
 
 
