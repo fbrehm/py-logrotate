@@ -28,6 +28,7 @@ endscript
     dateext
     daily
     size 5K
+    start 3
     maxage 0.5y
     mail	test@uhu-banane.de
     #olddir %Y-%m 0755 apache users

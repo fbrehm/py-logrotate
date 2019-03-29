@@ -49,7 +49,7 @@ from .translate import XLATOR
 
 from .common import split_parts
 
-__version__ = '0.6.6'
+__version__ = '0.6.7'
 
 _ = XLATOR.gettext
 ngettext = XLATOR.ngettext
@@ -163,6 +163,8 @@ class LogFileGroup(FbBaseObject, MutableSequence):
             'exclude': ['nocompress', 'nodelaycompress',]},
         'rotate': {
             'property': 'rotate', 'default': None, 'exclude': []},
+        'start': {
+            'property': 'start_number', 'default': None, 'exclude': []},
     }
 
     # -------------------------------------------------------------------------
@@ -192,6 +194,7 @@ class LogFileGroup(FbBaseObject, MutableSequence):
         self._if_empty = True
         self._missing_ok = False
         self._sharedscripts = False
+        self._start_number = 0
 
         self.applied_directives = {}
 
@@ -397,7 +400,11 @@ class LogFileGroup(FbBaseObject, MutableSequence):
         if value is None:
             self._delaycompress = None
             return
-        self._delaycompress = int(value)
+        v = int(value)
+        if v < 0:
+            msg = _("A negative value for {!r} is not allowed.").format('delaycompress')
+            raise ValueError(msg)
+        self._delaycompress = v
 
     # ------------------------------------------------------------
     @property
@@ -409,7 +416,27 @@ class LogFileGroup(FbBaseObject, MutableSequence):
 
     @rotate.setter
     def rotate(self, value):
-        self._rotate = int(value)
+        v = int(value)
+        if v < 0:
+            msg = _("A negative number for {!r} is not allowed.").format('rotate')
+            raise ValueError(msg)
+        self._rotate = v
+
+    # ------------------------------------------------------------
+    @property
+    def start_number(self):
+        """
+        The number to use as the base for rotation, if no date extension is used.
+        """
+        return self._start_number
+
+    @start_number.setter
+    def start_number(self, value):
+        v = int(value)
+        if v < 0:
+            msg = _("A negative number for {!r} is not allowed.").format('start_number')
+            raise ValueError(msg)
+        self._start_number = v
 
     # ------------------------------------------------------------
     @property
@@ -457,6 +484,7 @@ class LogFileGroup(FbBaseObject, MutableSequence):
         res['sharedscripts'] = self.sharedscripts
 
         res['rotate'] = self.rotate
+        res['start_number'] = self.start_number
         res['rotate_method'] = self.rotate_method
 
         res['patterns'] = copy.copy(self.patterns)
@@ -536,6 +564,7 @@ class LogFileGroup(FbBaseObject, MutableSequence):
         new_group.sharedscripts = self.sharedscripts
 
         new_group.rotate = self.rotate
+        new_group.start_number = self.start_number
 
         for fname in self:
             new_group.append(fname)
@@ -869,7 +898,14 @@ class LogFileGroup(FbBaseObject, MutableSequence):
                     "Setting file group property {p!r} to {v!r}.").format(p=prop, v=val))
         if not self.is_default:
             self.applied_directives[directive] = (cfg_file, linenr)
-        setattr(self, prop, val)
+        try:
+            setattr(self, prop, val)
+        except ValueError as e:
+            msg = _(
+                "Invalid value {v!r} for directive {d!r} in {lf!r}:{lnr}: {e}").format(
+                v=line_parts[1], d=directive, lf=str(cfg_file), lnr=linenr, e=e)
+            LOG.error(msg)
+            return False
 
         return True
 
