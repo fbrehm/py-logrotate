@@ -49,7 +49,7 @@ from .translate import XLATOR
 
 from .common import split_parts
 
-__version__ = '0.6.5'
+__version__ = '0.6.6'
 
 _ = XLATOR.gettext
 ngettext = XLATOR.ngettext
@@ -784,16 +784,18 @@ class LogFileGroup(FbBaseObject, MutableSequence):
                 d=directive, lf=str(cfg_file), lnr=linenr, line=line))
             return False
 
-        for exclude in excludes:
-            if exclude in self.applied_directives:
-                args = {
-                    'lf': str(cfg_file), 'lnr': linenr, 'd': directive,
-                    'ex': exclude, 'of': str(self.applied_directives[exclude][0]),
-                    'ol': self.applied_directives[exclude][1], 'line': line}
-                LOG.error(_(
-                    "Error in {lf!r}:{lnr}: directive {d!r} was already set as {ex!r} in "
-                    "{of!r}:{ol}: {line}").format(**args))
-                return False
+        if not self.is_default:
+            for exclude in excludes:
+                if exclude in self.applied_directives:
+                    args = {
+                        'lf': str(cfg_file), 'lnr': linenr, 'd': directive,
+                        'ex': exclude, 'of': str(self.applied_directives[exclude][0]),
+                        'ol': self.applied_directives[exclude][1], 'line': line}
+                    LOG.error(_(
+                        "Error in {lf!r}:{lnr}: directive {d!r} was already set as {ex!r} in "
+                        "{of!r}:{ol}: {line}").format(**args))
+                    return False
+
         if self.verbose > 2:
             if self.is_default:
                 LOG.debug(_(
@@ -801,7 +803,8 @@ class LogFileGroup(FbBaseObject, MutableSequence):
             else:
                 LOG.debug(_(
                     "Setting file group property {p!r} to {v!r}.").format(p=prop, v=val))
-        self.applied_directives[directive] = (cfg_file, linenr)
+        if not self.is_default:
+            self.applied_directives[directive] = (cfg_file, linenr)
         setattr(self, prop, val)
 
         return True
@@ -845,16 +848,18 @@ class LogFileGroup(FbBaseObject, MutableSequence):
                 d=directive, lf=str(cfg_file), lnr=linenr, line=line))
             return False
 
-        for exclude in excludes:
-            if exclude in self.applied_directives:
-                args = {
-                    'lf': str(cfg_file), 'lnr': linenr, 'd': directive,
-                    'ex': exclude, 'of': str(self.applied_directives[exclude][0]),
-                    'ol': self.applied_directives[exclude][1], 'line': line}
-                LOG.error(_(
-                    "Error in {lf!r}:{lnr}: directive {d!r} was already set as {ex!r} in "
-                    "{of!r}:{ol}: {line}").format(**args))
-                return False
+        if not self.is_default:
+            for exclude in excludes:
+                if exclude in self.applied_directives:
+                    args = {
+                        'lf': str(cfg_file), 'lnr': linenr, 'd': directive,
+                        'ex': exclude, 'of': str(self.applied_directives[exclude][0]),
+                        'ol': self.applied_directives[exclude][1], 'line': line}
+                    LOG.error(_(
+                        "Error in {lf!r}:{lnr}: directive {d!r} was already set as {ex!r} in "
+                        "{of!r}:{ol}: {line}").format(**args))
+                    return False
+
         if self.verbose > 2:
             if self.is_default:
                 LOG.debug(_(
@@ -862,7 +867,8 @@ class LogFileGroup(FbBaseObject, MutableSequence):
             else:
                 LOG.debug(_(
                     "Setting file group property {p!r} to {v!r}.").format(p=prop, v=val))
-        self.applied_directives[directive] = (cfg_file, linenr)
+        if not self.is_default:
+            self.applied_directives[directive] = (cfg_file, linenr)
         setattr(self, prop, val)
 
         return True

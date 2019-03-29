@@ -12,6 +12,8 @@ statusfile /home/frank/Development/Python/PyLogrotate/logrotate.status
 # smtppasswd bla
 # smtptls true
 
+compress
+
 script apache_restart
     echo "/etc/init.d/apache2 reload > /dev/null 2>&1 || true"
 endscript
@@ -53,6 +55,8 @@ endscript
     noolddir
     postrotate apache_restart
 }
+
+nocompress
 
 /home/frank/devel/Python/PyLogrotate/test/log/*.log {
     compress
