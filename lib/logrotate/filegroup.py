@@ -51,7 +51,7 @@ from .translate import XLATOR
 
 from .common import split_parts
 
-__version__ = '0.7.5'
+__version__ = '0.7.6'
 
 _ = XLATOR.gettext
 ngettext = XLATOR.ngettext
@@ -1154,6 +1154,8 @@ class LogFileGroup(FbBaseObject, MutableSequence):
         elif directive in ('compressoptions', 'create'):
             if len(options):
                 val = options
+            if directive == 'create':
+                prop = 'rotate_method'
 
         excludes = [directive]
         if self.string_directives[directive]['exclude']:
