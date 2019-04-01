@@ -3,6 +3,7 @@ notifempty
 missingok
 delaycompress
 rotate 4
+create 0644 root root
 
 /var/log/syslog /var/log/messages
 {
@@ -51,6 +52,7 @@ rotate 4
 /var/log/syslog.d/*.log {
 	rotate 10
 	weekly
+	create
 	missingok
 	notifempty
 	size 4M

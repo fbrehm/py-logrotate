@@ -17,6 +17,8 @@ import pprint
 import gettext
 import copy
 import glob
+import pwd
+import grp
 
 from collections import MutableSequence
 
@@ -49,7 +51,7 @@ from .translate import XLATOR
 
 from .common import split_parts
 
-__version__ = '0.7.4'
+__version__ = '0.7.5'
 
 _ = XLATOR.gettext
 ngettext = XLATOR.ngettext
@@ -223,6 +225,7 @@ class LogFileGroup(FbBaseObject, MutableSequence):
         'compresscmd': {'min': 1, 'max': 1, 'exclude': []},
         'compressext': {'min': 1, 'max': 1, 'exclude': []},
         'compressoptions': {'min': 0, 'max': None, 'exclude': []},
+        'create': {'min': 0, 'max': 3, 'exclude': ['copy', 'copytruncate']},
     }
 
     unsupported_directives = ('uncompresscmd', 'error', 'mail', 'mailfirst', 'maillast')
@@ -261,6 +264,10 @@ class LogFileGroup(FbBaseObject, MutableSequence):
         self._rotate = 0
         self._rotate_method = RotateMethod.default()
         self._rotation_interval = RotationInterval.default()
+
+        self._create_mode = None
+        self._create_owner = None
+        self._create_group = None
 
         super(LogFileGroup, self).__init__(
             appname=appname, verbose=verbose, version=__version__, base_dir=base_dir)
@@ -512,10 +519,102 @@ class LogFileGroup(FbBaseObject, MutableSequence):
     def rotate_method(self, value):
         if isinstance(value, RotateMethod):
             self._rotate_method = value
-            return
-        if value is None:
+        elif value is None:
             self._rotate_method = RotateMethod.default()
-        self._rotate_method = RotateMethod.from_str(value)
+        else:
+            self._rotate_method = RotateMethod.from_str(value)
+        if self._rotate_method != RotateMethod.create:
+            self.create_mode = None
+            self.create_owner = None
+            self.create_group = None
+
+    # ------------------------------------------------------------
+    @property
+    def create_mode(self):
+        """The file mode of the newly created logfile (if directive 'create' was given).
+            If None, the file mode of the rotated file will be used."""
+        return self._create_mode
+
+    @create_mode.setter
+    def create_mode(self, value):
+        if value is None:
+            self._create_mode = None
+            return
+        if isinstance(value, int):
+            self._create_mode = value
+        else:
+            v = int(value, 8)
+            self._create_mode = v
+
+    # ------------------------------------------------------------
+    @property
+    def create_owner(self):
+        """The UID of the owner of the newly created logfile (if directive 'create' was given).
+            If None, the file owner of the rotated file will be used."""
+        return self._create_owner
+
+    @property
+    def create_owner_name(self):
+        """The name of the owner of the newly created logfile (if directive 'create' was given).
+            If None, the file owner of the rotated file will be used."""
+        if self._create_owner is None:
+            return None
+        try:
+            user = pwd.getpwuid(self._create_owner).pw_name
+            return user
+        except KeyError:
+            pass
+        return self._create_owner
+
+    @create_owner.setter
+    def create_owner(self, value):
+        if value is None:
+            self._create_owner = None
+            return
+        try:
+            v = int(value)
+            self._create_owner = v
+            return
+        except ValueError:
+            pass
+        v = pwd.getpwnam(value).pw_uid
+        self._create_owner = v
+
+    # ------------------------------------------------------------
+    @property
+    def create_group(self):
+        """The GID of the owning group of the newly created logfile
+            (if directive 'create' was given).
+            If None, the file owning of the rotated file will be used."""
+        return self._create_group
+
+    @property
+    def create_group_name(self):
+        """The name of the owning of the newly created logfile
+            (if directive 'create' was given).
+            If None, the file owning of the rotated file will be used."""
+        if self._create_group is None:
+            return None
+        try:
+            group = grp.getgrgid(self._create_group).gr_name
+            return group
+        except KeyError:
+            pass
+        return self._create_group
+
+    @create_group.setter
+    def create_group(self, value):
+        if value is None:
+            self._create_group = None
+            return
+        try:
+            v = int(value)
+            self._create_group = v
+            return
+        except ValueError:
+            pass
+        v = grp.getgrnam(value).gr_gid
+        self._create_group = v
 
     # ------------------------------------------------------------
     @property
@@ -566,6 +665,14 @@ class LogFileGroup(FbBaseObject, MutableSequence):
         res['start'] = self.start
         res['rotate_method'] = self.rotate_method
         res['rotation_interval'] = self.rotation_interval
+
+        res['create_mode'] = None
+        if self.create_mode is not None:
+            res['create_mode'] = '{:04o}'.format(self.create_mode)
+        res['create_owner'] = self.create_owner
+        res['create_owner_name'] = self.create_owner_name
+        res['create_group'] = self.create_group
+        res['create_group_name'] = self.create_group_name
 
         res['patterns'] = copy.copy(self.patterns)
         res['files'] = copy.copy(self._files)
@@ -646,6 +753,9 @@ class LogFileGroup(FbBaseObject, MutableSequence):
         new_group.rotate = self.rotate
         new_group.start = self.start
         new_group.rotation_interval = self.rotation_interval
+        new_group.create_mode = self.create_mode
+        new_group.create_owner = self.create_owner
+        new_group.create_group = self.create_group
 
         for fname in self:
             new_group.append(fname)
@@ -1041,9 +1151,27 @@ class LogFileGroup(FbBaseObject, MutableSequence):
         prop = directive
         if directive in ('compresscmd', 'compressext'):
             val = options[0]
-        elif directive in ('compressoptions'):
+        elif directive in ('compressoptions', 'create'):
             if len(options):
                 val = options
+
+        excludes = [directive]
+        if self.string_directives[directive]['exclude']:
+            for excl in self.string_directives[directive]['exclude']:
+                excludes.append(excl)
+
+        if not self.is_default:
+            for exclude in excludes:
+                if exclude in self.applied_directives:
+                    args = {
+                        'lf': str(cfg_file), 'lnr': linenr, 'd': directive,
+                        'ex': self.applied_directives[exclude][0],
+                        'of': str(self.applied_directives[exclude][1]),
+                        'ol': self.applied_directives[exclude][2], 'line': line}
+                    LOG.error(_(
+                        "Error in {lf!r}:{lnr}: directive {d!r} was already set as {ex!r} in "
+                        "{of!r}:{ol}: {line}").format(**args))
+                    return False
 
         if self.verbose > 2:
             if self.is_default:
@@ -1053,11 +1181,15 @@ class LogFileGroup(FbBaseObject, MutableSequence):
                 LOG.debug(_(
                     "Setting file group property {p!r} to {v!r}.").format(p=prop, v=val))
         try:
-            setattr(self, prop, val)
+            if directive == 'create':
+                self._set_create_options(val)
+            else:
+                setattr(self, prop, val)
         except Exception as e:
             msg = _(
-                "Invalid value {v!r} for directive {d!r} in {lf!r}:{lnr}: {e}").format(
-                v=val, d=prop, lf=str(cfg_file), lnr=linenr, e=e)
+                "Invalid value {v!r} for directive {d!r} in {lf!r}:{lnr}: {c} - {e}").format(
+                v=val, d=prop, lf=str(cfg_file), lnr=linenr,
+                c=e.__class__.__name__, e=e)
             LOG.error(msg)
             return False
 
@@ -1065,6 +1197,38 @@ class LogFileGroup(FbBaseObject, MutableSequence):
             self.applied_directives[prop] = (directive, cfg_file, linenr)
 
         return True
+
+    # -------------------------------------------------------------------------
+    def _set_create_options(self, options):
+
+        if self.verbose > 2:
+            LOG.debug(_(
+                "Setting rotation method to {m!r} and the create options to {o!r}.").format(
+                m='create', o=options))
+
+        self.rotate_method = RotateMethod.create
+
+        if options is None:
+            self.create_mode = None
+            self.create_owner = None
+            self.create_group = None
+            return
+
+        if len(options) == 1:
+            self.create_mode = None
+            self.create_owner = options[0]
+            self.create_group = None
+            return
+
+        if len(options) == 2:
+            self.create_mode = None
+            self.create_owner = options[0]
+            self.create_group = options[1]
+            return
+
+        self.create_mode = options[0]
+        self.create_owner = options[1]
+        self.create_group = options[2]
 
 # ========================================================================
 
