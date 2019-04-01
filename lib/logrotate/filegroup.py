@@ -49,7 +49,7 @@ from .translate import XLATOR
 
 from .common import split_parts
 
-__version__ = '0.7.3'
+__version__ = '0.7.4'
 
 _ = XLATOR.gettext
 ngettext = XLATOR.ngettext
@@ -97,6 +97,35 @@ class RotateMethod(Enum):
             if method.name == v:
                 return method
         msg = _("Invalid rotation method {!r} given.").format(value)
+        raise ValueError(msg)
+
+
+# =============================================================================
+@unique
+class RotationInterval(Enum):
+    year = 1
+    month = 2
+    week = 3
+    day = 4
+    hour = 5
+
+    # -------------------------------------------------------------------------
+    def __str__(self):
+        return self.name
+
+    # -------------------------------------------------------------------------
+    @classmethod
+    def default(cls):
+        return cls.week
+
+    # -------------------------------------------------------------------------
+    @classmethod
+    def from_str(cls, value):
+        v = str(to_str(value)).strip().lower()
+        for method in cls:
+            if method.name == v:
+                return method
+        msg = _("Invalid rotation interval {!r} given.").format(value)
         raise ValueError(msg)
 
 
@@ -163,6 +192,21 @@ class LogFileGroup(FbBaseObject, MutableSequence):
         'nodelaycompress': {
             'property': 'delaycompress', 'value': None,
             'exclude': ['delaycompress',]},
+        'yearly': {
+            'property': 'rotation_interval', 'value': RotationInterval.year,
+            'exclude': ['monthly', 'weekly', 'daily', 'hourly']},
+        'monthly': {
+            'property': 'rotation_interval', 'value': RotationInterval.month,
+            'exclude': ['yearly', 'weekly', 'daily', 'hourly']},
+        'weekly': {
+            'property': 'rotation_interval', 'value': RotationInterval.week,
+            'exclude': ['yearly', 'monthly', 'daily', 'hourly']},
+        'daily': {
+            'property': 'rotation_interval', 'value': RotationInterval.day,
+            'exclude': ['yearly', 'monthly', 'weekly', 'hourly']},
+        'hourly': {
+            'property': 'rotation_interval', 'value': RotationInterval.hour,
+            'exclude': ['yearly', 'monthly', 'weekly', 'daily']},
     }
 
     integer_directives = {
@@ -216,6 +260,7 @@ class LogFileGroup(FbBaseObject, MutableSequence):
 
         self._rotate = 0
         self._rotate_method = RotateMethod.default()
+        self._rotation_interval = RotationInterval.default()
 
         super(LogFileGroup, self).__init__(
             appname=appname, verbose=verbose, version=__version__, base_dir=base_dir)
@@ -472,6 +517,21 @@ class LogFileGroup(FbBaseObject, MutableSequence):
             self._rotate_method = RotateMethod.default()
         self._rotate_method = RotateMethod.from_str(value)
 
+    # ------------------------------------------------------------
+    @property
+    def rotation_interval(self):
+        """The method, which is used for rotating the current logfiles."""
+        return self._rotation_interval.name
+
+    @rotation_interval.setter
+    def rotation_interval(self, value):
+        if isinstance(value, RotationInterval):
+            self._rotation_interval = value
+            return
+        if value is None:
+            self._rotation_interval = RotationInterval.default()
+        self._rotation_interval = RotationInterval.from_str(value)
+
     # -------------------------------------------------------------------------
     def as_dict(self, short=True):
         '''
@@ -505,6 +565,7 @@ class LogFileGroup(FbBaseObject, MutableSequence):
         res['rotate'] = self.rotate
         res['start'] = self.start
         res['rotate_method'] = self.rotate_method
+        res['rotation_interval'] = self.rotation_interval
 
         res['patterns'] = copy.copy(self.patterns)
         res['files'] = copy.copy(self._files)
@@ -584,6 +645,7 @@ class LogFileGroup(FbBaseObject, MutableSequence):
 
         new_group.rotate = self.rotate
         new_group.start = self.start
+        new_group.rotation_interval = self.rotation_interval
 
         for fname in self:
             new_group.append(fname)
@@ -845,8 +907,9 @@ class LogFileGroup(FbBaseObject, MutableSequence):
                 if exclude in self.applied_directives:
                     args = {
                         'lf': str(cfg_file), 'lnr': linenr, 'd': directive,
-                        'ex': exclude, 'of': str(self.applied_directives[exclude][0]),
-                        'ol': self.applied_directives[exclude][1], 'line': line}
+                        'ex': self.applied_directives[exclude][0],
+                        'of': str(self.applied_directives[exclude][1]),
+                        'ol': self.applied_directives[exclude][2], 'line': line}
                     LOG.error(_(
                         "Error in {lf!r}:{lnr}: directive {d!r} was already set as {ex!r} in "
                         "{of!r}:{ol}: {line}").format(**args))
@@ -860,7 +923,7 @@ class LogFileGroup(FbBaseObject, MutableSequence):
                 LOG.debug(_(
                     "Setting file group property {p!r} to {v!r}.").format(p=prop, v=val))
         if not self.is_default:
-            self.applied_directives[directive] = (cfg_file, linenr)
+            self.applied_directives[prop] = (directive, cfg_file, linenr)
         setattr(self, prop, val)
 
         return True
@@ -909,8 +972,9 @@ class LogFileGroup(FbBaseObject, MutableSequence):
                 if exclude in self.applied_directives:
                     args = {
                         'lf': str(cfg_file), 'lnr': linenr, 'd': directive,
-                        'ex': exclude, 'of': str(self.applied_directives[exclude][0]),
-                        'ol': self.applied_directives[exclude][1], 'line': line}
+                        'ex': self.applied_directives[exclude][0],
+                        'of': str(self.applied_directives[exclude][1]),
+                        'ol': self.applied_directives[exclude][2], 'line': line}
                     LOG.error(_(
                         "Error in {lf!r}:{lnr}: directive {d!r} was already set as {ex!r} in "
                         "{of!r}:{ol}: {line}").format(**args))
@@ -924,7 +988,7 @@ class LogFileGroup(FbBaseObject, MutableSequence):
                 LOG.debug(_(
                     "Setting file group property {p!r} to {v!r}.").format(p=prop, v=val))
         if not self.is_default:
-            self.applied_directives[directive] = (cfg_file, linenr)
+            self.applied_directives[prop] = (directive, cfg_file, linenr)
         try:
             setattr(self, prop, val)
         except ValueError as e:
@@ -998,7 +1062,7 @@ class LogFileGroup(FbBaseObject, MutableSequence):
             return False
 
         if not self.is_default:
-            self.applied_directives[directive] = (cfg_file, linenr)
+            self.applied_directives[prop] = (directive, cfg_file, linenr)
 
         return True
 
