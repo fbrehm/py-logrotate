@@ -58,6 +58,8 @@ rotate 4
 	dateext
 	compress
 	olddir /var/log/syslog.d/.old
+	mail frank@brehm-online.com
+	maillast
 	sharedscripts
 	postrotate
 		invoke-rc.d rsyslog rotate > /dev/null

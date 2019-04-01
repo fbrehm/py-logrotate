@@ -49,7 +49,7 @@ from .translate import XLATOR
 
 from .common import split_parts
 
-__version__ = '0.7.2'
+__version__ = '0.7.3'
 
 _ = XLATOR.gettext
 ngettext = XLATOR.ngettext
@@ -180,6 +180,8 @@ class LogFileGroup(FbBaseObject, MutableSequence):
         'compressext': {'min': 1, 'max': 1, 'exclude': []},
         'compressoptions': {'min': 0, 'max': None, 'exclude': []},
     }
+
+    unsupported_directives = ('uncompresscmd', 'error', 'mail', 'mailfirst', 'maillast')
 
     # -------------------------------------------------------------------------
     def __init__(
@@ -806,6 +808,12 @@ class LogFileGroup(FbBaseObject, MutableSequence):
             LOG.debug(msg.format(line))
 
         directive = line_parts[0].lower()
+        if directive in self.unsupported_directives:
+            LOG.info(_(
+                "Unsupported directive {d!r} found in {lf!r}:{lnr}.").format(
+                d=directive, lf=str(cfg_file), lnr=linenr))
+            return True
+
         if directive in self.unary_directives:
             return self.apply_unary_directive(line, line_parts, cfg_file, linenr)
         if directive in self.integer_directives:

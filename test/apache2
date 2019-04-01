@@ -30,7 +30,7 @@ endscript
     size 5K
     start 3
     maxage 0.5y
-    mail	test@uhu-banane.de
+    #mail	test@uhu-banane.de
     #olddir %Y-%m 0755 apache users
     olddir %Y-%m
     postrotate apache_restart
@@ -52,7 +52,7 @@ endscript
     daily
     #maxage 1y
     maxage 1d
-    mail    test@uhu-banane.de, Frank Brehm <frank@brehm-online.com>, "Brehm, Frank" <frank.brehm@profitbricks.com>
+    #mail    test@uhu-banane.de, Frank Brehm <frank@brehm-online.com>, "Brehm, Frank" <frank.brehm@profitbricks.com>
     noolddir
     postrotate apache_restart
 }
@@ -73,7 +73,7 @@ nocompress
     #period 4.5days 2 hours 3.4y
     size 1K
     maxage 0.5y
-    mail	test@uhu-banane.de
+    #mail	test@uhu-banane.de
     #olddir /var/log/apache2/%Y-%m
     #olddir %Y-%m 0755 apache users
     olddir %Y-%m
