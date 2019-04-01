@@ -33,6 +33,7 @@ endscript
     #mail	test@uhu-banane.de
     #olddir %Y-%m 0755 apache users
     olddir %Y-%m
+    #createolddir 0755 apache users
     postrotate apache_restart
 }
 
@@ -77,6 +78,7 @@ nocompress
     #olddir /var/log/apache2/%Y-%m
     #olddir %Y-%m 0755 apache users
     olddir %Y-%m
+    #createolddir 0755 apache users
     postrotate
         echo "/etc/init.d/apache2 reload > /dev/null 2>&1 || true"
     endscript

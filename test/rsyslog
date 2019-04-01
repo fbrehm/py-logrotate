@@ -4,6 +4,7 @@ missingok
 delaycompress
 rotate 4
 create 0644 root root
+createolddir 0755 root root
 
 /var/log/syslog /var/log/messages
 {
@@ -14,6 +15,7 @@ create 0644 root root
 	minsize 4M
 	dateext
 	olddir /var/log/.old
+	nocreateolddir
 	nocompress
 	nodelaycompress
 	postrotate

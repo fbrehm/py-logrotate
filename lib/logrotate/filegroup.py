@@ -51,7 +51,7 @@ from .translate import XLATOR
 
 from .common import split_parts
 
-__version__ = '0.7.6'
+__version__ = '0.7.7'
 
 _ = XLATOR.gettext
 ngettext = XLATOR.ngettext
@@ -209,6 +209,10 @@ class LogFileGroup(FbBaseObject, MutableSequence):
         'hourly': {
             'property': 'rotation_interval', 'value': RotationInterval.hour,
             'exclude': ['yearly', 'monthly', 'weekly', 'daily']},
+        'noolddir': {
+            'property': 'olddir', 'value': None, 'exclude': ['olddir',]},
+        'nocreateolddir': {
+            'property': 'createolddir', 'value': False, 'exclude': ['createolddir',]},
     }
 
     integer_directives = {
@@ -226,6 +230,8 @@ class LogFileGroup(FbBaseObject, MutableSequence):
         'compressext': {'min': 1, 'max': 1, 'exclude': []},
         'compressoptions': {'min': 0, 'max': None, 'exclude': []},
         'create': {'min': 0, 'max': 3, 'exclude': ['copy', 'copytruncate']},
+        'olddir': {'min': 1, 'max': 1, 'exclude': ['noolddir']},
+        'createolddir': {'min': 3, 'max': 3, 'exclude': ['nocreateolddir']},
     }
 
     unsupported_directives = ('uncompresscmd', 'error', 'mail', 'mailfirst', 'maillast')
@@ -268,6 +274,12 @@ class LogFileGroup(FbBaseObject, MutableSequence):
         self._create_mode = None
         self._create_owner = None
         self._create_group = None
+
+        self._olddir = None
+        self._createolddir = False
+        self._olddir_mode = None
+        self._olddir_owner = None
+        self._olddir_group = None
 
         super(LogFileGroup, self).__init__(
             appname=appname, verbose=verbose, version=__version__, base_dir=base_dir)
@@ -560,8 +572,8 @@ class LogFileGroup(FbBaseObject, MutableSequence):
         if self._create_owner is None:
             return None
         try:
-            user = pwd.getpwuid(self._create_owner).pw_name
-            return user
+            owner = pwd.getpwuid(self._create_owner).pw_name
+            return owner
         except KeyError:
             pass
         return self._create_owner
@@ -631,6 +643,126 @@ class LogFileGroup(FbBaseObject, MutableSequence):
             self._rotation_interval = RotationInterval.default()
         self._rotation_interval = RotationInterval.from_str(value)
 
+    # ------------------------------------------------------------
+    @property
+    def olddir(self):
+        """Directory, where rotated log are moved after rotation."""
+        return self._olddir
+
+    @olddir.setter
+    def olddir(self, value):
+        if value is None:
+            self._olddir = None
+            self._createolddir = False
+            self._olddir_mode = None
+            self._olddir_owner = None
+            self._olddir_group = None
+            return
+        self._olddir = Path(value)
+
+    # ------------------------------------------------------------
+    @property
+    def createolddir(self):
+        "Should a not existing olddir be created?"
+        return self._createolddir
+
+    @createolddir.setter
+    def createolddir(self, value):
+        self._createolddir = bool(value)
+        if not self._createolddir:
+            self._olddir_mode = None
+            self._olddir_owner = None
+            self._olddir_group = None
+
+    # ------------------------------------------------------------
+    @property
+    def olddir_mode(self):
+        """
+        The directory mode of the newly created olddir (if directive 'createolddir' was given).
+        """
+        return self._olddir_mode
+
+    @olddir_mode.setter
+    def olddir_mode(self, value):
+        if value is None:
+            self._olddir_mode = None
+            return
+        if isinstance(value, int):
+            self._olddir_mode = value
+        else:
+            v = int(value, 8)
+            self._olddir_mode = v
+
+    # ------------------------------------------------------------
+    @property
+    def olddir_owner(self):
+        """
+        The UID of the owner of the newly created olddir (if directive 'createolddir' was given).
+        """
+        return self._olddir_owner
+
+    @property
+    def olddir_owner_name(self):
+        """
+        The name of the owner of the newly created olddir (if directive 'createolddir' was given).
+        """
+        if self._olddir_owner is None:
+            return None
+        try:
+            owner = pwd.getpwuid(self._olddir_owner).pw_name
+            return owner
+        except KeyError:
+            pass
+        return self._olddir_owner
+
+    @olddir_owner.setter
+    def olddir_owner(self, value):
+        if value is None:
+            self._olddir_owner = None
+            return
+        try:
+            v = int(value)
+            self._olddir_owner = v
+            return
+        except ValueError:
+            pass
+        v = pwd.getpwnam(value).pw_uid
+        self._olddir_owner = v
+
+    # ------------------------------------------------------------
+    @property
+    def olddir_group(self):
+        """The GID of the owning group of the newly created olddir
+            (if directive 'createolddir' was given)."""
+        return self._olddir_group
+
+    @property
+    def olddir_group_name(self):
+        """The name of the owning of the newly created olddir
+            (if directive 'createolddir' was given)."""
+        if self._olddir_group is None:
+            return None
+        try:
+            group = grp.getgrgid(self._olddir_group).gr_name
+            return group
+        except KeyError:
+            pass
+        return self._olddir_group
+
+    @olddir_group.setter
+    def olddir_group(self, value):
+        if value is None:
+            self._olddir_group = None
+            return
+        try:
+            v = int(value)
+            self._olddir_group = v
+            return
+        except ValueError:
+            pass
+        v = grp.getgrnam(value).gr_gid
+        self._olddir_group = v
+
     # -------------------------------------------------------------------------
     def as_dict(self, short=True):
         '''
@@ -673,6 +805,16 @@ class LogFileGroup(FbBaseObject, MutableSequence):
         res['create_owner_name'] = self.create_owner_name
         res['create_group'] = self.create_group
         res['create_group_name'] = self.create_group_name
+
+        res['olddir'] = self.olddir
+        res['createolddir'] = self.createolddir
+        res['olddir_mode'] = None
+        if self.olddir_mode is not None:
+            res['olddir_mode'] = '{:04o}'.format(self.olddir_mode)
+        res['olddir_owner'] = self.olddir_owner
+        res['olddir_owner_name'] = self.olddir_owner_name
+        res['olddir_group'] = self.olddir_group
+        res['olddir_group_name'] = self.olddir_group_name
 
         res['patterns'] = copy.copy(self.patterns)
         res['files'] = copy.copy(self._files)
@@ -756,6 +898,12 @@ class LogFileGroup(FbBaseObject, MutableSequence):
         new_group.create_mode = self.create_mode
         new_group.create_owner = self.create_owner
         new_group.create_group = self.create_group
+
+        new_group.olddir = self.olddir
+        new_group.createolddir = self.createolddir
+        new_group.olddir_mode = self.olddir_mode
+        new_group.olddir_owner = self.olddir_owner
+        new_group.olddir_group = self.olddir_group
 
         for fname in self:
             new_group.append(fname)
@@ -1149,9 +1297,9 @@ class LogFileGroup(FbBaseObject, MutableSequence):
 
         val = None
         prop = directive
-        if directive in ('compresscmd', 'compressext'):
+        if directive in ('compresscmd', 'compressext', 'olddir'):
             val = options[0]
-        elif directive in ('compressoptions', 'create'):
+        elif directive in ('compressoptions', 'create', 'createolddir'):
             if len(options):
                 val = options
             if directive == 'create':
@@ -1185,6 +1333,11 @@ class LogFileGroup(FbBaseObject, MutableSequence):
         try:
             if directive == 'create':
                 self._set_create_options(val)
+            elif directive == 'createolddir':
+                self.createolddir = True
+                self.olddir_mode = val[0]
+                self.olddir_owner = val[1]
+                self.olddir_group = val[2]
             else:
                 setattr(self, prop, val)
         except Exception as e:
