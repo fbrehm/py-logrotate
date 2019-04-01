@@ -47,11 +47,11 @@ from fb_tools.obj import FbBaseObject
 from .errors import LogrotateObjectError
 from .errors import LogrotateCfgFatalError, LogrotateCfgNonFatalError
 
-from .translate import XLATOR
+from .translate import XLATOR, format_list
 
 from .common import split_parts
 
-__version__ = '0.7.7'
+__version__ = '0.7.8'
 
 _ = XLATOR.gettext
 ngettext = XLATOR.ngettext
@@ -157,6 +157,9 @@ class LogFileGroup(FbBaseObject, MutableSequence):
         re.compile(r'(^|/)xz$', re.IGNORECASE): '.xz',
         re.compile(r'(^|/)lzma$', re.IGNORECASE): '.lzma',
     }
+
+    re_wrong_pc_placeholder = re.compile(r'%[^%YmdHMSVs]')
+    valid_pc_placeholders = ('%%', '%Y', '%m', '%d', '%H', '%M', '%S', '%V', '%s')
 
     msg_pointless = _("Pointless option(s) for directive {d!r} in {lf!r}:{lnr}: {line}")
 
@@ -658,6 +661,13 @@ class LogFileGroup(FbBaseObject, MutableSequence):
             self._olddir_owner = None
             self._olddir_group = None
             return
+        path = Path(value)
+        if self.verbose > 2:
+            LOG.debug(_("New {l} path: {p!r}.").format(l='olddir', p=str(path)))
+        if self.re_wrong_pc_placeholder.search(str(path)):
+            msg = _("Found wrong {f} specifier, the only allowed specifiers are {l}.").format(
+                f='strftime()', l=format_list(self.valid_pc_placeholders))
+            raise ValueError(msg)
         self._olddir = Path(value)
 
     # ------------------------------------------------------------
@@ -1345,7 +1355,10 @@ class LogFileGroup(FbBaseObject, MutableSequence):
                 "Invalid value {v!r} for directive {d!r} in {lf!r}:{lnr}: {c} - {e}").format(
                 v=val, d=prop, lf=str(cfg_file), lnr=linenr,
                 c=e.__class__.__name__, e=e)
-            LOG.error(msg)
+            if self.verbose > 3:
+                self.handle_error(msg, do_traceback=True)
+            else:
+                LOG.error(msg)
             return False
 
         if not self.is_default:

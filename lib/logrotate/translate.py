@@ -16,6 +16,7 @@ import os
 import sys
 import logging
 import gettext
+import copy
 
 from pathlib import Path
 
@@ -25,6 +26,7 @@ from distutils.version import LooseVersion
 import six
 
 import babel
+import babel.lists
 from babel.support import Translations
 
 # Own modules
@@ -32,7 +34,7 @@ DOMAIN = 'plogrotate'
 
 LOG = logging.getLogger(__name__)
 
-__version__ = '1.0.1'
+__version__ = '1.1.1'
 
 __me__ = Path(__file__).resolve()
 __module_dir__ = __me__.parent
@@ -68,6 +70,28 @@ SUPPORTED_LANGS = (
 )
 
 _ = XLATOR.gettext
+
+
+# =============================================================================
+def format_list(lst, do_repr=False, style='standard', locale=DEFAULT_LOCALE):
+    """
+    Format the items in `lst` as a list.
+    :param lst: a sequence of items to format in to a list
+    :param locale: the locale
+    """
+    if not lst:
+        return ''
+
+    my_list = copy.copy(lst)
+    if do_repr:
+        my_list = []
+        for item in lst:
+            my_list.append('{!r}'.format(item))
+
+    if CUR_BABEL_VERSION < NEWER_BABEL_VERSION:
+        return babel.lists.format_list(my_list, locale=locale)
+    return babel.lists.format_list(my_list, style=style, locale=locale)
+
 
 # =============================================================================
 
