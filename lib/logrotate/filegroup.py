@@ -49,7 +49,7 @@ from .translate import XLATOR
 
 from .common import split_parts
 
-__version__ = '0.7.1'
+__version__ = '0.7.2'
 
 _ = XLATOR.gettext
 ngettext = XLATOR.ngettext
@@ -176,8 +176,9 @@ class LogFileGroup(FbBaseObject, MutableSequence):
     }
 
     string_directives = {
-        'compresscmd': {'exclude': []},
-        'compressext': {'exclude': []},
+        'compresscmd': {'min': 1, 'max': 1, 'exclude': []},
+        'compressext': {'min': 1, 'max': 1, 'exclude': []},
+        'compressoptions': {'min': 0, 'max': None, 'exclude': []},
     }
 
     # -------------------------------------------------------------------------
@@ -369,6 +370,9 @@ class LogFileGroup(FbBaseObject, MutableSequence):
             if self.compresscmd.startswith('internal_'):
                 return INTERNAL_COMPRESSORS[self.compresscmd]
             else:
+                for re_ext in self.ext_compress_extensions:
+                    if re_ext.search(self.compresscmd):
+                        return self.ext_compress_extensions[re_ext]
                 return '.compressed'
         return self._compressext
 
@@ -806,6 +810,8 @@ class LogFileGroup(FbBaseObject, MutableSequence):
             return self.apply_unary_directive(line, line_parts, cfg_file, linenr)
         if directive in self.integer_directives:
             return self.apply_integer_directive(line, line_parts, cfg_file, linenr)
+        if directive in self.string_directives:
+            return self.apply_string_directives(line, line_parts, cfg_file, linenr)
 
         return False
 
@@ -922,6 +928,71 @@ class LogFileGroup(FbBaseObject, MutableSequence):
 
         return True
 
+    # -------------------------------------------------------------------------
+    def apply_string_directives(self, line, line_parts, cfg_file, linenr):
+
+        directive = line_parts[0].lower()
+        options = line_parts[1:]
+        min_opts = self.string_directives[directive].get('min', 1)
+        max_opts = self.string_directives[directive].get('max', None)
+
+        if max_opts and min_opts == max_opts:
+            if len(options) != max_opts:
+                msg = ngettext(
+                    "Directive {d!r} needs exactly one option "
+                    "({g} given in {lf!r}:{lnr}): {line}",
+                    "Directive {d!r} needs exactly {nr} options "
+                    "({g} given in {lf!r}:{lnr}): {line}", max_opts).format(
+                    d=directive, nr=max_opts, g=len(options),
+                    lf=str(cfg_file), lnr=linenr)
+                LOG.error(msg)
+                return False
+
+        if len(options) < min_opts:
+            msg = ngettext(
+                "Directive {d!r} needs at least one option ({g} given in {lf!r}:{lnr}): {line}",
+                "Directive {d!r} needs at least {nr} options ({g} given in {lf!r}:{lnr}): {line}",
+                min_opts).format(d=directive, nr=min_opts, g=len(options),
+                lf=str(cfg_file), lnr=linenr)
+            LOG.error(msg)
+            return False
+        if max_opts and len(options) > max_opts:
+            msg = ngettext(
+                "Directive {d!r} needs at most one option ({g} given in {lf!r}:{lnr}): {line}",
+                "Directive {d!r} needs at most {nr} options ({g} given in {lf!r}:{lnr}): {line}",
+                max_opts).format(d=directive, nr=max_opts, g=len(options),
+                lf=str(cfg_file), lnr=linenr)
+            LOG.error(msg)
+            return False
+
+        val = None
+        prop = directive
+        if directive in ('compresscmd', 'compressext'):
+            val = options[0]
+        elif directive in ('compressoptions'):
+            if len(options):
+                val = options
+
+        if self.verbose > 2:
+            if self.is_default:
+                LOG.debug(_(
+                    "Setting default file group property {p!r} to {v!r}.").format(p=prop, v=val))
+            else:
+                LOG.debug(_(
+                    "Setting file group property {p!r} to {v!r}.").format(p=prop, v=val))
+        try:
+            setattr(self, prop, val)
+        except Exception as e:
+            msg = _(
+                "Invalid value {v!r} for directive {d!r} in {lf!r}:{lnr}: {e}").format(
+                v=val, d=prop, lf=str(cfg_file), lnr=linenr, e=e)
+            LOG.error(msg)
+            return False
+
+        if not self.is_default:
+            self.applied_directives[directive] = (cfg_file, linenr)
+
+        return True
 
 # ========================================================================
 

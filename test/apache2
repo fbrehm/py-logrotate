@@ -38,9 +38,9 @@ endscript
 
 /home/frank/devel/Python/PyLogrotate/test/log/error_log {
     compress
-    #compresscmd lzma
-    #compressext .lzma
-    #compressoptions --best {}
+    compresscmd lzma
+    compressext .lzma
+    compressoptions --best {}
     create
     nomissingok
     notifempty
