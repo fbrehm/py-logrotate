@@ -51,7 +51,7 @@ from .translate import XLATOR, format_list
 
 from .common import split_parts
 
-__version__ = '0.7.8'
+__version__ = '0.7.9'
 
 _ = XLATOR.gettext
 ngettext = XLATOR.ngettext
@@ -163,6 +163,9 @@ class LogFileGroup(FbBaseObject, MutableSequence):
 
     msg_pointless = _("Pointless option(s) for directive {d!r} in {lf!r}:{lnr}: {line}")
 
+    default_dateext_daily = '-%Y-%m-%d'
+    default_dateext_hourly = '-%Y-%m-%d-%H'
+
     unary_directives = {
         'compress': {
             'property': 'compress', 'value': True,
@@ -216,6 +219,14 @@ class LogFileGroup(FbBaseObject, MutableSequence):
             'property': 'olddir', 'value': None, 'exclude': ['olddir',]},
         'nocreateolddir': {
             'property': 'createolddir', 'value': False, 'exclude': ['createolddir',]},
+        'dateext': {
+            'property': 'dateext', 'value': True, 'exclude': ['nodateext',]},
+        'nodateext': {
+            'property': 'dateext', 'value': False, 'exclude': ['dateext',]},
+        'dateyesterday': {
+            'property': 'dateyesterday', 'value': True, 'exclude': []},
+        'datehourago': {
+            'property': 'datehourago', 'value': True, 'exclude': []},
     }
 
     integer_directives = {
@@ -235,6 +246,7 @@ class LogFileGroup(FbBaseObject, MutableSequence):
         'create': {'min': 0, 'max': 3, 'exclude': ['copy', 'copytruncate']},
         'olddir': {'min': 1, 'max': 1, 'exclude': ['noolddir']},
         'createolddir': {'min': 3, 'max': 3, 'exclude': ['nocreateolddir']},
+        'dateformat': {'min': 1, 'max': 1, 'exclude': []},
     }
 
     unsupported_directives = ('uncompresscmd', 'error', 'mail', 'mailfirst', 'maillast')
@@ -266,7 +278,12 @@ class LogFileGroup(FbBaseObject, MutableSequence):
         self._if_empty = True
         self._missing_ok = False
         self._sharedscripts = False
+
         self._start = 0
+        self._dateext = False
+        self._dateformat = None
+        self._dateyesterday = False
+        self._datehourago = False
 
         self.applied_directives = {}
 
@@ -523,6 +540,62 @@ class LogFileGroup(FbBaseObject, MutableSequence):
             msg = _("A negative number for {!r} is not allowed.").format('start')
             raise ValueError(msg)
         self._start = v
+
+    # ------------------------------------------------------------
+    @property
+    def dateext(self):
+        """Archive old versions of log files adding a date extension
+            instead of simply adding a number."""
+        return self._dateext
+
+    @dateext.setter
+    def dateext(self, value):
+        self._dateext = bool(value)
+
+    # ------------------------------------------------------------
+    @property
+    def dateformat(self):
+        """The extension for dateext using the notation similar to strftime(3) function."""
+        if self._dateformat is None:
+            if self.dateext:
+                if self.rotation_interval == 'hour':
+                    return self.default_dateext_hourly
+                else:
+                    return self.default_dateext_daily
+            return None
+        return self._dateformat
+
+    @dateformat.setter
+    def dateformat(self, value):
+        if value is None:
+            self._dateformat = None
+            return
+        v = str(value).strip()
+        if self.re_wrong_pc_placeholder.search(v):
+            msg = _("Found wrong {f} specifier, the only allowed specifiers are {l}.").format(
+                f='strftime()', l=format_list(self.valid_pc_placeholders))
+            raise ValueError(msg)
+        self._dateformat = v
+
+    # ------------------------------------------------------------
+    @property
+    def dateyesterday(self):
+        """Use yesterday's instead of today's date to create the dateext extension."""
+        return self._dateyesterday
+
+    @dateyesterday.setter
+    def dateyesterday(self, value):
+        self._dateyesterday = bool(value)
+
+    # ------------------------------------------------------------
+    @property
+    def datehourago(self):
+        """Use hour ago instead of current date to create the dateext extension."""
+        return self._datehourago
+
+    @datehourago.setter
+    def datehourago(self, value):
+        self._datehourago = bool(value)
 
     # ------------------------------------------------------------
     @property
@@ -805,6 +878,11 @@ class LogFileGroup(FbBaseObject, MutableSequence):
 
         res['rotate'] = self.rotate
         res['start'] = self.start
+        res['dateext'] = self.dateext
+        res['dateformat'] = self.dateformat
+        res['dateyesterday'] = self.dateyesterday
+        res['datehourago'] = self.datehourago
+
         res['rotate_method'] = self.rotate_method
         res['rotation_interval'] = self.rotation_interval
 
@@ -904,6 +982,11 @@ class LogFileGroup(FbBaseObject, MutableSequence):
 
         new_group.rotate = self.rotate
         new_group.start = self.start
+        new_group.dateext = self.dateext
+        new_group.dateformat = self.dateformat
+        new_group.dateyesterday = self.dateyesterday
+        new_group.datehourago = self.datehourago
+
         new_group.rotation_interval = self.rotation_interval
         new_group.create_mode = self.create_mode
         new_group.create_owner = self.create_owner
@@ -1307,13 +1390,15 @@ class LogFileGroup(FbBaseObject, MutableSequence):
 
         val = None
         prop = directive
-        if directive in ('compresscmd', 'compressext', 'olddir'):
+        if directive in ('compresscmd', 'compressext', 'olddir', 'dateformat'):
             val = options[0]
         elif directive in ('compressoptions', 'create', 'createolddir'):
             if len(options):
                 val = options
             if directive == 'create':
                 prop = 'rotate_method'
+        else:
+            raise RuntimeError(_("There is something failing ..."))
 
         excludes = [directive]
         if self.string_directives[directive]['exclude']:

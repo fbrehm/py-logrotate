@@ -53,7 +53,8 @@ createolddir 0755 root root
 
 /var/log/syslog.d/*.log {
 	rotate 10
-	weekly
+	# weekly
+	hourly
 	create
 	missingok
 	notifempty
