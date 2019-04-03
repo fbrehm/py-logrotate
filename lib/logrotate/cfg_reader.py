@@ -36,7 +36,7 @@ from .errors import LogrotateCfgFatalError, LogrotateCfgNonFatalError
 from .common import split_parts
 from .filegroup import LogFileGroup
 
-__version__ = '0.2.6'
+__version__ = '0.3.1'
 
 _ = XLATOR.gettext
 ngettext = XLATOR.ngettext
@@ -99,6 +99,15 @@ class LogrotateConfigReader(HandlingObject):
     re_bs_at_end = re.compile(r'\\$')
     re_comment = re.compile(r'^\s*#.*')
 
+    toboo_pattern_types = {
+        'ext': r'{}$',
+        'suffix': r'{}$',
+        'file': r'^{}$',
+        'prefix': r'^{}',
+    }
+    taboo_patterns = []
+    taboo_file_patterns = []
+
     msg_block_already_started = _(
         "Found opening curly bracket in file {f!r}:{nr} after another opening curly bracket.")
     msg_pointless_open_bracket = _(
@@ -134,7 +143,7 @@ class LogrotateConfigReader(HandlingObject):
 
         self.config_file = config_file
 
-        LogFileGroup.init_taboo_patterns()
+        self.init_taboo_patterns()
         self._init_default_group()
 
         self.initialized = True
@@ -161,6 +170,87 @@ class LogrotateConfigReader(HandlingObject):
     @has_read.setter
     def has_read(self, value):
         self._has_read = bool(value)
+
+    # -------------------------------------------------------------------------
+    @classmethod
+    def add_taboo_pattern(cls, pattern, pattern_type='file'):
+        """
+        Adding a new entry to the list of compiled taboo patterns.
+        """
+
+        if not pattern or not isinstance(to_str(pattern), str):
+            msg = _("Invalid taboo pattern {!r} given.").format(pattern)
+            raise ValueError(msg)
+
+        ptype = pattern_type.strip().lower()
+        if ptype not in cls.toboo_pattern_types:
+            msg = _("Invalid taboo pattern type {!r} given.").format(pattern_type)
+            raise ValueError(msg)
+
+        pat = cls.toboo_pattern_types[ptype].format(pattern)
+        re_taboo = None
+        try:
+            re_taboo = re.compile(pat, re.IGNORECASE)
+        except Exception as e:
+            msg = _("Got a {c} error on adding taboo pattern {p!r}: {e}.").format(
+                c=e.__class__.__name__, p=pattern, e=e)
+            return ValueError(msg)
+
+        plist = cls.taboo_patterns
+        if ptype == 'file':
+            plist = cls.taboo_file_patterns
+
+        found = False
+        for re_t in plist:
+            if pat == re_t.pattern:
+                msg = _("Taboo pattern {!r} already exists in the list of taboo patterns.")
+                if ptype == 'file':
+                    msg = _(
+                        "Taboo pattern {!r} already exists in the list of taboo file patterns.")
+                LOG.debug(msg.format(pat))
+                found = True
+                break
+
+        if not found:
+            plist.append(re_taboo)
+
+    # -------------------------------------------------------------------------
+    @classmethod
+    def init_taboo_patterns(cls):
+        "Initialize the list of taboo patterns with some default values."
+
+        LOG.debug(_("Initializing the list of taboo patterns with some default values."))
+
+        cls.taboo_patterns = []
+
+        # Standard taboo extensions (suffixes)
+        cls.add_taboo_pattern(r'\.rpmnew', 'ext');
+        cls.add_taboo_pattern(r'\.rpmorig', 'ext');
+        cls.add_taboo_pattern(r'\.rpmsave', 'ext');
+        cls.add_taboo_pattern(r',v', 'ext');
+        cls.add_taboo_pattern(r'\.swp', 'ext');
+        cls.add_taboo_pattern(r'~', 'ext');
+        cls.add_taboo_pattern(r'\.bak', 'ext');
+        cls.add_taboo_pattern(r'\.old', 'ext');
+        cls.add_taboo_pattern(r'\.rej', 'ext');
+        cls.add_taboo_pattern(r'\.disabled', 'ext');
+        cls.add_taboo_pattern(r'\.dpkg-old', 'ext');
+        cls.add_taboo_pattern(r'\.dpkg-del', 'ext');
+        cls.add_taboo_pattern(r'\.dpkg-dist', 'ext');
+        cls.add_taboo_pattern(r'\.dpkg-new', 'ext');
+        cls.add_taboo_pattern(r'\.dpkg-bak', 'ext');
+        cls.add_taboo_pattern(r'\.cfsaved', 'ext');
+        cls.add_taboo_pattern(r'\.ucf-old', 'ext');
+        cls.add_taboo_pattern(r'\.ucf-dist', 'ext');
+        cls.add_taboo_pattern(r'\.ucf-new', 'ext');
+        cls.add_taboo_pattern(r'\.rhn-cfg-tmp-.*', 'ext');
+
+        # Standard taboo prefix
+        cls.add_taboo_pattern(r'\.', 'prefix');
+
+        # Standard taboo files
+        cls.add_taboo_pattern(r'CVS', 'file');
+        cls.add_taboo_pattern(r'RCS', 'file');
 
     # -----------------------------------------------------------------------
     def _init_default_group(self):
@@ -192,6 +282,14 @@ class LogrotateConfigReader(HandlingObject):
 
         res['config_file'] = self.config_file
         res['has_read'] = self.has_read
+
+        res['taboo_patterns'] = []
+        for re_taboo in self.taboo_patterns:
+            res['taboo_patterns'].append(re_taboo.pattern)
+
+        res['taboo_file_patterns'] = []
+        for re_taboo in self.taboo_file_patterns:
+            res['taboo_file_patterns'].append(re_taboo.pattern)
 
         return res
 
