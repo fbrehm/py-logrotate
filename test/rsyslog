@@ -5,6 +5,8 @@ delaycompress
 rotate 4
 create 0644 root root
 createolddir 0755 root root
+shred
+shredcycles 2
 
 /var/log/syslog /var/log/messages
 {
@@ -18,6 +20,7 @@ createolddir 0755 root root
 	nocreateolddir
 	nocompress
 	nodelaycompress
+	noshred
 	postrotate
 		invoke-rc.d rsyslog rotate >/dev/null
 	endscript
@@ -46,6 +49,7 @@ createolddir 0755 root root
 	olddir /var/log/.old
 	compress
 	delaycompress 0
+	shredcycles 4
 	sharedscripts
 	postrotate
 		invoke-rc.d rsyslog rotate >/dev/null

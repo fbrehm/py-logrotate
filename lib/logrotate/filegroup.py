@@ -51,7 +51,7 @@ from .translate import XLATOR, format_list
 
 from .common import split_parts, human2bytes, period2days
 
-__version__ = '0.7.12'
+__version__ = '0.7.13'
 
 _ = XLATOR.gettext
 ngettext = XLATOR.ngettext
@@ -172,10 +172,10 @@ class LogFileGroup(FbBaseObject, MutableSequence):
             'exclude': ['nocompress']},
         'copy': {
             'property': 'rotate_method', 'value': 'copy',
-            'exclude': ['copytruncate', 'create', 'sharedscripts']},
+            'exclude': ['copytruncate', 'create', 'nocopy', 'sharedscripts']},
         'copytruncate': {
             'property': 'rotate_method', 'value': 'copytruncate',
-            'exclude': ['copy', 'create', 'sharedscripts']},
+            'exclude': ['copy', 'create', 'nocopy', 'sharedscripts']},
         'daily': {
             'property': 'rotation_interval', 'value': RotationInterval.day,
             'exclude': ['yearly', 'monthly', 'weekly', 'hourly']},
@@ -200,6 +200,9 @@ class LogFileGroup(FbBaseObject, MutableSequence):
         'nocompress': {
             'property': 'compress', 'value': False,
             'exclude': ['compress', 'delaycompress']},
+        'nocopy': {
+            'property': 'rotate_method', 'value': 'create',
+            'exclude': ['copy', 'create', 'sharedscripts']},
         'nocreateolddir': {
             'property': 'createolddir', 'value': False, 'exclude': ['createolddir',]},
         'nodateext': {
@@ -215,12 +218,18 @@ class LogFileGroup(FbBaseObject, MutableSequence):
         'nosharedscripts': {
             'property': 'sharedscripts', 'value': False,
             'exclude': ['sharedscripts']},
+        'noshred': {
+            'property': 'shred', 'value': False,
+            'exclude': ['shred']},
         'notifempty': {
             'property': 'if_empty', 'value': False,
             'exclude': ['ifempty']},
         'sharedscripts': {
             'property': 'sharedscripts', 'value': True,
             'exclude': ['nosharedscripts', 'copy', 'copytruncate']},
+        'shred': {
+            'property': 'shred', 'value': True,
+            'exclude': ['noshred']},
         'weekly': {
             'property': 'rotation_interval', 'value': RotationInterval.week,
             'exclude': ['yearly', 'monthly', 'daily', 'hourly']},
@@ -243,6 +252,8 @@ class LogFileGroup(FbBaseObject, MutableSequence):
             'property': 'minsize', 'default': None, 'exclude': []},
         'rotate': {
             'property': 'rotate', 'default': None, 'exclude': []},
+        'shredcycles': {
+            'property': 'shredcycles', 'default': None, 'exclude': []},
         'size': {
             'property': 'size', 'default': None, 'exclude': []},
         'start': {
@@ -261,7 +272,8 @@ class LogFileGroup(FbBaseObject, MutableSequence):
         'olddir': {'min': 1, 'max': 1, 'exclude': ['noolddir']},
     }
 
-    unsupported_directives = ('uncompresscmd', 'error', 'mail', 'mailfirst', 'maillast')
+    unsupported_directives = (
+        'error', 'mail', 'mailfirst', 'maillast', 'su', 'uncompresscmd')
 
     # -------------------------------------------------------------------------
     def __init__(
@@ -309,6 +321,8 @@ class LogFileGroup(FbBaseObject, MutableSequence):
         self._minsize = None
         self._maxsize = None
         self._size = None
+        self._shred = False
+        self._shredcycles = None
 
         self._create_mode = None
         self._create_owner = None
@@ -641,6 +655,35 @@ class LogFileGroup(FbBaseObject, MutableSequence):
             msg = _("A negative number for {!r} is not allowed.").format('size')
             raise ValueError(msg)
         self._size = v
+
+    # ------------------------------------------------------------
+    @property
+    def shred(self):
+        "Delete log files using shred -u instead of unlink()."
+        return self._shred
+
+    @shred.setter
+    def shred(self, value):
+        self._shred = bool(value)
+
+    # ------------------------------------------------------------
+    @property
+    def shredcycles(self):
+        """
+        Defines, how many rotated files should be held before they are removed.
+        """
+        return self._shredcycles
+
+    @shredcycles.setter
+    def shredcycles(self, value):
+        if value is None:
+            self._shredcycles = None
+            return
+        v = int(value)
+        if v < 0:
+            msg = _("A negative number for {!r} is not allowed.").format('shredcycles')
+            raise ValueError(msg)
+        self._shredcycles = v
 
     # ------------------------------------------------------------
     @property
@@ -1051,6 +1094,8 @@ class LogFileGroup(FbBaseObject, MutableSequence):
         res['create_owner_name'] = self.create_owner_name
         res['create_group'] = self.create_group
         res['create_group_name'] = self.create_group_name
+        res['shred'] = self.shred
+        res['shredcycles'] = self.shredcycles
 
         res['olddir'] = self.olddir
         res['createolddir'] = self.createolddir
@@ -1156,6 +1201,8 @@ class LogFileGroup(FbBaseObject, MutableSequence):
         new_group.create_mode = self.create_mode
         new_group.create_owner = self.create_owner
         new_group.create_group = self.create_group
+        new_group.shred = self.shred
+        new_group.shredcycles = self.shredcycles
 
         new_group.olddir = self.olddir
         new_group.createolddir = self.createolddir
