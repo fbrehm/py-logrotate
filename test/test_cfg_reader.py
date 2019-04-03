@@ -103,6 +103,24 @@ class LogrotCfgReaderTestCase(BaseTestCase):
 
             reader.read()
 
+    # -------------------------------------------------------------------------
+    def test_read_include_dir(self):
+
+        LOG.info("Testing reading of a config with an include directory ...")
+
+        from logrotate.cfg_reader import LogrotateConfigReader
+
+        cfg_file = self.test_dir / 'logrotate.conf'
+        LOG.debug("Reading {!r} ...".format(str(cfg_file)))
+
+        reader = LogrotateConfigReader(
+            appname=APPNAME, verbose=self.verbose,
+            config_file=cfg_file)
+        if self.verbose > 2:
+            LOG.debug("{c} object %s:\n{o}".format(
+                c=reader.__class__.__name__, o=reader))
+
+        reader.read()
 
 # =============================================================================
 
@@ -119,7 +137,8 @@ if __name__ == '__main__':
 
     suite.addTest(LogrotCfgReaderTestCase('test_import', verbose))
     suite.addTest(LogrotCfgReaderTestCase('test_object', verbose))
-    suite.addTest(LogrotCfgReaderTestCase('test_read_simple', verbose))
+    # suite.addTest(LogrotCfgReaderTestCase('test_read_simple', verbose))
+    suite.addTest(LogrotCfgReaderTestCase('test_read_include_dir', verbose))
 
     runner = unittest.TextTestRunner(verbosity=verbose)
 

@@ -36,7 +36,7 @@ from .errors import LogrotateCfgFatalError, LogrotateCfgNonFatalError
 from .common import split_parts
 from .filegroup import LogFileGroup
 
-__version__ = '0.3.1'
+__version__ = '0.3.2'
 
 _ = XLATOR.gettext
 ngettext = XLATOR.ngettext
@@ -136,6 +136,7 @@ class LogrotateConfigReader(HandlingObject):
         self._has_read = False
         self.file_groups = []
         self.scripts = []
+        self.included_paths = {}
 
         super(LogrotateConfigReader, self).__init__(
             appname=appname, verbose=verbose, version=__version__, base_dir=base_dir,
@@ -410,12 +411,117 @@ class LogrotateConfigReader(HandlingObject):
                 self._eval_closing_block_line(line, line_parts, cfg_file, linenr)
                 continue
 
+            if line_parts[0].lower() == 'include':
+                if self.current_group is not None:
+                    msg = _(
+                        "Syntax error: include may not appear inside of a log file definition "
+                        "({f!r}:{nr}).").format(f=str(cfg_file), nr=linenr)
+                    LOG.error(msg)
+                else:
+                    self.do_include(line, line_parts, cfg_file, linenr)
+                continue
+
             if self.current_group is not None:
                 self.current_group.apply_directive(line, line_parts, cfg_file, linenr)
             else:
                 self.default_group.apply_directive(line, line_parts, cfg_file, linenr)
 
         return True
+
+    # -------------------------------------------------------------------------
+    def do_include(self, line, line_parts, cfg_file, linenr):
+
+        if self.verbose > 2:
+            LOG.debug(_(
+                "Evaluating include line in {f!r}:{nr}: {l!r}").format(
+                l=line, f=str(cfg_file), nr=linenr))
+
+        if len(line_parts) < 2:
+            msg = _("No file or directory given in a include directive ({f!r}:{nr}).").format(
+                f=str(cfg_file), nr=linenr)
+            LOG.error(msg)
+            return
+
+        if len(line_parts) > 2:
+            msg = _(
+                "Only one declaration of a file or directory is allowed in a include directive, "
+                "the first one is used ({f!r}:{nr}).").format(f=str(cfg_file), nr=linenr)
+            LOG.warning(msg)
+        include = Path(line_parts[1])
+
+        if not include.exists():
+            msg = _("Including object {o!r} does not exists ({f!r}:{nr}).").format(
+                o=str(include), f=str(cfg_file), nr=linenr)
+            LOG.error(msg)
+            return
+        include = include.resolve()
+
+        if include in self.included_paths:
+            of = str(self.included_paths[include]['file'])
+            ol = self.included_paths[include]['line']
+            msg = _("Object {o!r} was already included in {of!r}{ol} ({f!r}:{nr}).").format(
+                o=str(include), of=of, ol=ol, f=str(cfg_file), nr=linenr)
+            LOG.error(msg)
+            return
+        self.included_paths[include] = {'file': cfg_file, 'line': linenr}
+
+        if not include.is_dir() and not include.is_file():
+            msg = _(
+                "Including object {o!r} is neither a directory nor a regular file "
+                "({f!r}:{nr}).").format(o=str(include), f=str(cfg_file), nr=linenr)
+            LOG.error(msg)
+            return
+
+        if include.is_dir():
+            self.do_include_dir(include, cfg_file, linenr)
+        else:
+            self.do_include_file(include, cfg_file, linenr)
+
+    # -------------------------------------------------------------------------
+    def do_include_dir(self, include_dir, cfg_file, linenr):
+
+        if self.verbose > 1:
+            LOG.debug(_("Including directory {!r} ...").format(str(include_dir)))
+
+        for child in sorted(include_dir.iterdir(), key=lambda x: str(x).lower()):
+            if not child.is_file():
+                if self.verbose > 2:
+                    LOG.debug(_("Include child {!r} is not a regular file.").format(
+                        str(child)))
+                    continue
+            if self.verbose > 2:
+                LOG.debug(_("Including child {!r}.").format(str(child)))
+            taboo_found = False
+            for taboo_re in self.taboo_patterns + self.taboo_file_patterns:
+                if taboo_re.search(str(child)):
+                    if self.verbose > 2:
+                        LOG.debug(_("File {f!r} matches taboo pattern {p!r}.").format(
+                            f=str(child), p=taboo_re.pattern))
+                    taboo_found = True
+                    break
+            if taboo_found:
+                continue
+
+            if child in self.included_paths:
+                of = str(self.included_paths[child]['file'])
+                ol = self.included_paths[child]['line']
+                msg = _("Object {o!r} was already included in {of!r}{ol} ({f!r}:{nr}).").format(
+                    o=str(child), of=of, ol=ol, f=str(cfg_file), nr=linenr)
+                LOG.error(msg)
+                return
+            self.included_paths[child] = {'file': cfg_file, 'line': linenr}
+            self.do_include_file(child, cfg_file, linenr)
+
+        return
+
+    # -------------------------------------------------------------------------
+    def do_include_file(self, include, cfg_file, linenr):
+
+        try:
+            self._read(include)
+        except LogrotateCfgFileAlreadyRead as e:
+            LOG.error(str(e) + (" ({f!r}:{nr})").format(f=str(cfg_file.name), nr=linenr))
+            return
 
     # -------------------------------------------------------------------------
     def _eval_path_line(self, line, line_parts, cfg_file, linenr):
