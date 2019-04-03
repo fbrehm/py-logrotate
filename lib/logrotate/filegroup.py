@@ -51,7 +51,7 @@ from .translate import XLATOR, format_list
 
 from .common import split_parts, human2bytes, period2days
 
-__version__ = '0.7.13'
+__version__ = '0.8.1'
 
 _ = XLATOR.gettext
 ngettext = XLATOR.ngettext
@@ -81,6 +81,7 @@ class RotateMethod(Enum):
     create = 1
     copytruncate = 2
     copy = 3
+    renamecopy = 4
 
     # -------------------------------------------------------------------------
     def __str__(self):
@@ -168,108 +169,90 @@ class LogFileGroup(FbBaseObject, MutableSequence):
 
     unary_directives = {
         'compress': {
-            'property': 'compress', 'value': True,
-            'exclude': ['nocompress']},
+            'property': 'compress', 'value': True,},
         'copy': {
-            'property': 'rotate_method', 'value': 'copy',
-            'exclude': ['copytruncate', 'create', 'nocopy', 'sharedscripts']},
+            'property': 'rotate_method', 'value': 'copy',},
         'copytruncate': {
-            'property': 'rotate_method', 'value': 'copytruncate',
-            'exclude': ['copy', 'create', 'nocopy', 'sharedscripts']},
+            'property': 'rotate_method', 'value': 'copytruncate',},
         'daily': {
-            'property': 'rotation_interval', 'value': RotationInterval.day,
-            'exclude': ['yearly', 'monthly', 'weekly', 'hourly']},
+            'property': 'rotation_interval', 'value': RotationInterval.day,},
         'dateext': {
-            'property': 'dateext', 'value': True, 'exclude': ['nodateext',]},
+            'property': 'dateext', 'value': True,},
         'datehourago': {
-            'property': 'datehourago', 'value': True, 'exclude': []},
+            'property': 'datehourago', 'value': True,},
         'dateyesterday': {
-            'property': 'dateyesterday', 'value': True, 'exclude': []},
+            'property': 'dateyesterday', 'value': True,},
         'hourly': {
-            'property': 'rotation_interval', 'value': RotationInterval.hour,
-            'exclude': ['yearly', 'monthly', 'weekly', 'daily']},
+            'property': 'rotation_interval', 'value': RotationInterval.hour,},
         'ifempty': {
-            'property': 'if_empty', 'value': True,
-            'exclude': ['notifempty']},
+            'property': 'if_empty', 'value': True,},
         'missingok': {
-            'property': 'missing_ok', 'value': True,
-            'exclude': ['nomissingok']},
+            'property': 'missing_ok', 'value': True,},
         'monthly': {
-            'property': 'rotation_interval', 'value': RotationInterval.month,
-            'exclude': ['yearly', 'weekly', 'daily', 'hourly']},
+            'property': 'rotation_interval', 'value': RotationInterval.month,},
         'nocompress': {
-            'property': 'compress', 'value': False,
-            'exclude': ['compress', 'delaycompress']},
+            'property': 'compress', 'value': False,},
         'nocopy': {
-            'property': 'rotate_method', 'value': 'create',
-            'exclude': ['copy', 'create', 'sharedscripts']},
+            'property': 'rotate_method', 'value': 'create',},
         'nocreateolddir': {
-            'property': 'createolddir', 'value': False, 'exclude': ['createolddir',]},
+            'property': 'createolddir', 'value': False,},
         'nodateext': {
-            'property': 'dateext', 'value': False, 'exclude': ['dateext',]},
+            'property': 'dateext', 'value': False,},
         'nodelaycompress': {
-            'property': 'delaycompress', 'value': None,
-            'exclude': ['delaycompress',]},
+            'property': 'delaycompress', 'value': None,},
         'nomissingok': {
-            'property': 'missing_ok', 'value': False,
-            'exclude': ['missingok']},
+            'property': 'missing_ok', 'value': False,},
         'noolddir': {
-            'property': 'olddir', 'value': None, 'exclude': ['olddir',]},
+            'property': 'olddir', 'value': None,},
         'nosharedscripts': {
-            'property': 'sharedscripts', 'value': False,
-            'exclude': ['sharedscripts']},
+            'property': 'sharedscripts', 'value': False,},
         'noshred': {
-            'property': 'shred', 'value': False,
-            'exclude': ['shred']},
+            'property': 'shred', 'value': False,},
         'notifempty': {
-            'property': 'if_empty', 'value': False,
-            'exclude': ['ifempty']},
+            'property': 'if_empty', 'value': False,},
+        'renamecopy': {
+            'property': 'rotate_method', 'value': 'renamecopy',},
         'sharedscripts': {
-            'property': 'sharedscripts', 'value': True,
-            'exclude': ['nosharedscripts', 'copy', 'copytruncate']},
+            'property': 'sharedscripts', 'value': True,},
         'shred': {
-            'property': 'shred', 'value': True,
-            'exclude': ['noshred']},
+            'property': 'shred', 'value': True,},
         'weekly': {
-            'property': 'rotation_interval', 'value': RotationInterval.week,
-            'exclude': ['yearly', 'monthly', 'daily', 'hourly']},
+            'property': 'rotation_interval', 'value': RotationInterval.week,},
         'yearly': {
-            'property': 'rotation_interval', 'value': RotationInterval.year,
-            'exclude': ['monthly', 'weekly', 'daily', 'hourly']},
+            'property': 'rotation_interval', 'value': RotationInterval.year,},
     }
 
     integer_directives = {
         'delaycompress': {
-            'property': 'delaycompress', 'default': 1,
-            'exclude': ['nocompress', 'nodelaycompress',]},
+            'property': 'delaycompress', 'default': 1,},
         'maxage': {
-            'property': 'maxage', 'default': None, 'exclude': []},
+            'property': 'maxage', 'default': None,},
         'maxsize': {
-            'property': 'maxsize', 'default': None, 'exclude': []},
+            'property': 'maxsize', 'default': None,},
         'minage': {
-            'property': 'minage', 'default': None, 'exclude': []},
+            'property': 'minage', 'default': None,},
         'minsize': {
-            'property': 'minsize', 'default': None, 'exclude': []},
+            'property': 'minsize', 'default': None,},
         'rotate': {
-            'property': 'rotate', 'default': None, 'exclude': []},
+            'property': 'rotate', 'default': None,},
         'shredcycles': {
-            'property': 'shredcycles', 'default': None, 'exclude': []},
+            'property': 'shredcycles', 'default': None,},
         'size': {
-            'property': 'size', 'default': None, 'exclude': []},
+            'property': 'size', 'default': None,},
         'start': {
-            'property': 'start', 'default': None, 'exclude': []},
+            'property': 'start', 'default': None,},
     }
 
     string_directives = {
-        'addextension': {'min': 1, 'max': 1, 'exclude': []},
-        'compresscmd': {'min': 1, 'max': 1, 'exclude': []},
-        'compressext': {'min': 1, 'max': 1, 'exclude': []},
-        'compressoptions': {'min': 0, 'max': None, 'exclude': []},
-        'create': {'min': 0, 'max': 3, 'exclude': ['copy', 'copytruncate']},
-        'createolddir': {'min': 3, 'max': 3, 'exclude': ['nocreateolddir']},
-        'dateformat': {'min': 1, 'max': 1, 'exclude': []},
-        'extension': {'min': 1, 'max': 1, 'exclude': []},
-        'olddir': {'min': 1, 'max': 1, 'exclude': ['noolddir']},
+        'addextension': {'min': 1, 'max': 1,},
+        'compresscmd': {'min': 1, 'max': 1,},
+        'compressext': {'min': 1, 'max': 1,},
+        'compressoptions': {'min': 0, 'max': None,},
+        'create': {'min': 0, 'max': 3,},
+        'createolddir': {'min': 3, 'max': 3,},
+        'dateformat': {'min': 1, 'max': 1,},
+        'extension': {'min': 1, 'max': 1,},
+        'olddir': {'min': 1, 'max': 1,},
     }
 
     unsupported_directives = (
@@ -1455,10 +1438,6 @@ class LogFileGroup(FbBaseObject, MutableSequence):
 
         prop = self.unary_directives[directive]['property']
         val = self.unary_directives[directive]['value']
-        excludes = [directive]
-        if self.unary_directives[directive]['exclude']:
-            for excl in self.unary_directives[directive]['exclude']:
-                excludes.append(excl)
 
         if len(line_parts) > 1:
             LOG.error(self.msg_pointless.format(
@@ -1466,17 +1445,16 @@ class LogFileGroup(FbBaseObject, MutableSequence):
             return False
 
         if not self.is_default:
-            for exclude in excludes:
-                if exclude in self.applied_directives:
-                    args = {
-                        'lf': str(cfg_file), 'lnr': linenr, 'd': directive,
-                        'ex': self.applied_directives[exclude][0],
-                        'of': str(self.applied_directives[exclude][1]),
-                        'ol': self.applied_directives[exclude][2], 'line': line}
-                    LOG.error(_(
-                        "Error in {lf!r}:{lnr}: directive {d!r} was already set as {ex!r} in "
-                        "{of!r}:{ol}: {line}").format(**args))
-                    return False
+            if prop in self.applied_directives:
+                args = {
+                    'lf': str(cfg_file), 'lnr': linenr, 'd': directive,
+                    'ex': self.applied_directives[prop][0],
+                    'of': str(self.applied_directives[prop][1]),
+                    'ol': self.applied_directives[prop][2]}
+                LOG.error(_(
+                    "Error in {lf!r}:{lnr}: directive {d!r} was already set as {ex!r} in "
+                    "{of!r}:{ol}.").format(**args))
+                return False
 
         if self.verbose > 2:
             if self.is_default:
@@ -1497,10 +1475,6 @@ class LogFileGroup(FbBaseObject, MutableSequence):
         directive = line_parts[0].lower()
 
         prop = self.integer_directives[directive]['property']
-        excludes = [directive]
-        if self.integer_directives[directive]['exclude']:
-            for excl in self.integer_directives[directive]['exclude']:
-                excludes.append(excl)
 
         val = None
         default = None
@@ -1524,17 +1498,16 @@ class LogFileGroup(FbBaseObject, MutableSequence):
             return False
 
         if not self.is_default:
-            for exclude in excludes:
-                if exclude in self.applied_directives:
-                    args = {
-                        'lf': str(cfg_file), 'lnr': linenr, 'd': directive,
-                        'ex': self.applied_directives[exclude][0],
-                        'of': str(self.applied_directives[exclude][1]),
-                        'ol': self.applied_directives[exclude][2], 'line': line}
-                    LOG.error(_(
-                        "Error in {lf!r}:{lnr}: directive {d!r} was already set as {ex!r} in "
-                        "{of!r}:{ol}: {line}").format(**args))
-                    return False
+            if prop in self.applied_directives:
+                args = {
+                    'lf': str(cfg_file), 'lnr': linenr, 'd': directive,
+                    'ex': self.applied_directives[prop][0],
+                    'of': str(self.applied_directives[prop][1]),
+                    'ol': self.applied_directives[prop][2]}
+                LOG.error(_(
+                    "Error in {lf!r}:{lnr}: directive {d!r} was already set as {ex!r} in "
+                    "{of!r}:{ol}.").format(**args))
+                return False
 
         if self.verbose > 2:
             if self.is_default:
@@ -1607,23 +1580,17 @@ class LogFileGroup(FbBaseObject, MutableSequence):
         else:
             raise RuntimeError(_("There is something failing ..."))
 
-        excludes = [directive]
-        if self.string_directives[directive]['exclude']:
-            for excl in self.string_directives[directive]['exclude']:
-                excludes.append(excl)
-
         if not self.is_default:
-            for exclude in excludes:
-                if exclude in self.applied_directives:
-                    args = {
-                        'lf': str(cfg_file), 'lnr': linenr, 'd': directive,
-                        'ex': self.applied_directives[exclude][0],
-                        'of': str(self.applied_directives[exclude][1]),
-                        'ol': self.applied_directives[exclude][2], 'line': line}
-                    LOG.error(_(
-                        "Error in {lf!r}:{lnr}: directive {d!r} was already set as {ex!r} in "
-                        "{of!r}:{ol}: {line}").format(**args))
-                    return False
+            if prop in self.applied_directives:
+                args = {
+                    'lf': str(cfg_file), 'lnr': linenr, 'd': directive,
+                    'ex': self.applied_directives[prop][0],
+                    'of': str(self.applied_directives[prop][1]),
+                    'ol': self.applied_directives[prop][2]}
+                LOG.error(_(
+                    "Error in {lf!r}:{lnr}: directive {d!r} was already set as {ex!r} in "
+                    "{of!r}:{ol}.").format(**args))
+                return False
 
         if self.verbose > 2:
             if self.is_default:

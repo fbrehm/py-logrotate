@@ -62,7 +62,7 @@ nocompress
 
 /home/frank/devel/Python/PyLogrotate/test/log/*.log {
     compress
-    create
+    renamecopy
     missingok
     notifempty
     sharedscripts
