@@ -51,7 +51,7 @@ from .translate import XLATOR, format_list
 
 from .common import split_parts
 
-__version__ = '0.7.9'
+__version__ = '0.7.10'
 
 _ = XLATOR.gettext
 ngettext = XLATOR.ngettext
@@ -170,63 +170,63 @@ class LogFileGroup(FbBaseObject, MutableSequence):
         'compress': {
             'property': 'compress', 'value': True,
             'exclude': ['nocompress']},
-        'nocompress': {
-            'property': 'compress', 'value': False,
-            'exclude': ['compress', 'delaycompress']},
         'copy': {
             'property': 'rotate_method', 'value': 'copy',
             'exclude': ['copytruncate', 'create', 'sharedscripts']},
         'copytruncate': {
             'property': 'rotate_method', 'value': 'copytruncate',
             'exclude': ['copy', 'create', 'sharedscripts']},
-        'ifempty': {
-            'property': 'if_empty', 'value': True,
-            'exclude': ['notifempty']},
-        'notifempty': {
-            'property': 'if_empty', 'value': False,
-            'exclude': ['ifempty']},
-        'missingok': {
-            'property': 'missing_ok', 'value': True,
-            'exclude': ['nomissingok']},
-        'nomissingok': {
-            'property': 'missing_ok', 'value': False,
-            'exclude': ['missingok']},
-        'sharedscripts': {
-            'property': 'sharedscripts', 'value': True,
-            'exclude': ['nosharedscripts', 'copy', 'copytruncate']},
-        'nosharedscripts': {
-            'property': 'sharedscripts', 'value': False,
-            'exclude': ['sharedscripts']},
-        'nodelaycompress': {
-            'property': 'delaycompress', 'value': None,
-            'exclude': ['delaycompress',]},
-        'yearly': {
-            'property': 'rotation_interval', 'value': RotationInterval.year,
-            'exclude': ['monthly', 'weekly', 'daily', 'hourly']},
-        'monthly': {
-            'property': 'rotation_interval', 'value': RotationInterval.month,
-            'exclude': ['yearly', 'weekly', 'daily', 'hourly']},
-        'weekly': {
-            'property': 'rotation_interval', 'value': RotationInterval.week,
-            'exclude': ['yearly', 'monthly', 'daily', 'hourly']},
         'daily': {
             'property': 'rotation_interval', 'value': RotationInterval.day,
             'exclude': ['yearly', 'monthly', 'weekly', 'hourly']},
+        'dateext': {
+            'property': 'dateext', 'value': True, 'exclude': ['nodateext',]},
+        'datehourago': {
+            'property': 'datehourago', 'value': True, 'exclude': []},
+        'dateyesterday': {
+            'property': 'dateyesterday', 'value': True, 'exclude': []},
         'hourly': {
             'property': 'rotation_interval', 'value': RotationInterval.hour,
             'exclude': ['yearly', 'monthly', 'weekly', 'daily']},
-        'noolddir': {
-            'property': 'olddir', 'value': None, 'exclude': ['olddir',]},
+        'ifempty': {
+            'property': 'if_empty', 'value': True,
+            'exclude': ['notifempty']},
+        'missingok': {
+            'property': 'missing_ok', 'value': True,
+            'exclude': ['nomissingok']},
+        'monthly': {
+            'property': 'rotation_interval', 'value': RotationInterval.month,
+            'exclude': ['yearly', 'weekly', 'daily', 'hourly']},
+        'nocompress': {
+            'property': 'compress', 'value': False,
+            'exclude': ['compress', 'delaycompress']},
         'nocreateolddir': {
             'property': 'createolddir', 'value': False, 'exclude': ['createolddir',]},
-        'dateext': {
-            'property': 'dateext', 'value': True, 'exclude': ['nodateext',]},
         'nodateext': {
             'property': 'dateext', 'value': False, 'exclude': ['dateext',]},
-        'dateyesterday': {
-            'property': 'dateyesterday', 'value': True, 'exclude': []},
-        'datehourago': {
-            'property': 'datehourago', 'value': True, 'exclude': []},
+        'nodelaycompress': {
+            'property': 'delaycompress', 'value': None,
+            'exclude': ['delaycompress',]},
+        'nomissingok': {
+            'property': 'missing_ok', 'value': False,
+            'exclude': ['missingok']},
+        'noolddir': {
+            'property': 'olddir', 'value': None, 'exclude': ['olddir',]},
+        'nosharedscripts': {
+            'property': 'sharedscripts', 'value': False,
+            'exclude': ['sharedscripts']},
+        'notifempty': {
+            'property': 'if_empty', 'value': False,
+            'exclude': ['ifempty']},
+        'sharedscripts': {
+            'property': 'sharedscripts', 'value': True,
+            'exclude': ['nosharedscripts', 'copy', 'copytruncate']},
+        'weekly': {
+            'property': 'rotation_interval', 'value': RotationInterval.week,
+            'exclude': ['yearly', 'monthly', 'daily', 'hourly']},
+        'yearly': {
+            'property': 'rotation_interval', 'value': RotationInterval.year,
+            'exclude': ['monthly', 'weekly', 'daily', 'hourly']},
     }
 
     integer_directives = {
@@ -244,9 +244,9 @@ class LogFileGroup(FbBaseObject, MutableSequence):
         'compressext': {'min': 1, 'max': 1, 'exclude': []},
         'compressoptions': {'min': 0, 'max': None, 'exclude': []},
         'create': {'min': 0, 'max': 3, 'exclude': ['copy', 'copytruncate']},
-        'olddir': {'min': 1, 'max': 1, 'exclude': ['noolddir']},
         'createolddir': {'min': 3, 'max': 3, 'exclude': ['nocreateolddir']},
         'dateformat': {'min': 1, 'max': 1, 'exclude': []},
+        'olddir': {'min': 1, 'max': 1, 'exclude': ['noolddir']},
     }
 
     unsupported_directives = ('uncompresscmd', 'error', 'mail', 'mailfirst', 'maillast')
