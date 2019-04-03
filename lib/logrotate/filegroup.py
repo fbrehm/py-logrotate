@@ -49,9 +49,9 @@ from .errors import LogrotateCfgFatalError, LogrotateCfgNonFatalError
 
 from .translate import XLATOR, format_list
 
-from .common import split_parts
+from .common import split_parts, human2bytes, period2days
 
-__version__ = '0.7.11'
+__version__ = '0.7.12'
 
 _ = XLATOR.gettext
 ngettext = XLATOR.ngettext
@@ -233,8 +233,18 @@ class LogFileGroup(FbBaseObject, MutableSequence):
         'delaycompress': {
             'property': 'delaycompress', 'default': 1,
             'exclude': ['nocompress', 'nodelaycompress',]},
+        'maxage': {
+            'property': 'maxage', 'default': None, 'exclude': []},
+        'maxsize': {
+            'property': 'maxsize', 'default': None, 'exclude': []},
+        'minage': {
+            'property': 'minage', 'default': None, 'exclude': []},
+        'minsize': {
+            'property': 'minsize', 'default': None, 'exclude': []},
         'rotate': {
             'property': 'rotate', 'default': None, 'exclude': []},
+        'size': {
+            'property': 'size', 'default': None, 'exclude': []},
         'start': {
             'property': 'start', 'default': None, 'exclude': []},
     }
@@ -294,6 +304,11 @@ class LogFileGroup(FbBaseObject, MutableSequence):
         self._rotate = 0
         self._rotate_method = RotateMethod.default()
         self._rotation_interval = RotationInterval.default()
+        self._minage = None
+        self._maxage = None
+        self._minsize = None
+        self._maxsize = None
+        self._size = None
 
         self._create_mode = None
         self._create_owner = None
@@ -528,6 +543,104 @@ class LogFileGroup(FbBaseObject, MutableSequence):
             msg = _("A negative number for {!r} is not allowed.").format('rotate')
             raise ValueError(msg)
         self._rotate = v
+
+    # ------------------------------------------------------------
+    @property
+    def maxage(self):
+        """
+        Remove rotated logs older than this number of days.
+        """
+        return self._maxage
+
+    @maxage.setter
+    def maxage(self, value):
+        if value is None:
+            self._maxage = None
+            return
+        v = period2days(value)
+        if v < 0:
+            msg = _("A negative number for {!r} is not allowed.").format('maxage')
+            raise ValueError(msg)
+        self._maxage = v
+
+    # ------------------------------------------------------------
+    @property
+    def minage(self):
+        """
+        Do not rotate logs which are less than this number of days old.
+        """
+        return self._minage
+
+    @minage.setter
+    def minage(self, value):
+        if value is None:
+            self._minage = None
+            return
+        v = period2days(value)
+        if v < 0:
+            msg = _("A negative number for {!r} is not allowed.").format('minage')
+            raise ValueError(msg)
+        self._minage = v
+
+    # ------------------------------------------------------------
+    @property
+    def maxsize(self):
+        """
+        Log files are rotated when they grow bigger than size bytes even
+        before the additionally specified time interval.
+        """
+        return self._maxsize
+
+    @maxsize.setter
+    def maxsize(self, value):
+        if value is None:
+            self._maxsize = None
+            return
+        v = human2bytes(value)
+        if v < 0:
+            msg = _("A negative number for {!r} is not allowed.").format('maxsize')
+            raise ValueError(msg)
+        self._maxsize = v
+
+    # ------------------------------------------------------------
+    @property
+    def minsize(self):
+        """
+        Log files are rotated when they grow bigger than size bytes, but not before
+        the additionally specified time interval.
+        """
+        return self._minsize
+
+    @minsize.setter
+    def minsize(self, value):
+        if value is None:
+            self._minsize = None
+            return
+        v = human2bytes(value)
+        if v < 0:
+            msg = _("A negative number for {!r} is not allowed.").format('minsize')
+            raise ValueError(msg)
+        self._minsize = v
+
+    # ------------------------------------------------------------
+    @property
+    def size(self):
+        """
+        Log files are rotated if they grow bigger than size bytes independent
+        of the specified time interval.
+        """
+        return self._size
+
+    @size.setter
+    def size(self, value):
+        if value is None:
+            self._size = None
+            return
+        v = human2bytes(value)
+        if v < 0:
+            msg = _("A negative number for {!r} is not allowed.").format('size')
+            raise ValueError(msg)
+        self._size = v
 
     # ------------------------------------------------------------
     @property
@@ -922,6 +1035,11 @@ class LogFileGroup(FbBaseObject, MutableSequence):
         res['datehourago'] = self.datehourago
         res['addextension'] = self.addextension
         res['extension'] = self.extension
+        res['maxage'] = self.maxage
+        res['minage'] = self.minage
+        res['maxsize'] = self.maxsize
+        res['minsize'] = self.minsize
+        res['size'] = self.size
 
         res['rotate_method'] = self.rotate_method
         res['rotation_interval'] = self.rotation_interval
@@ -1028,6 +1146,11 @@ class LogFileGroup(FbBaseObject, MutableSequence):
         new_group.datehourago = self.datehourago
         new_group.addextension = self.addextension
         new_group.extension = self.extension
+        new_group.maxage = self.maxage
+        new_group.minage = self.minage
+        new_group.maxsize = self.maxsize
+        new_group.minsize = self.minsize
+        new_group.size = self.size
 
         new_group.rotation_interval = self.rotation_interval
         new_group.create_mode = self.create_mode
@@ -1346,14 +1469,7 @@ class LogFileGroup(FbBaseObject, MutableSequence):
             else:
                 val = default
         else:
-            try:
-                val = int(line_parts[1])
-            except (ValueError, TypeError) as e:
-                msg = _(
-                    "Invalid value {v!r} for directive {d!r} in {lf!r}:{lnr}: {e}").format(
-                    v=line_parts[1], d=directive, lf=str(cfg_file), lnr=linenr, e=e)
-                LOG.error(msg)
-                return False
+            val = line_parts[1]
 
         if len(line_parts) > 2:
             LOG.error(self.msg_pointless.format(
@@ -1384,7 +1500,7 @@ class LogFileGroup(FbBaseObject, MutableSequence):
             self.applied_directives[prop] = (directive, cfg_file, linenr)
         try:
             setattr(self, prop, val)
-        except ValueError as e:
+        except Exception as e:
             msg = _(
                 "Invalid value {v!r} for directive {d!r} in {lf!r}:{lnr}: {e}").format(
                 v=line_parts[1], d=directive, lf=str(cfg_file), lnr=linenr, e=e)

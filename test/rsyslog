@@ -63,6 +63,8 @@ createolddir 0755 root root
 	size 4M
 	delaycompress 2
 	dateext
+	minage 1
+	maxage 365
 	compress
 	olddir /var/log/syslog.d/.old
 	mail frank@brehm-online.com

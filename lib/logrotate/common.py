@@ -19,6 +19,8 @@ import gettext
 import csv
 import email.utils
 
+from numbers import Number
+
 # Third party modules
 import six
 
@@ -30,7 +32,7 @@ from .errors import UnbalancedQuotesError
 
 from .translate import XLATOR
 
-__version__ = '0.4.2'
+__version__ = '0.4.3'
 
 _ = XLATOR.gettext
 ngettext = XLATOR.ngettext
@@ -177,7 +179,7 @@ def email_valid(address):
 
 
 # =============================================================================
-def human2bytes(value, si_conform=True, use_locale_radix=False, as_float=False, verbose=0):
+def human2bytes(value, si_conform=False, use_locale_radix=False, as_float=False, verbose=0):
     """
     Converts the given human readable byte value (e.g. 5MB, 8.4GiB etc.)
     with a suffix into an integer/long value (without a suffix).
@@ -208,6 +210,9 @@ def human2bytes(value, si_conform=True, use_locale_radix=False, as_float=False, 
     if value is None:
         msg = _("Given value is None.")
         raise ValueError(msg)
+
+    if isinstance(value, Number):
+        return int(value)
 
     radix = '.'
     thousep = ','
@@ -344,6 +349,9 @@ def period2days(period, use_locale_radix=False, verbose=0):
 
     if period is None:
         raise ValueError(_("Given period is None."))
+
+    if isinstance(period, Number):
+        return int(period)
 
     value = str(period).strip().lower()
     if period == '':
