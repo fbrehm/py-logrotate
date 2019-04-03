@@ -51,7 +51,7 @@ from .translate import XLATOR, format_list
 
 from .common import split_parts
 
-__version__ = '0.7.10'
+__version__ = '0.7.11'
 
 _ = XLATOR.gettext
 ngettext = XLATOR.ngettext
@@ -240,12 +240,14 @@ class LogFileGroup(FbBaseObject, MutableSequence):
     }
 
     string_directives = {
+        'addextension': {'min': 1, 'max': 1, 'exclude': []},
         'compresscmd': {'min': 1, 'max': 1, 'exclude': []},
         'compressext': {'min': 1, 'max': 1, 'exclude': []},
         'compressoptions': {'min': 0, 'max': None, 'exclude': []},
         'create': {'min': 0, 'max': 3, 'exclude': ['copy', 'copytruncate']},
         'createolddir': {'min': 3, 'max': 3, 'exclude': ['nocreateolddir']},
         'dateformat': {'min': 1, 'max': 1, 'exclude': []},
+        'extension': {'min': 1, 'max': 1, 'exclude': []},
         'olddir': {'min': 1, 'max': 1, 'exclude': ['noolddir']},
     }
 
@@ -284,6 +286,8 @@ class LogFileGroup(FbBaseObject, MutableSequence):
         self._dateformat = None
         self._dateyesterday = False
         self._datehourago = False
+        self._addextension = None
+        self._extension = None
 
         self.applied_directives = {}
 
@@ -599,6 +603,40 @@ class LogFileGroup(FbBaseObject, MutableSequence):
 
     # ------------------------------------------------------------
     @property
+    def addextension(self):
+        "Log files will get the given extension as their filal extension after rotation."
+        return self._addextension
+
+    @addextension.setter
+    def addextension(self, value):
+        if value is None:
+            self._addextension = None
+            return
+        v = str(value).strip()
+        if v == '':
+            self._addextension = None
+            return
+        self._addextension = v
+
+    # ------------------------------------------------------------
+    @property
+    def extension(self):
+        "Log files can keep given extension after rotation."
+        return self._extension
+
+    @extension.setter
+    def extension(self, value):
+        if value is None:
+            self._extension = None
+            return
+        v = str(value).strip()
+        if v == '':
+            self._extension = None
+            return
+        self._extension = v
+
+    # ------------------------------------------------------------
+    @property
     def rotate_method(self):
         """The method, which is used for rotating the current logfiles."""
         return self._rotate_method.name
@@ -882,6 +920,8 @@ class LogFileGroup(FbBaseObject, MutableSequence):
         res['dateformat'] = self.dateformat
         res['dateyesterday'] = self.dateyesterday
         res['datehourago'] = self.datehourago
+        res['addextension'] = self.addextension
+        res['extension'] = self.extension
 
         res['rotate_method'] = self.rotate_method
         res['rotation_interval'] = self.rotation_interval
@@ -986,6 +1026,8 @@ class LogFileGroup(FbBaseObject, MutableSequence):
         new_group.dateformat = self.dateformat
         new_group.dateyesterday = self.dateyesterday
         new_group.datehourago = self.datehourago
+        new_group.addextension = self.addextension
+        new_group.extension = self.extension
 
         new_group.rotation_interval = self.rotation_interval
         new_group.create_mode = self.create_mode
@@ -1390,7 +1432,9 @@ class LogFileGroup(FbBaseObject, MutableSequence):
 
         val = None
         prop = directive
-        if directive in ('compresscmd', 'compressext', 'olddir', 'dateformat'):
+        if directive in (
+                'compresscmd', 'compressext', 'addextension', 'extension',
+                'olddir', 'dateformat'):
             val = options[0]
         elif directive in ('compressoptions', 'create', 'createolddir'):
             if len(options):
