@@ -35,7 +35,7 @@ from .translate import XLATOR
 
 from .common import split_parts
 
-__version__ = '0.4.3'
+__version__ = '0.5.1'
 
 _ = XLATOR.gettext
 ngettext = XLATOR.ngettext
@@ -49,8 +49,8 @@ class LogRotateScript(HandlingObject, MutableSequence):
 
     #-------------------------------------------------------
     def __init__(
-        self, name=None, simulate=False, commands=None, quiet=False, force=None,
-            appname=None, verbose=0, base_dir=None):
+        self, name=None, commands=None, cfg_file=None, cfg_line=None,
+            simulate=False, quiet=False, force=None, appname=None, verbose=0, base_dir=None):
         """
         Constructor.
 
@@ -72,6 +72,9 @@ class LogRotateScript(HandlingObject, MutableSequence):
         self._do_post = False
         self._do_last = False
 
+        self._cfg_file = None
+        self._cfg_line = None
+
         if name is not None:
             self._name = to_str(name)
 
@@ -84,6 +87,9 @@ class LogRotateScript(HandlingObject, MutableSequence):
         super(LogRotateScript, self).__init__(
             appname=appname, verbose=verbose, version=__version__, base_dir=base_dir,
             simulate=simulate, quiet=quiet, force=force)
+
+        self.cfg_file = cfg_file
+        self.cfg_line = cfg_line
 
         if isinstance(commands, (list, tuple)):
             for cmd in commands:
@@ -105,6 +111,35 @@ class LogRotateScript(HandlingObject, MutableSequence):
     def name(self):
         "Name of the script as an identifier"
         return self._name
+
+    # ------------------------------------------------------------
+    @property
+    def cfg_file(self):
+        "Filename of the configuration file, where this script is defined."
+        return self._cfg_file
+
+    @cfg_file.setter
+    def cfg_file(self, value):
+        if value is None:
+            self._cfg_file = None
+            return
+        self._cfg_file = Path(value)
+
+    # ------------------------------------------------------------
+    @property
+    def cfg_line(self):
+        """
+        The number of the beginning line of the definition in the configuration file,
+        where this script is defined.
+        """
+        return self._cfg_line
+
+    @cfg_line.setter
+    def cfg_line(self, value):
+        if value is None:
+            self._cfg_line = None
+            return
+        self._cfg_line = int(value)
 
     #------------------------------------------------------------
     @property
@@ -194,6 +229,15 @@ class LogRotateScript(HandlingObject, MutableSequence):
     def do_last(self, value):
         self._do_last = bool(value)
 
+    # -----------------------------------------------------------
+    @property
+    def command(self):
+        "All commands as a single string, separated by newlines."
+
+        if not self._commands:
+            return None
+        return '\n'.join(self._commands)
+
     #-------------------------------------------------------
     def __del__(self):
         '''
@@ -237,7 +281,10 @@ class LogRotateScript(HandlingObject, MutableSequence):
         res['done_lastrun'] = self.done_lastrun
         res['do_post'] = self.do_post
         res['do_last'] = self.do_last
+        res['cfg_file'] = self.cfg_file
+        res['cfg_line'] = self.cfg_line
 
+        res['command'] = self.command
         res['commands'] = copy.copy(self._commands)
 
         return res
@@ -269,6 +316,8 @@ class LogRotateScript(HandlingObject, MutableSequence):
 
         fields = []
         fields.append("name=%r" % (self.name))
+        fields.append("cfg_file=%r" % (self.cfg_file))
+        fields.append("cfg_line=%r" % (self.cfg_line))
         fields.append("simulate=%r" % (self.simulate))
         fields.append("appname=%r" % (self.appname))
         fields.append("verbose=%r" % (self.verbose))
@@ -277,6 +326,31 @@ class LogRotateScript(HandlingObject, MutableSequence):
 
         out += ", ".join(fields) + ")>"
         return out
+
+    # -------------------------------------------------------------------------
+    def __copy__(self):
+        """Wrapper method for copy.copy() to create a complete copy
+        of this script."""
+
+        new_script = LogRotateScript(
+            name=self.name, cfg_file=self.cfg_file, cfg_line=self.cfg_line,
+            simulate=self.simulate, quiet=self.quiet, force=self.force,
+            appname=self.appname, verbose=self.verbose, base_dir=self.base_dir,
+        )
+
+        new_script.post_files = self.post_files
+        new_script.last_files = self.last_files
+        new_script.done_firstrun = self.done_firstrun
+        new_script.done_prerun = self.done_prerun
+        new_script.done_postrun = self.done_postrun
+        new_script.done_lastrun = self.done_lastrun
+        new_script.do_post = self.do_post
+        new_script.do_last = self.do_last
+
+        for cmd in self:
+            new_script.append(cmd)
+
+        return new_script
 
     # -------------------------------------------------------------------------
     def index(self, value, *args):
@@ -358,16 +432,14 @@ class LogRotateScript(HandlingObject, MutableSequence):
         @rtype: int
         """
 
-        if not self._commands:
+        if not self.command:
             msg = _("No command to execute defined in script {!r}.").format(self.name)
             raise LogRotateScriptError(msg)
-
-        command = '\n'.join(self._commands)
 
         if self.verbose > 2:
             msg = (
                 _("Executing script {!r} with command:").format(self.name)
-                + '\n' +command.rstrip())
+                + '\n' + self.command.rstrip())
             LOG.debug(msg)
         if force is None:
             force = self.force
@@ -376,7 +448,7 @@ class LogRotateScript(HandlingObject, MutableSequence):
                 return True
 
         try:
-            completed = self.run([command], shell=True)
+            completed = self.run([self.command], shell=True)
             if self.verbose > 1:
                 LOG.debug(_("Completed process:") + '\n' + pp(completed.__dict__))
             if completed.returncode != expected_retcode:

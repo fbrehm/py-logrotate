@@ -137,7 +137,7 @@ if __name__ == '__main__':
 
     suite.addTest(LogrotCfgReaderTestCase('test_import', verbose))
     suite.addTest(LogrotCfgReaderTestCase('test_object', verbose))
-    # suite.addTest(LogrotCfgReaderTestCase('test_read_simple', verbose))
+    suite.addTest(LogrotCfgReaderTestCase('test_read_simple', verbose))
     suite.addTest(LogrotCfgReaderTestCase('test_read_include_dir', verbose))
 
     runner = unittest.TextTestRunner(verbosity=verbose)

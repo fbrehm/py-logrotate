@@ -35,8 +35,9 @@ from .errors import LogrotateConfigurationError
 from .errors import LogrotateCfgFatalError, LogrotateCfgNonFatalError
 from .common import split_parts
 from .filegroup import LogFileGroup
+from .script import LogRotateScript
 
-__version__ = '0.3.2'
+__version__ = '0.4.1'
 
 _ = XLATOR.gettext
 ngettext = XLATOR.ngettext
@@ -108,6 +109,9 @@ class LogrotateConfigReader(HandlingObject):
     taboo_patterns = []
     taboo_file_patterns = []
 
+    fg_script_directives = [
+        'postrotate', 'prerotate', 'firstaction', 'lastaction', 'preremove']
+
     msg_block_already_started = _(
         "Found opening curly bracket in file {f!r}:{nr} after another opening curly bracket.")
     msg_pointless_open_bracket = _(
@@ -135,8 +139,10 @@ class LogrotateConfigReader(HandlingObject):
         self.default_group = None
         self._has_read = False
         self.file_groups = []
-        self.scripts = []
         self.included_paths = {}
+
+        self.scripts = {}
+        self.current_script = None
 
         super(LogrotateConfigReader, self).__init__(
             appname=appname, verbose=verbose, version=__version__, base_dir=base_dir,
@@ -268,7 +274,7 @@ class LogrotateConfigReader(HandlingObject):
 
         self._init_default_group()
         self.file_groups = []
-        self.scripts = []
+        self.scripts = {}
 
     # -------------------------------------------------------------------------
     def as_dict(self, short=True):
@@ -322,6 +328,11 @@ class LogrotateConfigReader(HandlingObject):
                 out.append(fg.as_dict())
             LOG.debug(_("All read config files:") + '\n' + pp(out))
 
+            out = {}
+            for script_name in self.scripts:
+                out[script_name] = self.scripts[script_name].as_dict()
+            LOG.debug(_("All evaluated scripts:") + '\n' + pp(out))
+
         self.has_read = True
         return True
 
@@ -356,7 +367,14 @@ class LogrotateConfigReader(HandlingObject):
 
         lines = content.splitlines()
 
-        return self._eval_cfg_lines(lines, cfg_file)
+        ret = self._eval_cfg_lines(lines, cfg_file)
+
+        if self.current_script:
+            msg = _("Script {n!r} not finished at the end of file {fn!r}.").format(
+                n=self.current_script.name, fn=str(cfg_file))
+            raise LogrotateCfgFatalError(msg)
+
+        return ret
 
     # -------------------------------------------------------------------------
     def _eval_cfg_lines(self, lines, cfg_file):
@@ -392,6 +410,19 @@ class LogrotateConfigReader(HandlingObject):
                 LOG.debug(_("Evaluating line {f!r}:{nr}: {l!r}").format(
                     f=str(cfg_file.name), nr=linenr, l=line) + '\n' + pp(line_parts))
 
+            if self.current_script is not None:
+                if line_parts[0].lower() == 'endscript':
+                    sname = self.current_script.name
+                    if self.verbose > 2:
+                        LOG.debug(_(
+                            "Finishing script {n!r} ({f!r}:{nr}).").format(
+                            n=sname, f=str(cfg_file.name), nr=linenr))
+                    self.scripts[sname] = self.current_script
+                    self.current_script = None
+                    continue
+                self.current_script.append(line)
+                continue
+
             path = None
             try:
                 path = Path(line_parts[0])
@@ -411,14 +442,7 @@ class LogrotateConfigReader(HandlingObject):
                 self._eval_closing_block_line(line, line_parts, cfg_file, linenr)
                 continue
 
-            if line_parts[0].lower() == 'include':
-                if self.current_group is not None:
-                    msg = _(
-                        "Syntax error: include may not appear inside of a log file definition "
-                        "({f!r}:{nr}).").format(f=str(cfg_file), nr=linenr)
-                    LOG.error(msg)
-                else:
-                    self.do_include(line, line_parts, cfg_file, linenr)
+            if self.eval_global_directives(line, line_parts, cfg_file, linenr):
                 continue
 
             if self.current_group is not None:
@@ -427,6 +451,97 @@ class LogrotateConfigReader(HandlingObject):
                 self.default_group.apply_directive(line, line_parts, cfg_file, linenr)
 
         return True
+
+    # -------------------------------------------------------------------------
+    def eval_global_directives(self, line, line_parts, cfg_file, linenr):
+
+        if line_parts[0].lower() == 'include':
+            if self.current_group is not None:
+                msg = _(
+                    "Syntax error: include may not appear inside of a log file definition "
+                "({f!r}:{nr}).").format(f=str(cfg_file), nr=linenr)
+                LOG.error(msg)
+            else:
+                self.do_include(line, line_parts, cfg_file, linenr)
+            return True
+
+        if line_parts[0].lower() in self.fg_script_directives + ['script']:
+            self.start_script_definition(line, line_parts, cfg_file, linenr)
+            return True
+
+        return False
+
+    # -------------------------------------------------------------------------
+    def start_script_definition(self, line, line_parts, cfg_file, linenr):
+
+        if self.verbose > 1:
+            LOG.debug(_("Starting new script in {f!r}:{nr}: {line}").format(
+                f=str(cfg_file), nr=linenr, line=line))
+
+        directive = line_parts[0].lower()
+        script_name = None
+        if len(line_parts) > 1:
+            script_name = line_parts[1].lower()
+
+        if len(line_parts) > 2:
+            msg = _("Pointless options for directive {d!} found ({f!r}:{nr}).".format(
+                d=directive, f=str(cfg_file), nr=linenr))
+            LOG.warning(msg)
+
+        if self.current_group is not None:
+            if directive in self.fg_script_directives:
+                if directive not in self.current_group.scripts:
+                    self.current_group.scripts[directive] = []
+                if script_name:
+                    self.current_group.scripts[directive].append(script_name)
+                    return
+                script_name = self.new_scriptname(directive)
+                self.current_script = LogRotateScript(
+                    name=script_name, cfg_file=cfg_file, cfg_line=linenr,
+                    simulate=self.simulate, quiet=self.quiet, force=self.force,
+                    appname=self.appname, verbose=self.verbose, base_dir=self.base_dir)
+                self.current_group.scripts[directive].append(script_name)
+                return
+            msg = _(
+                "Directive {d!r} is not allowed inside a logfile definition "
+                "block ({f!r}:{nr}).".format(d=directive, f=str(cfg_file), nr=linenr))
+            raise LogrotateCfgFatalError(msg)
+
+        if directive in self.fg_script_directives:
+            msg = _(
+                "Directive {d!r} is not allowed outside a logfile definition "
+                "block ({f!r}:{nr}).".format(d=directive, f=str(cfg_file), nr=linenr))
+            raise LogrotateCfgFatalError(msg)
+
+        if not script_name:
+            msg = _("Directive {d!r} needs a unique name of the script ({f!r}:{nr}).".format(
+                d=directive, f=str(cfg_file), nr=linenr))
+            raise LogrotateCfgFatalError(msg)
+        if script_name in self.scripts:
+            msg = _("Name {n!r} for a script was already used ({f!r}:{nr}).".format(
+                n=script_name, f=str(cfg_file), nr=linenr))
+            raise LogrotateCfgFatalError(msg)
+        self.scripts[script_name] = None
+
+        self.current_script = LogRotateScript(
+            name=script_name, cfg_file=cfg_file, cfg_line=linenr,
+            simulate=self.simulate, quiet=self.quiet, force=self.force,
+            appname=self.appname, verbose=self.verbose, base_dir=self.base_dir)
+
+    # -------------------------------------------------------------------------
+    def new_scriptname(self, directive):
+
+        i = 0
+        template = "{}_{{:03d}}".format(directive)
+        script_name = template.format(i)
+
+        while script_name in self.scripts:
+            i += 1
+            script_name = template.format(i)
+        self.scripts[script_name] = None
+        if self.verbose > 2:
+            LOG.debug(_("New script name: {!r}.").format(script_name))
+        return script_name
 
     # -------------------------------------------------------------------------
     def do_include(self, line, line_parts, cfg_file, linenr):

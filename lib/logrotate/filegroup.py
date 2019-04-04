@@ -51,7 +51,7 @@ from .translate import XLATOR, format_list
 
 from .common import split_parts, human2bytes, period2days
 
-__version__ = '0.8.2'
+__version__ = '0.8.3'
 
 _ = XLATOR.gettext
 ngettext = XLATOR.ngettext
@@ -276,7 +276,9 @@ class LogFileGroup(FbBaseObject, MutableSequence):
 
         self._if_empty = True
         self._missing_ok = False
+
         self._sharedscripts = False
+        self.scripts = {}
 
         self._start = 0
         self._dateext = False
