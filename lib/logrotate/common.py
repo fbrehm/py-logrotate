@@ -11,28 +11,24 @@ from __future__ import absolute_import, print_function
 
 # Standard modules
 import re
-import os
-import sys
 import locale
 import logging
-import gettext
 import csv
 import email.utils
 
 from numbers import Number
 
 # Third party modules
-import six
 
 # Own modules
 
-from fb_tools.common import pp, human2mbytes
+from fb_tools.common import pp
 
 from .errors import UnbalancedQuotesError
 
 from .translate import XLATOR
 
-__version__ = '0.4.3'
+__version__ = '0.4.4'
 
 _ = XLATOR.gettext
 ngettext = XLATOR.ngettext
@@ -179,7 +175,8 @@ def email_valid(address):
 
 
 # =============================================================================
-def human2bytes(value, si_conform=False, use_locale_radix=False, as_float=False, verbose=0):
+def human2bytes(                                                                        # noqa
+        value, si_conform=False, use_locale_radix=False, as_float=False, verbose=0):
     """
     Converts the given human readable byte value (e.g. 5MB, 8.4GiB etc.)
     with a suffix into an integer/long value (without a suffix).
@@ -246,11 +243,7 @@ def human2bytes(value, si_conform=False, use_locale_radix=False, as_float=False,
     if use_locale_radix:
         value_raw = re.sub(radix, '.', value_raw, 1)
     value_float = float(value_raw)
-    value_long = 0
-    if six.PY2:
-        value_long = long(value_float)
-    else:
-        value_long = int(value_float)
+    value_long = int(value_float)
     if suffix is None:
         suffix = ''
     if verbose > 4:
@@ -261,17 +254,11 @@ def human2bytes(value, si_conform=False, use_locale_radix=False, as_float=False,
     factor_bin = 1024
     factor_si = 1000
     factor = 1
-    if six.PY2:
-        factor_bin = long(1024)
-        factor_si = long(1000)
-        factor = long(1)
     if not si_conform:
         factor_si = factor_bin
 
     if re.search(r'^\s*(?:b(?:yte)?)?\s*$', suffix, re.IGNORECASE):
         factor = 1
-        if six.PY2:
-            factor = long(1)
     elif re.search(r'^\s*k(?:[bB](?:[Yy][Tt][Ee])?)?\s*$', suffix):
         factor = factor_si
     elif re.search(r'^\s*Ki?(?:[bB](?:[Yy][Tt][Ee])?)?\s*$', suffix):
@@ -311,16 +298,13 @@ def human2bytes(value, si_conform=False, use_locale_radix=False, as_float=False,
     fbytes = float(factor) * value_float
     if as_float:
         return fbytes
-    if six.PY2:
-        lbytes = long(fbytes)
-    else:
-        lbytes = int(fbytes)
+    lbytes = int(fbytes)
 
     return lbytes
 
 
 # =============================================================================
-def period2days(period, use_locale_radix=False, verbose=0):
+def period2days(period, use_locale_radix=False, verbose=0):                             # noqa
     """
     Converts the given string of the form »5d 8h« in an amount of days.
     It raises a ValueError on invalid values.
@@ -471,7 +455,7 @@ def period2days(period, use_locale_radix=False, verbose=0):
 
 
 # =============================================================================
-def get_address_list(address_str, verbose = 0):
+def get_address_list(address_str, verbose=0):
     '''
     Retrieves all mail addresses from address_str and give them back
     as a list of tuples.
@@ -491,16 +475,14 @@ def get_address_list(address_str, verbose = 0):
     addr_list = []
     addresses = []
 
-    for row in csv.reader([address_str],
-                          doublequote=False,
-                          skipinitialspace=True):
+    for row in csv.reader([address_str], doublequote=False, skipinitialspace=True):
         for address in row:
             addr_list.append(address)
 
     if verbose > 3:
-        LOG.debug(
-            ngettext("Found address entry:", "Found address entries:", len(addr_list)) +
-            "\n" + pp(addr_list))
+        msg = ngettext("Found address entry:", "Found address entries:", len(addr_list))
+        msg += "\n" + pp(addr_list)
+        LOG.debug(msg)
 
     for address in addr_list:
         address = re.sub(r',', ' ', address)
