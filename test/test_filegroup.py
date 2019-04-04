@@ -62,21 +62,6 @@ class LogFileGroupTestCase(BaseTestCase):
         from logrotate.filegroup import LogFileGroup                     # noqa
 
     # -------------------------------------------------------------------------
-    def test_define_taboo_pattern(self):
-
-        LOG.info("Testing initialisation and modifying of taboo patterns.")
-        from logrotate.filegroup import LogFileGroup
-
-        LogFileGroup.init_taboo_patterns()
-        patterns = []
-        for regex in LogFileGroup.taboo_patterns:
-            patterns.append(regex.pattern)
-        LOG.debug("Found initialised taboo patterns:\n%s", pp(patterns))
-        test_patterns = (r',v$', r'~$', r'^\.', r'^CVS$')
-        for pat in test_patterns:
-            self.assertIn(pat, patterns)
-
-    # -------------------------------------------------------------------------
     def test_object(self):
 
         LOG.info("Testing creating a new LogFileGroup object ...")
@@ -114,8 +99,9 @@ class LogFileGroupTestCase(BaseTestCase):
 
         LOG.info("Testing pattern handling of a LogFileGroup object ...")
         from logrotate.filegroup import LogFileGroup
+        from logrotate.errors import LogrotateCfgNonFatalError
 
-        with self.assertRaises(TypeError) as cm:
+        with self.assertRaises((LogrotateCfgNonFatalError, TypeError)) as cm:
             group = LogFileGroup(
                 simulate=True, patterns=55, verbose=self.verbose, appname=self.appname)
         e = cm.exception
@@ -129,14 +115,14 @@ class LogFileGroupTestCase(BaseTestCase):
         group.add_pattern("/var/log/a.log")
         group.add_pattern("/var/log/b.log")
         group.add_pattern("/var/log/c*.log")
-        self.assertEqual(len(group.patterns), 3)
         if self.verbose > 2:
             LOG.debug("Injected logfile globbing pattern:\n%s", pp(group.patterns))
+        self.assertEqual(len(group.patterns), 3)
 
         wrong_pattern = (None, 12, False, object())
 
         for pattern in wrong_pattern:
-            with self.assertRaises(ValueError) as cm:
+            with self.assertRaises((LogrotateCfgNonFatalError, TypeError, ValueError)) as cm:
                 ret = group.add_pattern(pattern)
             e = cm.exception
             LOG.debug("%s raised: %s", e.__class__.__name__, str(e))
@@ -190,7 +176,6 @@ if __name__ == '__main__':
     suite = unittest.TestSuite()
 
     suite.addTest(LogFileGroupTestCase('test_import', verbose))
-    suite.addTest(LogFileGroupTestCase('test_define_taboo_pattern', verbose))
     suite.addTest(LogFileGroupTestCase('test_object', verbose))
     suite.addTest(LogFileGroupTestCase('test_pattern', verbose))
     suite.addTest(LogFileGroupTestCase('test_filelist', verbose))

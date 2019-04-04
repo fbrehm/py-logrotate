@@ -61,6 +61,29 @@ class LogrotCfgReaderTestCase(BaseTestCase):
         from logrotate.cfg_reader import LogrotateConfigReader           # noqa
 
     # -------------------------------------------------------------------------
+    def test_define_taboo_pattern(self):
+
+        LOG.info("Testing initialisation and modifying of taboo patterns.")
+        from logrotate.cfg_reader import LogrotateConfigReader
+
+        LogrotateConfigReader.init_taboo_patterns()
+        patterns = []
+        for regex in LogrotateConfigReader.taboo_patterns:
+            patterns.append(regex.pattern)
+        LOG.debug("Found initialised taboo patterns:\n%s", pp(patterns))
+        test_patterns = (r',v$', r'~$', r'^\.')
+        for pat in test_patterns:
+            self.assertIn(pat, patterns)
+
+        patterns = []
+        for regex in LogrotateConfigReader.taboo_file_patterns:
+            patterns.append(regex.pattern)
+        LOG.debug("Found initialised taboo file patterns:\n%s", pp(patterns))
+        test_patterns = (r'^CVS$',)
+        for pat in test_patterns:
+            self.assertIn(pat, patterns)
+
+    # -------------------------------------------------------------------------
     def test_object(self):
 
         LOG.info("Testing init of a config reader object ...")
@@ -136,6 +159,7 @@ if __name__ == '__main__':
     suite = unittest.TestSuite()
 
     suite.addTest(LogrotCfgReaderTestCase('test_import', verbose))
+    suite.addTest(LogrotCfgReaderTestCase('test_define_taboo_pattern', verbose))
     suite.addTest(LogrotCfgReaderTestCase('test_object', verbose))
     suite.addTest(LogrotCfgReaderTestCase('test_read_simple', verbose))
     suite.addTest(LogrotCfgReaderTestCase('test_read_include_dir', verbose))

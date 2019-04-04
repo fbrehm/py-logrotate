@@ -45,7 +45,7 @@ from .translate import XLATOR, format_list
 
 from .common import human2bytes, period2days
 
-__version__ = '0.8.4'
+__version__ = '0.8.5'
 
 _ = XLATOR.gettext
 ngettext = XLATOR.ngettext
@@ -1290,7 +1290,8 @@ class LogFileGroup(FbBaseObject, MutableSequence):
             msg = _("A logfile pattern must be an absolute path: {!r}").format(str(path))
             raise LogrotateCfgNonFatalError(msg)
 
-        self.patterns.append(path)
+        if path not in self.patterns:
+            self.patterns.append(path)
 
     # -------------------------------------------------------------------------
     def resolve_patterns(self):
