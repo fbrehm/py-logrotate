@@ -12,21 +12,15 @@ from __future__ import absolute_import, print_function
 # Standard modules
 import re
 import logging
-import subprocess
-import pprint
-import gettext
-import copy
 import errno
 import os
 
 from pathlib import Path
 
 # Third party modules
-import six
 
 # Own modules
 from fb_tools.common import pp, to_str
-from fb_tools.obj import FbBaseObjectError, FbBaseObject
 from fb_tools.handling_obj import HandlingObject
 
 from . import DEFAULT_CONFIG_FILE
@@ -37,7 +31,7 @@ from .common import split_parts
 from .filegroup import LogFileGroup
 from .script import LogRotateScript
 
-__version__ = '0.4.2'
+__version__ = '0.4.3'
 
 _ = XLATOR.gettext
 ngettext = XLATOR.ngettext
@@ -115,11 +109,11 @@ class LogrotateConfigReader(HandlingObject):
     msg_block_already_started = _(
         "Found opening curly bracket in file {f!r}:{nr} after another opening curly bracket.")
     msg_pointless_open_bracket = _(
-        "Pointless content found (l!r} after opening curly bracket in file {f!r}:{nr}.")
+        "Pointless content found (li!r} after opening curly bracket in file {f!r}:{nr}.")
     msg_pointless_closing_bracket = _(
-        "Pointless content found (l!r} after closing curly bracket in file {f!r}:{nr}.")
+        "Pointless content found (li!r} after closing curly bracket in file {f!r}:{nr}.")
 
-    #-------------------------------------------------------
+    # ------------------------------------------------------
     def __init__(
         self, config_file=DEFAULT_CONFIG_FILE, name=None, simulate=False, quiet=False,
             force=None, appname=None, verbose=0, base_dir=None):
@@ -231,33 +225,33 @@ class LogrotateConfigReader(HandlingObject):
         cls.taboo_patterns = []
 
         # Standard taboo extensions (suffixes)
-        cls.add_taboo_pattern(r'\.rpmnew', 'ext');
-        cls.add_taboo_pattern(r'\.rpmorig', 'ext');
-        cls.add_taboo_pattern(r'\.rpmsave', 'ext');
-        cls.add_taboo_pattern(r',v', 'ext');
-        cls.add_taboo_pattern(r'\.swp', 'ext');
-        cls.add_taboo_pattern(r'~', 'ext');
-        cls.add_taboo_pattern(r'\.bak', 'ext');
-        cls.add_taboo_pattern(r'\.old', 'ext');
-        cls.add_taboo_pattern(r'\.rej', 'ext');
-        cls.add_taboo_pattern(r'\.disabled', 'ext');
-        cls.add_taboo_pattern(r'\.dpkg-old', 'ext');
-        cls.add_taboo_pattern(r'\.dpkg-del', 'ext');
-        cls.add_taboo_pattern(r'\.dpkg-dist', 'ext');
-        cls.add_taboo_pattern(r'\.dpkg-new', 'ext');
-        cls.add_taboo_pattern(r'\.dpkg-bak', 'ext');
-        cls.add_taboo_pattern(r'\.cfsaved', 'ext');
-        cls.add_taboo_pattern(r'\.ucf-old', 'ext');
-        cls.add_taboo_pattern(r'\.ucf-dist', 'ext');
-        cls.add_taboo_pattern(r'\.ucf-new', 'ext');
-        cls.add_taboo_pattern(r'\.rhn-cfg-tmp-.*', 'ext');
+        cls.add_taboo_pattern(r'\.rpmnew', 'ext')
+        cls.add_taboo_pattern(r'\.rpmorig', 'ext')
+        cls.add_taboo_pattern(r'\.rpmsave', 'ext')
+        cls.add_taboo_pattern(r',v', 'ext')
+        cls.add_taboo_pattern(r'\.swp', 'ext')
+        cls.add_taboo_pattern(r'~', 'ext')
+        cls.add_taboo_pattern(r'\.bak', 'ext')
+        cls.add_taboo_pattern(r'\.old', 'ext')
+        cls.add_taboo_pattern(r'\.rej', 'ext')
+        cls.add_taboo_pattern(r'\.disabled', 'ext')
+        cls.add_taboo_pattern(r'\.dpkg-old', 'ext')
+        cls.add_taboo_pattern(r'\.dpkg-del', 'ext')
+        cls.add_taboo_pattern(r'\.dpkg-dist', 'ext')
+        cls.add_taboo_pattern(r'\.dpkg-new', 'ext')
+        cls.add_taboo_pattern(r'\.dpkg-bak', 'ext')
+        cls.add_taboo_pattern(r'\.cfsaved', 'ext')
+        cls.add_taboo_pattern(r'\.ucf-old', 'ext')
+        cls.add_taboo_pattern(r'\.ucf-dist', 'ext')
+        cls.add_taboo_pattern(r'\.ucf-new', 'ext')
+        cls.add_taboo_pattern(r'\.rhn-cfg-tmp-.*', 'ext')
 
         # Standard taboo prefix
-        cls.add_taboo_pattern(r'\.', 'prefix');
+        cls.add_taboo_pattern(r'\.', 'prefix')
 
         # Standard taboo files
-        cls.add_taboo_pattern(r'CVS', 'file');
-        cls.add_taboo_pattern(r'RCS', 'file');
+        cls.add_taboo_pattern(r'CVS', 'file')
+        cls.add_taboo_pattern(r'RCS', 'file')
 
     # -----------------------------------------------------------------------
     def _init_default_group(self):
@@ -356,7 +350,6 @@ class LogrotateConfigReader(HandlingObject):
 
         LOG.info(_("Reading configuration from {!r} ...").format(str(cfg_file)))
 
-        fh = None
         content = None
         try:
             content = self.read_file(cfg_file)
@@ -383,10 +376,7 @@ class LogrotateConfigReader(HandlingObject):
             LOG.debug(_("Evaluating content of {!r} ...").format(str(cfg_file)))
 
         linenr = 0
-        in_script = False
-        in_logfile_list = False
         lastrow = ''
-        newscript = ''
         self.current_group = None
 
         for line in lines:
@@ -407,8 +397,8 @@ class LogrotateConfigReader(HandlingObject):
 
             line_parts = split_parts(line)
             if self.verbose > 3:
-                LOG.debug(_("Evaluating line {f!r}:{nr}: {l!r}").format(
-                    f=str(cfg_file.name), nr=linenr, l=line) + '\n' + pp(line_parts))
+                LOG.debug(_("Evaluating line {f!r}:{nr}: {li!r}").format(
+                    f=str(cfg_file.name), nr=linenr, li=line) + '\n' + pp(line_parts))
 
             if self.current_script is not None:
                 if line_parts[0].lower() == 'endscript':
@@ -426,7 +416,7 @@ class LogrotateConfigReader(HandlingObject):
             path = None
             try:
                 path = Path(line_parts[0])
-            except:
+            except Exception:
                 pass
             if self.verbose > 4:
                 LOG.debug(_("Possible path at begin: {!r}.").format(path))
@@ -459,7 +449,7 @@ class LogrotateConfigReader(HandlingObject):
             if self.current_group is not None:
                 msg = _(
                     "Syntax error: include may not appear inside of a log file definition "
-                "({f!r}:{nr}).").format(f=str(cfg_file), nr=linenr)
+                    "({f!r}:{nr}).").format(f=str(cfg_file), nr=linenr)
                 LOG.error(msg)
             else:
                 self.do_include(line, line_parts, cfg_file, linenr)
@@ -548,8 +538,8 @@ class LogrotateConfigReader(HandlingObject):
 
         if self.verbose > 2:
             LOG.debug(_(
-                "Evaluating include line in {f!r}:{nr}: {l!r}").format(
-                l=line, f=str(cfg_file), nr=linenr))
+                "Evaluating include line in {f!r}:{nr}: {li!r}").format(
+                li=line, f=str(cfg_file), nr=linenr))
 
         if len(line_parts) < 2:
             msg = _("No file or directory given in a include directive ({f!r}:{nr}).").format(
@@ -643,8 +633,8 @@ class LogrotateConfigReader(HandlingObject):
 
         if self.verbose > 2:
             LOG.debug(_(
-                "Evaluating line with a path at begin in {f!r}:{nr}: {l!r}").format(
-                l=line, f=str(cfg_file), nr=linenr))
+                "Evaluating line with a path at begin in {f!r}:{nr}: {li!r}").format(
+                li=line, f=str(cfg_file), nr=linenr))
 
         if self.current_group is None:
             self.current_group = self.default_group.spawn_new()
@@ -665,7 +655,7 @@ class LogrotateConfigReader(HandlingObject):
                 self.current_group.definition_started = True
                 if len(line_parts):
                     LOG.error(self.msg_pointless_open_bracket.format(
-                        l=line, f=str(cfg_file), nr=linenr))
+                        li=line, f=str(cfg_file), nr=linenr))
                 break
             self.current_group.add_pattern(part)
         if self.verbose > 3:
@@ -676,8 +666,8 @@ class LogrotateConfigReader(HandlingObject):
 
         if self.verbose > 2:
             LOG.debug(_(
-                "Evaluating line with a opening curly bracket in {f!r}:{nr}: {l!r}").format(
-                l=line, f=str(cfg_file), nr=linenr))
+                "Evaluating line with a opening curly bracket in {f!r}:{nr}: {li!r}").format(
+                li=line, f=str(cfg_file), nr=linenr))
 
         if self.current_group is None:
             msg = _(
@@ -688,7 +678,7 @@ class LogrotateConfigReader(HandlingObject):
             raise LogrotateCfgFatalError(
                 self.msg_block_already_started.format(f=str(cfg_file), nr=linenr))
         if len(line_parts) > 1:
-            LOG.error(self.msg_pointless_open_bracket.format(l=line, f=str(cfg_file), nr=linenr))
+            LOG.error(self.msg_pointless_open_bracket.format(li=line, f=str(cfg_file), nr=linenr))
 
         self.current_group.definition_started = True
 
@@ -697,8 +687,8 @@ class LogrotateConfigReader(HandlingObject):
 
         if self.verbose > 2:
             LOG.debug(_(
-                "Evaluating line with a closing curly bracket in {f!r}:{nr}: {l!r}").format(
-                l=line, f=str(cfg_file), nr=linenr))
+                "Evaluating line with a closing curly bracket in {f!r}:{nr}: {li!r}").format(
+                li=line, f=str(cfg_file), nr=linenr))
 
         if self.verbose > 3:
             LOG.debug(_("Current file group:") + '\n' + pp(self.current_group.as_dict()))
@@ -716,7 +706,7 @@ class LogrotateConfigReader(HandlingObject):
             raise LogrotateCfgFatalError(msg)
         if len(line_parts) > 1:
             LOG.error(self.msg_pointless_closing_bracket.format(
-                l=line, f=str(cfg_file), nr=linenr))
+                li=line, f=str(cfg_file), nr=linenr))
         self.current_group.definition_started = False
         self.file_groups.append(self.current_group)
         self.current_group = None
@@ -743,6 +733,6 @@ class LogrotateConfigReader(HandlingObject):
 if __name__ == "__main__":
     pass
 
-#========================================================================
+# =======================================================================
 
 # vim: fileencoding=utf-8 filetype=python ts=4 expandtab
