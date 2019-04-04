@@ -9,11 +9,7 @@
 """
 
 # Standard modules
-import re
 import logging
-import subprocess
-import pprint
-import gettext
 import copy
 
 from collections import MutableSequence
@@ -21,21 +17,16 @@ from collections import MutableSequence
 from pathlib import Path
 
 # Third party modules
-import pytz
-import six
 
 # Own modules
 from fb_tools.common import pp, to_str
-from fb_tools.obj import FbBaseObjectError, FbBaseObject
 from fb_tools.handling_obj import HandlingObject
 
 from .errors import LogRotateScriptError, ExecutionError
 
 from .translate import XLATOR
 
-from .common import split_parts
-
-__version__ = '0.5.1'
+__version__ = '0.5.2'
 
 _ = XLATOR.gettext
 ngettext = XLATOR.ngettext
@@ -47,7 +38,7 @@ LOG = logging.getLogger(__name__)
 class LogRotateScript(HandlingObject, MutableSequence):
     "Class for encapsulating a logrotate script (for pre- and postrotate actions)"
 
-    #-------------------------------------------------------
+    # ------------------------------------------------------
     def __init__(
         self, name=None, commands=None, cfg_file=None, cfg_line=None,
             simulate=False, quiet=False, force=None, appname=None, verbose=0, base_dir=None):
@@ -100,13 +91,13 @@ class LogRotateScript(HandlingObject, MutableSequence):
             self.append(commands)
         else:
             msg = _("Invalid type {t!r} of parameter {par}: {pat!r}.").format(
-                    t=commands.__class__.__name__, par='commands', pat=commands)
+                t=commands.__class__.__name__, par='commands', pat=commands)
             raise TypeError(msg)
 
-    #------------------------------------------------------------
+    # -----------------------------------------------------------
     # Defintion of some properties
 
-    #------------------------------------------------------------
+    # -----------------------------------------------------------
     @property
     def name(self):
         "Name of the script as an identifier"
@@ -141,7 +132,7 @@ class LogRotateScript(HandlingObject, MutableSequence):
             return
         self._cfg_line = int(value)
 
-    #------------------------------------------------------------
+    # -----------------------------------------------------------
     @property
     def post_files(self):
         "Number of logfiles referencing to this script as a postrotate script."
@@ -155,7 +146,7 @@ class LogRotateScript(HandlingObject, MutableSequence):
         msg = _("Invalid value for property {!r} given.").format('post_files')
         raise LogRotateScriptError(msg)
 
-    #------------------------------------------------------------
+    # -----------------------------------------------------------
     @property
     def last_files(self):
         "Number of logfiles referencing to this script as a lastaction script."
@@ -169,7 +160,7 @@ class LogRotateScript(HandlingObject, MutableSequence):
         msg = _("Invalid value for property {!r} given.").format('last_files')
         raise LogRotateScriptError(msg)
 
-    #------------------------------------------------------------
+    # -----------------------------------------------------------
     @property
     def done_firstrun(self):
         "Flag, whether the script was executed as a firstaction script."
@@ -179,7 +170,7 @@ class LogRotateScript(HandlingObject, MutableSequence):
     def done_firstrun(self, value):
         self._done_firstrun = bool(value)
 
-    #------------------------------------------------------------
+    # -----------------------------------------------------------
     @property
     def done_prerun(self):
         "Flag, whether the script was executed as a prerun script."
@@ -189,7 +180,7 @@ class LogRotateScript(HandlingObject, MutableSequence):
     def done_prerun(self, value):
         self._done_prerun = bool(value)
 
-    #------------------------------------------------------------
+    # -----------------------------------------------------------
     @property
     def done_postrun(self):
         "Flag, whether the script was executed as a postrun script."
@@ -199,7 +190,7 @@ class LogRotateScript(HandlingObject, MutableSequence):
     def done_postrun(self, value):
         self._done_postrun = bool(value)
 
-    #------------------------------------------------------------
+    # -----------------------------------------------------------
     @property
     def done_lastrun(self):
         "Flag, whether the script was executed as a lastaction script."
@@ -209,7 +200,7 @@ class LogRotateScript(HandlingObject, MutableSequence):
     def done_lastrun(self, value):
         self._done_lastrun = bool(value)
 
-    #------------------------------------------------------------
+    # -----------------------------------------------------------
     @property
     def do_post(self):
         "Flag, whether the script should be executed as a postrun script."
@@ -219,7 +210,7 @@ class LogRotateScript(HandlingObject, MutableSequence):
     def _set_do_post(self, value):
         self._do_post = bool(value)
 
-    #------------------------------------------------------------
+    # -----------------------------------------------------------
     @property
     def do_last(self):
         "Flag, whether the script should be executed as a lastaction script."
@@ -238,7 +229,7 @@ class LogRotateScript(HandlingObject, MutableSequence):
             return None
         return '\n'.join(self._commands)
 
-    #-------------------------------------------------------
+    # ------------------------------------------------------
     def __del__(self):
         '''
         Destructor.
@@ -252,7 +243,7 @@ class LogRotateScript(HandlingObject, MutableSequence):
 
         self.check_for_execute()
 
-    #------------------------------------------------------------
+    # -----------------------------------------------------------
     def __str__(self):
         '''
         Typecasting function for translating object structure
@@ -261,7 +252,7 @@ class LogRotateScript(HandlingObject, MutableSequence):
 
         return pp(self.as_dict())
 
-    #-------------------------------------------------------
+    # ------------------------------------------------------
     def as_dict(self, short=True):
         '''
         Transforms the elements of the object into a dict
@@ -402,18 +393,18 @@ class LogRotateScript(HandlingObject, MutableSequence):
         v = str(to_str(cmd))
         self._commands.append(v)
 
-    #------------------------------------------------------------
+    # -----------------------------------------------------------
     def add_cmd(self, cmd):
         self.append(cmd)
 
-    #------------------------------------------------------------
+    # -----------------------------------------------------------
     def __call__(self):
         """
         Wrapper for self.execute(force=False, expected_retcode=0)
         """
         return self.execute(force=False, expected_retcode=0)
 
-    #------------------------------------------------------------
+    # -----------------------------------------------------------
     def execute(self, force=None, expected_retcode=0, raise_on_error=False):
         """
         Executes the command as an OS command in a shell.
@@ -437,9 +428,8 @@ class LogRotateScript(HandlingObject, MutableSequence):
             raise LogRotateScriptError(msg)
 
         if self.verbose > 2:
-            msg = (
-                _("Executing script {!r} with command:").format(self.name)
-                + '\n' + self.command.rstrip())
+            msg = _("Executing script {!r} with command:").format(self.name)
+            msg += '\n' + self.command.rstrip()
             LOG.debug(msg)
         if force is None:
             force = self.force
@@ -469,7 +459,7 @@ class LogRotateScript(HandlingObject, MutableSequence):
 
         return 999
 
-    #------------------------------------------------------------
+    # -----------------------------------------------------------
     def check_for_execute(self, force=False, expected_retcode=0):
         '''
         Checks, whether the script should executed.
@@ -496,11 +486,11 @@ class LogRotateScript(HandlingObject, MutableSequence):
 
         return True
 
-#========================================================================
 
+# =======================================================================
 if __name__ == "__main__":
     pass
 
-#========================================================================
+# =======================================================================
 
 # vim: fileencoding=utf-8 filetype=python ts=4 expandtab
