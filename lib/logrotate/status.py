@@ -10,14 +10,14 @@
 
 # Standard modules
 import re
-import sys
 import os
 import logging
 import shlex
 import collections
 import stat
+import errno
 
-from datetime import tzinfo, timedelta, datetime, date, time
+from datetime import datetime, date
 
 from pathlib import Path
 
@@ -30,15 +30,13 @@ from six.moves import shlex_quote
 # Own modules
 from fb_tools.common import pp, to_str
 
-from fb_tools.obj import FbBaseObjectError, FbBaseObject
+from fb_tools.obj import FbBaseObject
 
-from .errors import LogrotateStatusFileError, LogrotateStatusEntryError, StatusEntryValueError
+from .errors import LogrotateStatusFileError, StatusEntryValueError
 
 from .translate import XLATOR
 
-from .common import split_parts
-
-__version__ = '0.4.3'
+__version__ = '0.4.4'
 
 _ = XLATOR.gettext
 ngettext = XLATOR.ngettext
@@ -176,7 +174,6 @@ class StatusFileEntry(FbBaseObject):
     def from_line(cls, line, appname=None, verbose=0, base_dir=None):
 
         entry = cls(appname=appname, verbose=verbose, base_dir=base_dir)
-        #fields = split_parts(line.strip())
         fields = shlex.split(line, comments=False, posix=True)
 
         if len(fields) > 0:
@@ -657,8 +654,8 @@ class StatusFile(FbBaseObject, collections.MutableMapping):
         LOG.debug(msg)
         return True
 
-# =============================================================================
 
+# =============================================================================
 if __name__ == "__main__":
     pass
 

@@ -37,7 +37,7 @@ from .common import split_parts
 from .filegroup import LogFileGroup
 from .script import LogRotateScript
 
-__version__ = '0.4.1'
+__version__ = '0.4.2'
 
 _ = XLATOR.gettext
 ngettext = XLATOR.ngettext
