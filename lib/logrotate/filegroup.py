@@ -12,9 +12,6 @@ from __future__ import absolute_import
 # Standard modules
 import re
 import logging
-import subprocess
-import pprint
-import gettext
 import copy
 import glob
 import pwd
@@ -28,30 +25,27 @@ from pathlib import Path
 
 HAS_LZMA = False
 try:
-    import lzma
+    import lzma                                             # noqa
     HAS_LZMA = True
 except ImportError:
     pass
 
 # Third party modules
-import pytz
-import six
-
 from six.moves import shlex_quote
 
 # Own modules
-from fb_tools.common import pp, human2mbytes, to_str, is_sequence
+from fb_tools.common import to_str, is_sequence
 
 from fb_tools.obj import FbBaseObject
 
 from .errors import LogrotateObjectError
-from .errors import LogrotateCfgFatalError, LogrotateCfgNonFatalError
+from .errors import LogrotateCfgNonFatalError
 
 from .translate import XLATOR, format_list
 
-from .common import split_parts, human2bytes, period2days
+from .common import human2bytes, period2days
 
-__version__ = '0.8.3'
+__version__ = '0.8.4'
 
 _ = XLATOR.gettext
 ngettext = XLATOR.ngettext
@@ -161,90 +155,90 @@ class LogFileGroup(FbBaseObject, MutableSequence):
 
     unary_directives = {
         'compress': {
-            'property': 'compress', 'value': True,},
+            'property': 'compress', 'value': True},
         'copy': {
-            'property': 'rotate_method', 'value': 'copy',},
+            'property': 'rotate_method', 'value': 'copy'},
         'copytruncate': {
-            'property': 'rotate_method', 'value': 'copytruncate',},
+            'property': 'rotate_method', 'value': 'copytruncate'},
         'daily': {
-            'property': 'rotation_interval', 'value': RotationInterval.day,},
+            'property': 'rotation_interval', 'value': RotationInterval.day},
         'dateext': {
-            'property': 'dateext', 'value': True,},
+            'property': 'dateext', 'value': True},
         'datehourago': {
-            'property': 'datehourago', 'value': True,},
+            'property': 'datehourago', 'value': True},
         'dateyesterday': {
-            'property': 'dateyesterday', 'value': True,},
+            'property': 'dateyesterday', 'value': True},
         'hourly': {
-            'property': 'rotation_interval', 'value': RotationInterval.hour,},
+            'property': 'rotation_interval', 'value': RotationInterval.hour},
         'ifempty': {
-            'property': 'if_empty', 'value': True,},
+            'property': 'if_empty', 'value': True},
         'missingok': {
-            'property': 'missing_ok', 'value': True,},
+            'property': 'missing_ok', 'value': True},
         'monthly': {
-            'property': 'rotation_interval', 'value': RotationInterval.month,},
+            'property': 'rotation_interval', 'value': RotationInterval.month},
         'nocompress': {
-            'property': 'compress', 'value': False,},
+            'property': 'compress', 'value': False},
         'nocopy': {
-            'property': 'rotate_method', 'value': 'create',},
+            'property': 'rotate_method', 'value': 'create'},
         'nocreateolddir': {
-            'property': 'createolddir', 'value': False,},
+            'property': 'createolddir', 'value': False},
         'nodateext': {
-            'property': 'dateext', 'value': False,},
+            'property': 'dateext', 'value': False},
         'nodelaycompress': {
-            'property': 'delaycompress', 'value': None,},
+            'property': 'delaycompress', 'value': None},
         'nomissingok': {
-            'property': 'missing_ok', 'value': False,},
+            'property': 'missing_ok', 'value': False},
         'noolddir': {
-            'property': 'olddir', 'value': None,},
+            'property': 'olddir', 'value': None},
         'nosharedscripts': {
-            'property': 'sharedscripts', 'value': False,},
+            'property': 'sharedscripts', 'value': False},
         'noshred': {
-            'property': 'shred', 'value': False,},
+            'property': 'shred', 'value': False},
         'notifempty': {
-            'property': 'if_empty', 'value': False,},
+            'property': 'if_empty', 'value': False},
         'renamecopy': {
-            'property': 'rotate_method', 'value': 'renamecopy',},
+            'property': 'rotate_method', 'value': 'renamecopy'},
         'sharedscripts': {
-            'property': 'sharedscripts', 'value': True,},
+            'property': 'sharedscripts', 'value': True},
         'shred': {
-            'property': 'shred', 'value': True,},
+            'property': 'shred', 'value': True},
         'weekly': {
-            'property': 'rotation_interval', 'value': RotationInterval.week,},
+            'property': 'rotation_interval', 'value': RotationInterval.week},
         'yearly': {
-            'property': 'rotation_interval', 'value': RotationInterval.year,},
+            'property': 'rotation_interval', 'value': RotationInterval.year},
     }
 
     integer_directives = {
         'delaycompress': {
-            'property': 'delaycompress', 'default': 1,},
+            'property': 'delaycompress', 'default': 1},
         'maxage': {
-            'property': 'maxage', 'default': None,},
+            'property': 'maxage', 'default': None},
         'maxsize': {
-            'property': 'maxsize', 'default': None,},
+            'property': 'maxsize', 'default': None},
         'minage': {
-            'property': 'minage', 'default': None,},
+            'property': 'minage', 'default': None},
         'minsize': {
-            'property': 'minsize', 'default': None,},
+            'property': 'minsize', 'default': None},
         'rotate': {
-            'property': 'rotate', 'default': None,},
+            'property': 'rotate', 'default': None},
         'shredcycles': {
-            'property': 'shredcycles', 'default': None,},
+            'property': 'shredcycles', 'default': None},
         'size': {
-            'property': 'size', 'default': None,},
+            'property': 'size', 'default': None},
         'start': {
-            'property': 'start', 'default': None,},
+            'property': 'start', 'default': None},
     }
 
     string_directives = {
-        'addextension': {'min': 1, 'max': 1,},
-        'compresscmd': {'min': 1, 'max': 1,},
-        'compressext': {'min': 1, 'max': 1,},
-        'compressoptions': {'min': 0, 'max': None,},
-        'create': {'min': 0, 'max': 3,},
-        'createolddir': {'min': 3, 'max': 3,},
-        'dateformat': {'min': 1, 'max': 1,},
-        'extension': {'min': 1, 'max': 1,},
-        'olddir': {'min': 1, 'max': 1,},
+        'addextension': {'min': 1, 'max': 1},
+        'compresscmd': {'min': 1, 'max': 1},
+        'compressext': {'min': 1, 'max': 1},
+        'compressoptions': {'min': 0, 'max': None},
+        'create': {'min': 0, 'max': 3},
+        'createolddir': {'min': 3, 'max': 3},
+        'dateformat': {'min': 1, 'max': 1},
+        'extension': {'min': 1, 'max': 1},
+        'olddir': {'min': 1, 'max': 1},
     }
 
     unsupported_directives = (
@@ -266,7 +260,7 @@ class LogFileGroup(FbBaseObject, MutableSequence):
         self._definition_started = False
 
         self.patterns = []
-        self._files =[]
+        self._files = []
 
         self._compress = bool(compress)
         self._compresscmd = None
@@ -709,8 +703,8 @@ class LogFileGroup(FbBaseObject, MutableSequence):
             return
         v = str(value).strip()
         if self.re_wrong_pc_placeholder.search(v):
-            msg = _("Found wrong {f} specifier, the only allowed specifiers are {l}.").format(
-                f='strftime()', l=format_list(self.valid_pc_placeholders))
+            msg = _("Found wrong {f} specifier, the only allowed specifiers are {li}.").format(
+                f='strftime()', li=format_list(self.valid_pc_placeholders))
             raise ValueError(msg)
         self._dateformat = v
 
@@ -907,10 +901,10 @@ class LogFileGroup(FbBaseObject, MutableSequence):
             return
         path = Path(value)
         if self.verbose > 2:
-            LOG.debug(_("New {l} path: {p!r}.").format(l='olddir', p=str(path)))
+            LOG.debug(_("New {what} path: {p!r}.").format(what='olddir', p=str(path)))
         if self.re_wrong_pc_placeholder.search(str(path)):
-            msg = _("Found wrong {f} specifier, the only allowed specifiers are {l}.").format(
-                f='strftime()', l=format_list(self.valid_pc_placeholders))
+            msg = _("Found wrong {f} specifier, the only allowed specifiers are {li}.").format(
+                f='strftime()', li=format_list(self.valid_pc_placeholders))
             raise ValueError(msg)
         self._olddir = Path(value)
 
@@ -1470,16 +1464,16 @@ class LogFileGroup(FbBaseObject, MutableSequence):
             msg = ngettext(
                 "Directive {d!r} needs at least one option ({g} given in {lf!r}:{lnr}): {line}",
                 "Directive {d!r} needs at least {nr} options ({g} given in {lf!r}:{lnr}): {line}",
-                min_opts).format(d=directive, nr=min_opts, g=len(options),
-                lf=str(cfg_file), lnr=linenr)
+                min_opts).format(
+                d=directive, nr=min_opts, g=len(options), lf=str(cfg_file), lnr=linenr)
             LOG.error(msg)
             return False
         if max_opts and len(options) > max_opts:
             msg = ngettext(
                 "Directive {d!r} needs at most one option ({g} given in {lf!r}:{lnr}): {line}",
                 "Directive {d!r} needs at most {nr} options ({g} given in {lf!r}:{lnr}): {line}",
-                max_opts).format(d=directive, nr=max_opts, g=len(options),
-                lf=str(cfg_file), lnr=linenr)
+                max_opts).format(
+                d=directive, nr=max_opts, g=len(options), lf=str(cfg_file), lnr=linenr)
             LOG.error(msg)
             return False
 
@@ -1574,8 +1568,8 @@ class LogFileGroup(FbBaseObject, MutableSequence):
         self.create_owner = options[1]
         self.create_group = options[2]
 
-# ========================================================================
 
+# ========================================================================
 if __name__ == "__main__":
     pass
 
