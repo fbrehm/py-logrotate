@@ -12,8 +12,6 @@
 from __future__ import absolute_import, print_function
 
 # Standard modules
-import os
-import sys
 import logging
 import gettext
 import copy
@@ -23,8 +21,6 @@ from pathlib import Path
 from distutils.version import LooseVersion
 
 # Third party modules
-import six
-
 import babel
 import babel.lists
 from babel.support import Translations
@@ -34,7 +30,7 @@ DOMAIN = 'plogrotate'
 
 LOG = logging.getLogger(__name__)
 
-__version__ = '1.1.1'
+__version__ = '1.1.2'
 
 __me__ = Path(__file__).resolve()
 __module_dir__ = __me__.parent
