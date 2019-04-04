@@ -7,20 +7,17 @@
 from __future__ import absolute_import
 
 # Standard modules
-import errno
-import signal
-import os
 
 # Third party modules
 
 # Own modules
 
 from fb_tools.obj import FbBaseObjectError
-from fb_tools.errors import FbError, FbHandlerError, FbAppError
+from fb_tools.errors import FbError, FbHandlerError
 
 from .translate import XLATOR
 
-__version__ = '0.3.0'
+__version__ = '0.3.1'
 
 _ = XLATOR.gettext
 ngettext = XLATOR.ngettext
@@ -38,6 +35,7 @@ class LogrotateObjectError(FbBaseObjectError, LogrotateError):
     """ Base error class useable by all objects. """
 
     pass
+
 
 # =============================================================================
 class LogrotateConfigurationError(LogrotateObjectError):
