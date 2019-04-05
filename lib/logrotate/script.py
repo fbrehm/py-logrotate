@@ -26,7 +26,7 @@ from .errors import LogRotateScriptError, ExecutionError
 
 from .translate import XLATOR
 
-__version__ = '0.5.2'
+__version__ = '0.5.3'
 
 _ = XLATOR.gettext
 ngettext = XLATOR.ngettext
@@ -475,8 +475,9 @@ class LogRotateScript(HandlingObject, MutableSequence):
         @rtype:  bool
         '''
 
-        msg = _("Checking, whether the script {!r} should be executed.").format(self.name)
-        LOG.debug(msg)
+        if self.verbose > 1:
+            msg = _("Checking, whether the script {!r} should be executed.").format(self.name)
+            LOG.debug(msg)
 
         if self.do_post or self.do_last:
             result = self.execute(force=force, expected_retcode=expected_retcode)

@@ -31,7 +31,7 @@ from .common import split_parts
 from .filegroup import LogFileGroup
 from .script import LogRotateScript
 
-__version__ = '0.4.5'
+__version__ = '0.4.6'
 
 _ = XLATOR.gettext
 ngettext = XLATOR.ngettext
@@ -135,6 +135,8 @@ class LogrotateConfigReader(HandlingObject):
         self._has_read = False
         self.file_groups = []
         self.included_paths = {}
+        self._statusfile = None
+        self._pidfile = None
 
         self.scripts = {}
         self.current_script = None
@@ -162,6 +164,30 @@ class LogrotateConfigReader(HandlingObject):
             msg = _("The filename of the config file may not be None.")
             raise LogrotateConfigurationError(msg)
         self._config_file = Path(value)
+
+    # -----------------------------------------------------------------------
+    @property
+    def statusfile(self):
+        "The file name of the statusfile of the application read from configuration."
+        return self._statusfile
+
+    @statusfile.setter
+    def statusfile(self, value):
+        if value is None:
+            self._statusfile = None
+        self._statusfile = Path(value)
+
+    # -----------------------------------------------------------------------
+    @property
+    def pidfile(self):
+        "The file name of the PID file of the application read from configuration."
+        return self._pidfile
+
+    @pidfile.setter
+    def pidfile(self, value):
+        if value is None:
+            self._pidfile = None
+        self._pidfile = Path(value)
 
     # ------------------------------------------------------------
     @property
@@ -285,6 +311,8 @@ class LogrotateConfigReader(HandlingObject):
 
         res['config_file'] = self.config_file
         res['has_read'] = self.has_read
+        res['statusfile'] = self.statusfile
+        res['pidfile'] = self.pidfile
 
         res['taboo_patterns'] = []
         for re_taboo in self.taboo_patterns:
@@ -471,7 +499,47 @@ class LogrotateConfigReader(HandlingObject):
             self.eval_taboo_stuff(line, line_parts, cfg_file, linenr)
             return True
 
+        if line_parts[0].lower() in ('statusfile', 'pidfile'):
+            self.eval_global_file_directives(line, line_parts, cfg_file, linenr)
+            return True
+
         return False
+
+    # -------------------------------------------------------------------------
+    def eval_global_file_directives(self, line, line_parts, cfg_file, linenr):
+
+        directive = line_parts[0].lower()
+        if self.current_group is not None:
+            msg = _(
+                "Syntax error: directive {d!r} may not appear inside of a log file definition "
+                "({f!r}:{nr}).").format(d=directive, f=str(cfg_file), nr=linenr)
+            LOG.error(msg)
+            return
+
+        if len(line_parts) == 1:
+            msg = _(
+                "Syntax error: directive {d!r} needs a file parameter ({f!r}:{nr}).").format(
+                d=directive, f=str(cfg_file), nr=linenr)
+            LOG.error(msg)
+            return
+
+        if len(line_parts) > 2:
+            msg = _(
+                "Syntax error: directive {d!r} needs exactly one file parameter "
+                "({f!r}:{nr}).").format(d=directive, f=str(cfg_file), nr=linenr)
+            LOG.error(msg)
+            return
+
+        path = Path(line_parts[1])
+        if not path.is_absolute():
+            msg = _("Directive {d!r} needs an absolute path as parameter ({f!r}:{nr}).").format(
+                d=directive, f=str(cfg_file), nr=linenr)
+            LOG.error(msg)
+            return
+
+        if self.verbose > 1:
+            LOG.debug(_("Setting {d!r} to {p!r}.").format(d=directive, p=str(path)))
+        setattr(self, directive, path)
 
     # -------------------------------------------------------------------------
     def eval_taboo_stuff(self, line, line_parts, cfg_file, linenr):
@@ -479,10 +547,16 @@ class LogrotateConfigReader(HandlingObject):
         directive = line_parts[0].lower()
         taboo_list = line_parts[1:]
         do_add = False
+        if self.current_group is not None:
+            msg = _(
+                "Syntax error: directive {d!r} may not appear inside of a log file definition "
+                "({f!r}:{nr}).").format(d=directive, f=str(cfg_file), nr=linenr)
+            LOG.error(msg)
+            return
 
         if len(taboo_list) and taboo_list[0] == '+':
             do_add = True
-            taboo_list = taboo_list[1:]
+            taboo_list.pop(0)
 
         if not len(taboo_list):
             msg = _("Directive {d!r} without pattern given ({f!r}:{nr}).").format(
