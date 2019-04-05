@@ -31,7 +31,7 @@ from .common import split_parts
 from .filegroup import LogFileGroup
 from .script import LogRotateScript
 
-__version__ = '0.4.3'
+__version__ = '0.4.4'
 
 _ = XLATOR.gettext
 ngettext = XLATOR.ngettext
@@ -595,15 +595,25 @@ class LogrotateConfigReader(HandlingObject):
                         str(child)))
                     continue
             if self.verbose > 2:
-                LOG.debug(_("Including child {!r}.").format(str(child)))
+                LOG.debug(_(
+                    "Including child {!r}, searching for taboo patterns ...").format(str(child)))
             taboo_found = False
-            for taboo_re in self.taboo_patterns + self.taboo_file_patterns:
-                if taboo_re.search(str(child)):
-                    if self.verbose > 2:
-                        LOG.debug(_("File {f!r} matches taboo pattern {p!r}.").format(
-                            f=str(child), p=taboo_re.pattern))
+            for taboo_re in self.taboo_patterns:
+                if taboo_re.search(child.name):
+                    if self.verbose > 1:
+                        LOG.debug(_("File {n!r} ({f}) matches taboo pattern {p!r}.").format(
+                            n=child.name, f=child, p=taboo_re.pattern))
                     taboo_found = True
                     break
+            if not taboo_found:
+                for taboo_re in self.taboo_file_patterns:
+                    if taboo_re.search(str(child)):
+                        if self.verbose > 1:
+                            LOG.debug(_("File {f!r} matches taboo file pattern {p!r}.").format(
+                                f=str(child), p=taboo_re.pattern))
+                        taboo_found = True
+                        break
+
             if taboo_found:
                 continue
 
