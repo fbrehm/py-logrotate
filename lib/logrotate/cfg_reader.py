@@ -31,7 +31,7 @@ from .common import split_parts
 from .filegroup import LogFileGroup
 from .script import LogRotateScript
 
-__version__ = '0.4.4'
+__version__ = '0.4.5'
 
 _ = XLATOR.gettext
 ngettext = XLATOR.ngettext
@@ -94,7 +94,7 @@ class LogrotateConfigReader(HandlingObject):
     re_bs_at_end = re.compile(r'\\$')
     re_comment = re.compile(r'^\s*#.*')
 
-    toboo_pattern_types = {
+    taboo_pattern_types = {
         'ext': r'{}$',
         'suffix': r'{}$',
         'file': r'^{}$',
@@ -102,6 +102,7 @@ class LogrotateConfigReader(HandlingObject):
     }
     taboo_patterns = []
     taboo_file_patterns = []
+    taboo_directives = ('tabooext', 'tabooprefix', 'taboopat')
 
     fg_script_directives = [
         'postrotate', 'prerotate', 'firstaction', 'lastaction', 'preremove']
@@ -184,11 +185,11 @@ class LogrotateConfigReader(HandlingObject):
             raise ValueError(msg)
 
         ptype = pattern_type.strip().lower()
-        if ptype not in cls.toboo_pattern_types:
+        if ptype not in cls.taboo_pattern_types:
             msg = _("Invalid taboo pattern type {!r} given.").format(pattern_type)
             raise ValueError(msg)
 
-        pat = cls.toboo_pattern_types[ptype].format(pattern)
+        pat = cls.taboo_pattern_types[ptype].format(pattern)
         re_taboo = None
         try:
             re_taboo = re.compile(pat, re.IGNORECASE)
@@ -223,6 +224,7 @@ class LogrotateConfigReader(HandlingObject):
         LOG.debug(_("Initializing the list of taboo patterns with some default values."))
 
         cls.taboo_patterns = []
+        cls.taboo_file_patterns = []
 
         # Standard taboo extensions (suffixes)
         cls.add_taboo_pattern(r'\.rpmnew', 'ext')
@@ -436,9 +438,15 @@ class LogrotateConfigReader(HandlingObject):
                 continue
 
             if self.current_group is not None:
-                self.current_group.apply_directive(line, line_parts, cfg_file, linenr)
+                if self.current_group.apply_directive(line, line_parts, cfg_file, linenr):
+                    continue
             else:
-                self.default_group.apply_directive(line, line_parts, cfg_file, linenr)
+                if self.default_group.apply_directive(line, line_parts, cfg_file, linenr):
+                    continue
+
+            msg = _("Unknown directive {d!r} in {f!r}:{nr} found.").format(
+                d=line_parts[0], f=str(cfg_file), nr=linenr)
+            LOG.warning(msg)
 
         return True
 
@@ -459,7 +467,46 @@ class LogrotateConfigReader(HandlingObject):
             self.start_script_definition(line, line_parts, cfg_file, linenr)
             return True
 
+        if line_parts[0].lower() in self.taboo_directives:
+            self.eval_taboo_stuff(line, line_parts, cfg_file, linenr)
+            return True
+
         return False
+
+    # -------------------------------------------------------------------------
+    def eval_taboo_stuff(self, line, line_parts, cfg_file, linenr):
+
+        directive = line_parts[0].lower()
+        taboo_list = line_parts[1:]
+        do_add = False
+
+        if len(taboo_list) and taboo_list[0] == '+':
+            do_add = True
+            taboo_list = taboo_list[1:]
+
+        if not len(taboo_list):
+            msg = _("Directive {d!r} without pattern given ({f!r}:{nr}).").format(
+                d=directive, f=str(cfg_file), nr=linenr)
+            LOG.error(msg)
+            return
+
+        if not do_add:
+            if directive == 'taboopat':
+                self.taboo_file_patterns = []
+            else:
+                self.taboo_patterns = []
+
+        for item in taboo_list:
+            item_pattern = re.escape(item)
+            p_type = 'file'
+            if directive == 'tabooext':
+                p_type = 'ext'
+            elif directive == 'tabooprefix':
+                p_type = 'prefix'
+            if self.verbose > 2:
+                LOG.debug(_("Adding taboo pattern {p!r} of type {t!r}.").format(
+                    p=item_pattern, t=p_type))
+            self.add_taboo_pattern(item_pattern, p_type)
 
     # -------------------------------------------------------------------------
     def start_script_definition(self, line, line_parts, cfg_file, linenr):

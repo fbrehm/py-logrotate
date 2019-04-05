@@ -45,7 +45,7 @@ from .translate import XLATOR, format_list
 
 from .common import human2bytes, period2days
 
-__version__ = '0.8.5'
+__version__ = '0.8.6'
 
 _ = XLATOR.gettext
 ngettext = XLATOR.ngettext
@@ -180,6 +180,8 @@ class LogFileGroup(FbBaseObject, MutableSequence):
             'property': 'compress', 'value': False},
         'nocopy': {
             'property': 'rotate_method', 'value': 'create'},
+        'nocreate': {
+            'property': 'rotate_method', 'value': 'copy'},
         'nocreateolddir': {
             'property': 'createolddir', 'value': False},
         'nodateext': {
@@ -242,7 +244,7 @@ class LogFileGroup(FbBaseObject, MutableSequence):
     }
 
     unsupported_directives = (
-        'error', 'mail', 'mailfirst', 'maillast', 'su', 'uncompresscmd')
+        'error', 'mail', 'mailfirst', 'maillast', 'nomail', 'su', 'uncompresscmd')
 
     # -------------------------------------------------------------------------
     def __init__(
