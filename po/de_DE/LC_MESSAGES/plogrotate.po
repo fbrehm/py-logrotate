@@ -5,10 +5,10 @@
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: plogrotate 0.8.0\n"
+"Project-Id-Version: plogrotate 0.8.1\n"
 "Report-Msgid-Bugs-To: frank.brehm@profitbricks.com\n"
-"POT-Creation-Date: 2019-03-26 16:37+0100\n"
-"PO-Revision-Date: 2019-03-26 16:40+0100\n"
+"POT-Creation-Date: 2019-04-05 14:55+0200\n"
+"PO-Revision-Date: 2019-04-05 14:00+0100\n"
 "Last-Translator: Frank Brehm <frank@brehm-online.com>\n"
 "Language: de\n"
 "Language-Team: de <LL@li.org>\n"
@@ -18,917 +18,683 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 2.6.0\n"
 
-#: lib/logrotate/cfg_reader.py:53 lib/logrotate/status.py:475 lib/logrotate/status.py:551
+#: lib/logrotate/cfg_reader.py:48 lib/logrotate/status.py:472 lib/logrotate/status.py:548
 msgid "File does not exists"
 msgstr "Die Datei existiert nicht"
 
-#: lib/logrotate/cfg_reader.py:64
+#: lib/logrotate/cfg_reader.py:59
 msgid "Path is a directory"
 msgstr "Der Pfad ist ein Verzeichnis"
 
-#: lib/logrotate/cfg_reader.py:75
+#: lib/logrotate/cfg_reader.py:70
 msgid "File is not readable"
 msgstr "Die Datei ist nicht lesbar"
 
-#: lib/logrotate/cfg_reader.py:91
+#: lib/logrotate/cfg_reader.py:86
 msgid "Config file {!r} was already read."
 msgstr "Die Konfigurationsdatei {!r} wurde bereits gelesen."
 
-#: lib/logrotate/cfg_reader.py:139
+#: lib/logrotate/cfg_reader.py:110
+msgid "Found opening curly bracket in file {f!r}:{nr} after another opening curly bracket."
+msgstr ""
+"Öffnende geschweifte Klammern in Datei {f!r}:{nr} nach anderen öffnenden geschweiften Klammern "
+"gefunden."
+
+#: lib/logrotate/cfg_reader.py:112
+msgid "Pointless content found {li!r} after opening curly bracket in file {f!r}:{nr}."
+msgstr "Sinnlosen Inhalt {li!r} nach öffnenden geschweiften Klammern in Datei {f!r}:{nr} gefunden."
+
+#: lib/logrotate/cfg_reader.py:114
+msgid "Pointless content found {li!r} after closing curly bracket in file {f!r}:{nr}."
+msgstr "Sinnlosen Inhalt {li!r} nach schließenden geschweiften Klammern in Datei {f!r}:{nr} gefunden."
+
+#: lib/logrotate/cfg_reader.py:164
 msgid "The filename of the config file may not be None."
 msgstr "Der Dateiname der Konfigurationsdatei darf nicht None sein."
 
-#: lib/logrotate/cfg_reader.py:156
+#: lib/logrotate/cfg_reader.py:210
+msgid "Invalid taboo pattern {!r} given."
+msgstr "Ungültiges Tabu-Muster {!r} gegeben."
+
+#: lib/logrotate/cfg_reader.py:215
+msgid "Invalid taboo pattern type {!r} given."
+msgstr "Ungültiger Typ {!r} für ein Tabu-Muster gegeben."
+
+#: lib/logrotate/cfg_reader.py:223
+msgid "Got a {c} error on adding taboo pattern {p!r}: {e}."
+msgstr "Bekam einen {c}-Fehler beim Hizufügen des Tabumusters {p!r}: {e}."
+
+#: lib/logrotate/cfg_reader.py:234
+msgid "Taboo pattern {!r} already exists in the list of taboo patterns."
+msgstr "Das Tabu-Muster {!r} existiert bereits in der Liste der Tabu-Muster."
+
+#: lib/logrotate/cfg_reader.py:236
+msgid "Taboo pattern {!r} already exists in the list of taboo file patterns."
+msgstr "Das Tabu-Muster {!r} existiert bereits in der Liste der Datei-Tabu-Muster."
+
+#: lib/logrotate/cfg_reader.py:250
+msgid "Initializing the list of taboo patterns with some default values."
+msgstr "Initialisiere die Liste der Tabu-Muster mit einigen Vorgabe-Werten."
+
+#: lib/logrotate/cfg_reader.py:287
 msgid "Initializing default file group ..."
 msgstr "Initialisiere Vorgabe-Dateigruppe …"
 
-#: lib/logrotate/cfg_reader.py:206
+#: lib/logrotate/cfg_reader.py:353
 msgid "All read config files:"
 msgstr "Alle gelesenen Konfigurationsdateien:"
 
-#: lib/logrotate/cfg_reader.py:229
+#: lib/logrotate/cfg_reader.py:358
+msgid "All evaluated scripts:"
+msgstr "Alle gefundenen Skripte:"
+
+#: lib/logrotate/cfg_reader.py:381
 msgid "Reading configuration from {!r} ..."
 msgstr "Lese Konfiguration von {!r} …"
 
-#: lib/logrotate/common.py:145
+#: lib/logrotate/cfg_reader.py:387
+msgid "Could not read configuration file {f!r}: {e}"
+msgstr "Konnte Konfigurations-Datei {f!r} nicht lesen: {e}"
+
+#: lib/logrotate/cfg_reader.py:396
+msgid "Script {n!r} not finished at the end of file {fn!r}."
+msgstr "Das Skript {n!r} ist am Ende der Datei {fn!r} nicht abgeschlossen."
+
+#: lib/logrotate/cfg_reader.py:406
+msgid "Evaluating content of {!r} ..."
+msgstr "Erforsche Inhalt von {!r} …"
+
+#: lib/logrotate/cfg_reader.py:430
+msgid "Evaluating line {f!r}:{nr}: {li!r}"
+msgstr "Erforsche Zeile {f!r}:{nr}: {li!r}"
+
+#: lib/logrotate/cfg_reader.py:437
+msgid "Finishing script {n!r} ({f!r}:{nr})."
+msgstr "Beende Skript {n!r} ({f!r}:{nr})."
+
+#: lib/logrotate/cfg_reader.py:452
+msgid "Possible path at begin: {!r}."
+msgstr "Möglicher Pfad am Anfang: {!r}."
+
+#: lib/logrotate/cfg_reader.py:475
+msgid "Unknown directive {d!r} in {f!r}:{nr} found."
+msgstr "Unbekannte Direktive {d!r} in {f!r}:{nr} gefunden."
+
+#: lib/logrotate/cfg_reader.py:486
+msgid "Syntax error: include may not appear inside of a log file definition ({f!r}:{nr})."
+msgstr ""
+"Syntaxfehler: ein Include darf nicht innerhalb eines Logdatei-Definitionsblocks auftreten "
+"({f!r}:{nr})."
+
+#: lib/logrotate/cfg_reader.py:513 lib/logrotate/cfg_reader.py:551
+msgid "Syntax error: directive {d!r} may not appear inside of a log file definition ({f!r}:{nr})."
+msgstr ""
+"Syntaxfehler: die Direktive {d!r} darf nicht innerhalb eines Logdatei-Definitionsblocks "
+"auftreten ({f!r}:{nr})."
+
+#: lib/logrotate/cfg_reader.py:520
+msgid "Syntax error: directive {d!r} needs a file parameter ({f!r}:{nr})."
+msgstr "Syntaxfehler: die Direktive {d!r} benötigt einen Datei-Parameter ({f!r}:{nr})."
+
+#: lib/logrotate/cfg_reader.py:527
+msgid "Syntax error: directive {d!r} needs exactly one file parameter ({f!r}:{nr})."
+msgstr "Syntaxfehler: die Direktive {d!r} benötigt exakt einen Datei-Parameter ({f!r}:{nr})."
+
+#: lib/logrotate/cfg_reader.py:535
+msgid "Directive {d!r} needs an absolute path as parameter ({f!r}:{nr})."
+msgstr "Die Direktive {d!r} benötigt einen absoluten Pfad als Parameter ({f!r}:{nr})."
+
+#: lib/logrotate/cfg_reader.py:541
+msgid "Setting {d!r} to {p!r}."
+msgstr "Setze {d!r} auf {p!r}."
+
+#: lib/logrotate/cfg_reader.py:562
+msgid "Directive {d!r} without pattern given ({f!r}:{nr})."
+msgstr "Die Direktive {d!r} wurde ohne Muster angegeben ({f!r}:{nr})."
+
+#: lib/logrotate/cfg_reader.py:581
+msgid "Adding taboo pattern {p!r} of type {t!r}."
+msgstr "Füge Tabu-Muster {p!r} vom Typ {t!r} hinzu."
+
+#: lib/logrotate/cfg_reader.py:589
+msgid "Starting new script in {f!r}:{nr}: {line}"
+msgstr "Beginne neues Skript in {f!r}:{nr}: {line}"
+
+#: lib/logrotate/cfg_reader.py:599
+msgid "Pointless options for directive {d!} found ({f!r}:{nr})."
+msgstr "Sinnlose Optionen für Direktive {d!} gefunden ({f!r}:{nr})."
+
+#: lib/logrotate/cfg_reader.py:618
+msgid "Directive {d!r} is not allowed inside a logfile definition block ({f!r}:{nr})."
+msgstr "Die Direktive {d!r} ist innerhalb eines Logdatei-Definitionsblocks nicht erlaubt ({f!r}:{nr})."
+
+#: lib/logrotate/cfg_reader.py:624
+msgid "Directive {d!r} is not allowed outside a logfile definition block ({f!r}:{nr})."
+msgstr "Die Direktive {d!r} ist nicht außerhalb eines Logdatei-Definitionsblocks erlaubt ({f!r}:{nr})."
+
+#: lib/logrotate/cfg_reader.py:629
+msgid "Directive {d!r} needs a unique name of the script ({f!r}:{nr})."
+msgstr "Die Direktive {d!r} benötigt einen eindeutigen Names des Skripts ({f!r}:{nr})."
+
+#: lib/logrotate/cfg_reader.py:633
+msgid "Name {n!r} for a script was already used ({f!r}:{nr})."
+msgstr "Der Name {n!r} wurde bereits für ein Skript verwendet ({f!r}:{nr})."
+
+#: lib/logrotate/cfg_reader.py:654
+msgid "New script name: {!r}."
+msgstr "Neuer Skriptname: {!r}."
+
+#: lib/logrotate/cfg_reader.py:661
+msgid "Evaluating include line in {f!r}:{nr}: {li!r}"
+msgstr "Erforsche Include-Zeile in {f!r}:{nr}: {li!r}"
+
+#: lib/logrotate/cfg_reader.py:666
+msgid "No file or directory given in a include directive ({f!r}:{nr})."
+msgstr "Keine Datei oder Verzeichnis in Include-Direktive gegeben ({f!r}:{nr})."
+
+#: lib/logrotate/cfg_reader.py:672
+msgid ""
+"Only one declaration of a file or directory is allowed in a include directive, the first one is "
+"used ({f!r}:{nr})."
+msgstr ""
+"In einer Include-Direktive ist die Deklaration einer Datei oder Verzeichnisses erlaubt, die "
+"erste wird verwendet ({f!r}:{nr})."
+
+#: lib/logrotate/cfg_reader.py:679
+msgid "Including object {o!r} does not exists ({f!r}:{nr})."
+msgstr "Das Include-Obket {o!r} existiert nicht ({f!r}:{nr})."
+
+#: lib/logrotate/cfg_reader.py:688 lib/logrotate/cfg_reader.py:744
+msgid "Object {o!r} was already included in {of!r}:{ol} ({f!r}:{nr})."
+msgstr "Das Objekt {o!r} wurde bereits in {of!r}:{ol} included ({f!r}:{nr})."
+
+#: lib/logrotate/cfg_reader.py:695
+msgid "Including object {o!r} is neither a directory nor a regular file ({f!r}:{nr})."
+msgstr "Das Include-Obket {o!r} ist weder ein Verzeichnis noch eine reguläre Datei ({f!r}:{nr})."
+
+#: lib/logrotate/cfg_reader.py:710
+msgid "Including directory {!r} ..."
+msgstr "Include Verzeichnis {!r} …"
+
+#: lib/logrotate/cfg_reader.py:715
+msgid "Include child {!r} is not a regular file."
+msgstr "Das Unterobjekt {!r}  als Include ist keine reguläre Datei."
+
+#: lib/logrotate/cfg_reader.py:719
+msgid "Including child {!r}, searching for taboo patterns ..."
+msgstr "Include Unterobjekt {!r}, suche nach Tabu-Mustern …"
+
+#: lib/logrotate/cfg_reader.py:725
+msgid "File {n!r} ({f}) matches taboo pattern {p!r}."
+msgstr "Die Datei ({f}) stimmt mit Tabu-Muster {p!r} überein."
+
+#: lib/logrotate/cfg_reader.py:733
+msgid "File {f!r} matches taboo file pattern {p!r}."
+msgstr "Die Datei ({f}) stimmt mit Dateimuster {p!r} überein."
+
+#: lib/logrotate/cfg_reader.py:766
+msgid "Evaluating line with a path at begin in {f!r}:{nr}: {li!r}"
+msgstr "Erforsche Zeile mit einem Pfad am Anfang in {f!r}:{nr}: {li!r}"
+
+#: lib/logrotate/cfg_reader.py:774
+msgid "New spawned file group:"
+msgstr "Neu generierte Dateigruppe:"
+
+#: lib/logrotate/cfg_reader.py:776
+msgid "Logfile patttern definitions inside a definition block (in file {f!r}:{nr}) are not allowed."
+msgstr ""
+"Logdateimuster-Definitionen innerhalb eines Definitionsblocks (in Datei {f!r}:{nr}) sind nicht "
+"erlaubt."
+
+#: lib/logrotate/cfg_reader.py:793 lib/logrotate/cfg_reader.py:825
+msgid "Current file group:"
+msgstr "Aktuelle Dateigruppe:"
+
+#: lib/logrotate/cfg_reader.py:799
+msgid "Evaluating line with a opening curly bracket in {f!r}:{nr}: {li!r}"
+msgstr "Erforsche Zeile mit öffnenden geschweiften Klammern in {f!r}:{nr}: {li!r}"
+
+#: lib/logrotate/cfg_reader.py:804
+msgid "Found opening curly bracket in file {f!r}:{nr} without previous definition of files to rotate."
+msgstr ""
+"Öffnende geschweifte Klammern in Datei {f!r}:{nr} ohne vorherige Definition der Dateien, die zu "
+"rotieren sind, gefunden."
+
+#: lib/logrotate/cfg_reader.py:820
+msgid "Evaluating line with a closing curly bracket in {f!r}:{nr}: {li!r}"
+msgstr "Erforsche Zeile mit schließenden geschweiften Klammern in {f!r}:{nr}: {li!r}"
+
+#: lib/logrotate/cfg_reader.py:827
+msgid "Found closing curly bracket in file {f!r}:{nr} without previous definition of files to rotate."
+msgstr ""
+"Schließende geschweifte Klammern in Datei {f!r}:{nr} ohne vorherige Definion von Dateien, die zu"
+" rotieren sind, gefunden."
+
+#: lib/logrotate/cfg_reader.py:832
+msgid "Finishing file group:"
+msgstr "Schließe Dateigruppe:"
+
+#: lib/logrotate/cfg_reader.py:834
+msgid "Found closing curly bracket in file {f!r}:{nr} without previous opening curly bracket."
+msgstr ""
+"Schließende geschweifte Klammern in Datei {f!r}:{nr} ohne vorherige öffnende geschweifte "
+"Klammern gefunden."
+
+#: lib/logrotate/cfg_reader.py:855
+msgid "Double declaration of logfile {lf!r} in {f1!r} and {f2!r}."
+msgstr "Doppelte Deklaration der Logdatei {lf!r} in {f1!r} und {f2!r}."
+
+#: lib/logrotate/common.py:159
 msgid "Broken split of {chunk!r}: {left!r} left."
 msgstr "Kaputte Auftrennung von {chunk!r}: {left!r} blieb übrig."
 
-#: lib/logrotate/common.py:209
+#: lib/logrotate/common.py:224
 msgid "Given value is None."
 msgstr "Der übergebene Wert ist None."
 
-#: lib/logrotate/common.py:220
+#: lib/logrotate/common.py:238
 msgid "Using radix {radix!r}, thousend separator {sep!r}"
 msgstr "Verwendeter Dezimal-Separator {radix!r}, Tausender-Separator {sep!r}"
 
-#: lib/logrotate/common.py:230
+#: lib/logrotate/common.py:248
 msgid "Value without thousend separators: {!r}."
 msgstr "Wert ohne Tausender-Separator: {!r}."
 
-#: lib/logrotate/common.py:238
+#: lib/logrotate/common.py:256
 msgid "Could not determine bytes in {!r}."
 msgstr "Konnte Bytes in {!r} nicht ermitteln"
 
-#: lib/logrotate/common.py:299
-msgid "Couldn't detect suffix {!r}."
-msgstr "Konnte Suffix in {!r} nicht ermitteln."
-
-#: lib/logrotate/common.py:303
+#: lib/logrotate/common.py:278
 msgid "Found factor {}."
 msgstr "Faktor {} gefunden."
 
-#: lib/logrotate/common.py:346
+#: lib/logrotate/common.py:325
+msgid "Couldn't detect suffix {!r}."
+msgstr "Konnte Suffix in {!r} nicht ermitteln."
+
+#: lib/logrotate/common.py:360
 msgid "Given period is None."
 msgstr "Die übergebene Periode ist None."
 
-#: lib/logrotate/common.py:350
+#: lib/logrotate/common.py:367
 msgid "Given period was empty."
 msgstr "Die übergebene Periode war leer."
 
-#: lib/logrotate/common.py:353
+#: lib/logrotate/common.py:370
 msgid "Called with {!r}."
 msgstr "Aufgerufen mit {!r}."
 
-#: lib/logrotate/common.py:368
+#: lib/logrotate/common.py:385
 msgid "Using radix {!r} ..."
 msgstr "Verwende Dezimal-Separator {!r} …"
 
-#: lib/logrotate/common.py:373 lib/logrotate/common.py:390 lib/logrotate/common.py:407
-#: lib/logrotate/common.py:424 lib/logrotate/common.py:441
-msgid "Pattern {!r}."
-msgstr "Muster {!r}."
-
-#: lib/logrotate/common.py:382
-msgid "Found {:.2f} hours."
-msgstr "Fand {:.2f} Stunden."
-
-#: lib/logrotate/common.py:385
-msgid "Rest after hours: {!r}."
-msgstr "Rest nach Stundenermittlung: {!r}."
-
-#: lib/logrotate/common.py:399
-msgid "Found {:f} weeks."
-msgstr "Fand {:f} Wochen."
-
-#: lib/logrotate/common.py:402
-msgid "Rest after weeks: {!r}."
-msgstr "Rest nach Wochenermittlung: {!r}."
-
-#: lib/logrotate/common.py:416
-msgid "Found {:f} months."
-msgstr "Fand {:f} Monate."
-
-#: lib/logrotate/common.py:419
-msgid "Rest after months: {!r}."
-msgstr "Rest nach Monatzsermittlung: {!r}."
-
-#: lib/logrotate/common.py:433
-msgid "Found {:f} years."
-msgstr "Fand {:f} Jahre."
-
-#: lib/logrotate/common.py:436
-msgid "Rest after years: {!r}."
-msgstr "Rest nach den Jahresermittlung: {!r}."
-
-#: lib/logrotate/common.py:450
-msgid "Found {:f} days."
-msgstr "{:f} Tage gefunden."
-
-#: lib/logrotate/common.py:453
-msgid "Rest after days: {!r}."
-msgstr "Rest nach Ermittlung der Tage: {!r}."
-
-#: lib/logrotate/common.py:457
+#: lib/logrotate/common.py:409
 msgid "Invalid content for a period: {!r}."
 msgstr "Ungültiger Inhalt für eine Periode: {!r}."
 
-#: lib/logrotate/common.py:460
+#: lib/logrotate/common.py:412
 msgid "Total {!r} days found."
 msgstr "Insgesamt {!r} Tage gefunden."
 
-#: lib/logrotate/common.py:494
+#: lib/logrotate/common.py:426 lib/logrotate/common.py:452 lib/logrotate/common.py:478
+#: lib/logrotate/common.py:504 lib/logrotate/common.py:529
+msgid "Pattern {!r}."
+msgstr "Muster {!r}."
+
+#: lib/logrotate/common.py:435
+msgid "Found {:.2f} hours."
+msgstr "Fand {:.2f} Stunden."
+
+#: lib/logrotate/common.py:438
+msgid "Rest after hours: {!r}."
+msgstr "Rest nach Stundenermittlung: {!r}."
+
+#: lib/logrotate/common.py:461
+msgid "Found {:f} weeks."
+msgstr "Fand {:f} Wochen."
+
+#: lib/logrotate/common.py:464
+msgid "Rest after weeks: {!r}."
+msgstr "Rest nach Wochenermittlung: {!r}."
+
+#: lib/logrotate/common.py:487
+msgid "Found {:f} months."
+msgstr "Fand {:f} Monate."
+
+#: lib/logrotate/common.py:490
+msgid "Rest after months: {!r}."
+msgstr "Rest nach Monatzsermittlung: {!r}."
+
+#: lib/logrotate/common.py:513
+msgid "Found {:f} years."
+msgstr "Fand {:f} Jahre."
+
+#: lib/logrotate/common.py:516
+msgid "Rest after years: {!r}."
+msgstr "Rest nach den Jahresermittlung: {!r}."
+
+#: lib/logrotate/common.py:537
+msgid "Found {:f} days."
+msgstr "{:f} Tage gefunden."
+
+#: lib/logrotate/common.py:540
+msgid "Rest after days: {!r}."
+msgstr "Rest nach Ermittlung der Tage: {!r}."
+
+#: lib/logrotate/common.py:571
 msgid "Found address entry:"
 msgid_plural "Found address entries:"
 msgstr[0] "Gefundener Adresseintrag:"
 msgstr[1] "Gefundene Adresseinträge:"
 
-#: lib/logrotate/common.py:502
+#: lib/logrotate/common.py:580
 msgid "Got mail address pair:"
 msgstr "Mailadress-Paar bekommen:"
 
-#: lib/logrotate/common.py:504
+#: lib/logrotate/common.py:582
 msgid "Found invalid mail address {!r}."
 msgstr "Ungültige Mailadresse {!r} gefunden."
 
-#: lib/logrotate/config_reader.py:313
-msgid "Logrotate config reader initialised."
-msgstr ""
-
-#: lib/logrotate/config_reader.py:368
-msgid "Resetting default values for directives to hard coded values."
-msgstr ""
-
-#: lib/logrotate/config_reader.py:426
-#, python-format
-msgid "Invalid taboo pattern type '%s' given."
-msgstr ""
-
-#: lib/logrotate/config_reader.py:431
-#, python-format
-msgid "New taboo pattern: '%s'."
-msgstr ""
-
-#: lib/logrotate/config_reader.py:460 lib/logrotate/config_reader.py:473
-#: lib/logrotate/config_reader.py:487
-#, python-format
-msgid "'%s' is not a directory."
-msgstr ""
-
-#: lib/logrotate/config_reader.py:534 lib/logrotate/config_reader.py:602
-#, python-format
-msgid "Search path '%s' doesn't exists or is not a directory."
-msgstr ""
-
-#: lib/logrotate/config_reader.py:540
-#, python-format
-msgid "Shred command found: '%s'."
-msgstr ""
-
-#: lib/logrotate/config_reader.py:545
-msgid "Shred command not found, shred disabled."
-msgstr ""
-
-#: lib/logrotate/config_reader.py:652 lib/logrotate/config_reader.py:678
-#, python-format
-msgid "File '%s' doesn't exists."
-msgstr ""
-
-#: lib/logrotate/config_reader.py:674
-#, python-format
-msgid "Try reading configuration from '%s' ..."
-msgstr ""
-
-#: lib/logrotate/config_reader.py:682
-#, python-format
-msgid "'%s' is not a regular file."
-msgstr ""
-
-#: lib/logrotate/config_reader.py:687
-#, python-format
-msgid "Reading configuration from '%s' ..."
-msgstr ""
-
-#: lib/logrotate/config_reader.py:694
-#, python-format
-msgid "Could not read configuration file '%s'"
-msgstr ""
-
-#: lib/logrotate/config_reader.py:742
-msgid "Starting a logfile definition."
-msgstr ""
-
-#: lib/logrotate/config_reader.py:743 lib/logrotate/config_reader.py:765
-#: lib/logrotate/config_reader.py:789 lib/logrotate/config_reader.py:814
-#: lib/logrotate/config_reader.py:820 lib/logrotate/config_reader.py:826
-#: lib/logrotate/config_reader.py:883 lib/logrotate/config_reader.py:903
-#: lib/logrotate/config_reader.py:926 lib/logrotate/config_reader.py:933
-#: lib/logrotate/config_reader.py:977 lib/logrotate/config_reader.py:1010
-#: lib/logrotate/config_reader.py:1025 lib/logrotate/config_reader.py:1039
-#: lib/logrotate/config_reader.py:1047 lib/logrotate/config_reader.py:1054
-#: lib/logrotate/config_reader.py:1062 lib/logrotate/config_reader.py:1069
-#: lib/logrotate/config_reader.py:1112 lib/logrotate/config_reader.py:1144
-#: lib/logrotate/config_reader.py:1163 lib/logrotate/config_reader.py:1261
-#: lib/logrotate/config_reader.py:1276 lib/logrotate/config_reader.py:1285
-#: lib/logrotate/config_reader.py:1303 lib/logrotate/config_reader.py:1332
-#: lib/logrotate/config_reader.py:1351 lib/logrotate/config_reader.py:1370
-#: lib/logrotate/config_reader.py:1387 lib/logrotate/config_reader.py:1400
-#: lib/logrotate/config_reader.py:1417 lib/logrotate/config_reader.py:1424
-#: lib/logrotate/config_reader.py:1433 lib/logrotate/config_reader.py:1442
-#: lib/logrotate/config_reader.py:1463 lib/logrotate/config_reader.py:1482
-#: lib/logrotate/config_reader.py:1502 lib/logrotate/config_reader.py:1532
-#: lib/logrotate/config_reader.py:1539 lib/logrotate/config_reader.py:1568
-#: lib/logrotate/config_reader.py:1588 lib/logrotate/config_reader.py:1608
-#: lib/logrotate/config_reader.py:1635 lib/logrotate/config_reader.py:1653
-#: lib/logrotate/config_reader.py:1668 lib/logrotate/config_reader.py:1729
-#: lib/logrotate/config_reader.py:1738 lib/logrotate/config_reader.py:1747
-#: lib/logrotate/config_reader.py:1785 lib/logrotate/config_reader.py:1794
-#: lib/logrotate/config_reader.py:1803 lib/logrotate/config_reader.py:1814
-#: lib/logrotate/config_reader.py:1827 lib/logrotate/config_reader.py:1836
-#: lib/logrotate/config_reader.py:1886 lib/logrotate/config_reader.py:1917
-#: lib/logrotate/config_reader.py:1924 lib/logrotate/config_reader.py:1962
-#, python-format
-msgid "(file '%(file)s', line %(lnr)s)"
-msgstr ""
-
-#: lib/logrotate/config_reader.py:763
-msgid "Logfile pattern definition not allowed inside a logfile definition."
-msgstr ""
-
-#: lib/logrotate/config_reader.py:781
-#, python-format
-msgid "Split into parts of: '%s'"
-msgstr ""
-
-#: lib/logrotate/config_reader.py:787
-msgid "Syntax error: open curly bracket inside alogfile pattern definition."
-msgstr ""
-
-#: lib/logrotate/config_reader.py:812
-msgid "Syntax error: unbalanced closing curly bracket found."
-msgstr ""
-
-#: lib/logrotate/config_reader.py:819
-msgid "End of a logfile definition."
-msgstr ""
-
-#: lib/logrotate/config_reader.py:824
-#, python-format
-msgid "Needless content found at the end of a logfile definition found: '%s'."
-msgstr ""
-
-#: lib/logrotate/config_reader.py:839
-#, python-format
-msgid ""
-"No extension for compressed logfiles given (File of definition: '%(file)s', start definition: "
-"%(rownum)d)."
-msgstr ""
-
-#: lib/logrotate/config_reader.py:850
-msgid "New logfile definition:"
-msgstr ""
-
-#: lib/logrotate/config_reader.py:859
-#, python-format
-msgid "Postrotate script '%s' not found."
-msgstr ""
-
-#: lib/logrotate/config_reader.py:867
-#, python-format
-msgid "Lastaction script '%s' not found."
-msgstr ""
-
-#: lib/logrotate/config_reader.py:881
-msgid "Syntax error: include may not appear inside of log file definition."
-msgstr ""
-
-#: lib/logrotate/config_reader.py:901
-#, python-format
-msgid "Found start of a regular script definition: type: '%(type)s', name: '%(name)s'."
-msgstr ""
-
-#: lib/logrotate/config_reader.py:917
-#, python-format
-msgid "New log script name: '%s'."
-msgstr ""
-
-#: lib/logrotate/config_reader.py:925
-msgid "Found start of a external script definition."
-msgstr ""
-
-#: lib/logrotate/config_reader.py:931
-msgid "Syntax error: external script definition may not appear inside of a log file definition."
-msgstr ""
-
-#: lib/logrotate/config_reader.py:943
-#, python-format
-msgid "New external script name: '%s'."
-msgstr ""
-
-#: lib/logrotate/config_reader.py:949
-#, python-format
-msgid "Syntax error in file '%(file)s', line %(line)s"
-msgstr ""
-
-#: lib/logrotate/config_reader.py:976
-#, python-format
-msgid "Checking line '%s' for a logrotate option."
-msgstr ""
-
-#: lib/logrotate/config_reader.py:996
-#, python-format
-msgid "Could not detect option in line '%s'."
-msgstr ""
-
-#: lib/logrotate/config_reader.py:1001
-#, python-format
-msgid "Found option '%(opt)s' with value '%(val)s'."
-msgstr ""
-
-#: lib/logrotate/config_reader.py:1009
-#, python-format
-msgid "Unsupported option '%s'."
-msgstr ""
-
-#: lib/logrotate/config_reader.py:1022
-#, python-format
-msgid "Found value '%(value)s' behind the boolean option '%(option)s', ignoring."
-msgstr ""
-
-#: lib/logrotate/config_reader.py:1033
-#, python-format
-msgid "Setting boolean option '%(option)s' in '%(directive)s' to '%(value)s'."
-msgstr ""
-
-#: lib/logrotate/config_reader.py:1045 lib/logrotate/config_reader.py:1052
-#: lib/logrotate/config_reader.py:1060 lib/logrotate/config_reader.py:1067
-#, python-format
-msgid "Option '%(by)s' disables option '%(what)s'."
-msgstr ""
-
-#: lib/logrotate/config_reader.py:1085 lib/logrotate/config_reader.py:1181
-#: lib/logrotate/config_reader.py:1211
-#, python-format
-msgid "Option '%s' must have a value."
-msgstr ""
-
-#: lib/logrotate/config_reader.py:1094
-#, python-format
-msgid "Option '%(option)s' has no integer value: %(msg)s."
-msgstr ""
-
-#: lib/logrotate/config_reader.py:1100
-#, python-format
-msgid "Negative value %(value)s for option '%(option)s' is not allowed."
-msgstr ""
-
-#: lib/logrotate/config_reader.py:1106
-#, python-format
-msgid "Setting integer option '%(option)s' in '%(directive)s' to '%(value)s'."
-msgstr ""
-
-#: lib/logrotate/config_reader.py:1125 lib/logrotate/config_reader.py:1167
-#, python-format
-msgid "Senseless option value '%(value)s' after '%(option)s'."
-msgstr ""
-
-#: lib/logrotate/config_reader.py:1138
-#, python-format
-msgid "Setting mail address in '%(directive)s' to '%(addr)s'."
-msgstr ""
-
-#: lib/logrotate/config_reader.py:1158
-#, python-format
-msgid "Setting mailfirst in '%(directive)s' to '%(value)s'."
-msgstr ""
-
-#: lib/logrotate/config_reader.py:1184 lib/logrotate/config_reader.py:1214
-#, python-format
-msgid "Option '%s' without a value."
-msgstr ""
-
-#: lib/logrotate/config_reader.py:1190
-#, python-format
-msgid "Compress command '%s' not found."
-msgstr ""
-
-#: lib/logrotate/config_reader.py:1205
-#, python-format
-msgid "Option '%s' not allowed inside a logfile directive."
-msgstr ""
-
-#: lib/logrotate/config_reader.py:1219
-#, python-format
-msgid "Value '%(value)s' for option '%(option)s' is not an absolute path."
-msgstr ""
-
-#: lib/logrotate/config_reader.py:1227
-#, python-format
-msgid "Invalid mail address for 'mailfrom' given: '%s'."
-msgstr ""
-
-#: lib/logrotate/config_reader.py:1237 lib/logrotate/config_reader.py:1241
-#, python-format
-msgid "Invalid SMTP port '%s' given."
-msgstr ""
-
-#: lib/logrotate/config_reader.py:1258
-#, python-format
-msgid "Setting global option '%(option)s' to '%(value)s'."
-msgstr ""
-
-#: lib/logrotate/config_reader.py:1273
-#, python-format
-msgid "Checking for option 'period': key '%(key)s', value '%(value)s'."
-msgstr ""
-
-#: lib/logrotate/config_reader.py:1282
-#, python-format
-msgid "Option '%(option)s' may not have a value ('%(value)s')."
-msgstr ""
-
-#: lib/logrotate/config_reader.py:1293
-#, python-format
-msgid "Invalid period definition: '%s'."
-msgstr ""
-
-#: lib/logrotate/config_reader.py:1297 lib/logrotate/config_reader.py:1326
-#, python-format
-msgid "Setting '%(what)s' in '%(directive)s' to %(to)f days."
-msgstr ""
-
-#: lib/logrotate/config_reader.py:1322
-#, python-format
-msgid "Invalid maxage definition: '%s'"
-msgstr ""
-
-#: lib/logrotate/config_reader.py:1349
-#, python-format
-msgid "Checking for option 'dateext', negated: '%s'."
-msgstr ""
-
-#: lib/logrotate/config_reader.py:1367
-#, python-format
-msgid "'dateext': first_val: '%(first_val)s', option_value: '%(value)s'."
-msgstr ""
-
-#: lib/logrotate/config_reader.py:1382 lib/logrotate/config_reader.py:1394
-#, python-format
-msgid "Setting '%(what)s' in '%(directive)s' to %(to)s."
-msgstr ""
-
-#: lib/logrotate/config_reader.py:1416 lib/logrotate/config_reader.py:1531
-#, python-format
-msgid "Checking for option '%s' ..."
-msgstr ""
-
-#: lib/logrotate/config_reader.py:1423 lib/logrotate/config_reader.py:1538
-#, python-format
-msgid "Removing '%s'."
-msgstr ""
-
-#: lib/logrotate/config_reader.py:1431 lib/logrotate/config_reader.py:1440
-#, python-format
-msgid "Option '%s' was set, so option 'create' has no effect."
-msgstr ""
-
-#: lib/logrotate/config_reader.py:1461
-#, python-format
-msgid "Trying to determine create mode '%s' ..."
-msgstr ""
-
-#: lib/logrotate/config_reader.py:1472
-#, python-format
-msgid "Invalid create mode '%s'."
-msgstr ""
-
-#: lib/logrotate/config_reader.py:1480
-#, python-format
-msgid "Trying to determine create owner '%s' ..."
-msgstr ""
-
-#: lib/logrotate/config_reader.py:1491 lib/logrotate/config_reader.py:1597
-#, python-format
-msgid "Invalid owner '%(owner)s' in '%(what)s'."
-msgstr ""
-
-#: lib/logrotate/config_reader.py:1500
-#, python-format
-msgid "Trying to determine create group '%s' ..."
-msgstr ""
-
-#: lib/logrotate/config_reader.py:1511 lib/logrotate/config_reader.py:1617
-#, python-format
-msgid "Invalid group '%(group)s' in '%(what)s'."
-msgstr ""
-
-#: lib/logrotate/config_reader.py:1553
-#, python-format
-msgid "Option '%s' without a value given."
-msgstr ""
-
-#: lib/logrotate/config_reader.py:1566
-#, python-format
-msgid "Trying to determine olddir create mode '%s' ..."
-msgstr ""
-
-#: lib/logrotate/config_reader.py:1577
-#, python-format
-msgid "Invalid create mode '%s' in 'olddir'."
-msgstr ""
-
-#: lib/logrotate/config_reader.py:1586
-#, python-format
-msgid "Trying to determine olddir owner '%s' ..."
-msgstr ""
-
-#: lib/logrotate/config_reader.py:1606
-#, python-format
-msgid "Trying to determine olddir group '%s' ..."
-msgstr ""
-
-#: lib/logrotate/config_reader.py:1633
-#, python-format
-msgid "Checking for option 'size', value '%s' ..."
-msgstr ""
-
-#: lib/logrotate/config_reader.py:1639
-msgid "Failing size definition."
-msgstr ""
-
-#: lib/logrotate/config_reader.py:1646
-#, python-format
-msgid "Invalid definition for 'size': '%s'."
-msgstr ""
-
-#: lib/logrotate/config_reader.py:1650
-#, python-format
-msgid "Got a rotation size in '%(directive)s' of %(bytes)d bytes."
-msgstr ""
-
-#: lib/logrotate/config_reader.py:1665
-#, python-format
-msgid "Checking for option 'taboo%(type)s', value: '%(value)s' ..."
-msgstr ""
-
-#: lib/logrotate/config_reader.py:1673
-#, python-format
-msgid "Option 'taboo%s' not allowed inside a logfile directive."
-msgstr ""
-
-#: lib/logrotate/config_reader.py:1688
-#, python-format
-msgid "Option 'taboo%s' needs a value."
-msgstr ""
-
-#: lib/logrotate/config_reader.py:1700
-#, python-format
-msgid "Unknown option '%s'."
-msgstr ""
-
-#: lib/logrotate/config_reader.py:1728
-msgid "No script name given in a script directive."
-msgstr ""
-
-#: lib/logrotate/config_reader.py:1736
-msgid "Only one script name is allowed in a script directive, the first one is used."
-msgstr ""
-
-#: lib/logrotate/config_reader.py:1745
-#, python-format
-msgid "Script name '%s' is allready declared, it will be overwritten."
-msgstr ""
-
-#: lib/logrotate/config_reader.py:1784
-msgid "No file or directory given in a include directive."
-msgstr ""
-
-#: lib/logrotate/config_reader.py:1792
-msgid ""
-"Only one declaration of a file or directory is allowed in a include directive, the first one is "
-"used."
-msgstr ""
-
-#: lib/logrotate/config_reader.py:1802
-#, python-format
-msgid "Including object '%s' doesn't exists."
-msgstr ""
-
-#: lib/logrotate/config_reader.py:1812
-#, python-format
-msgid "Including object '%s' is neither a regular file  nor a directory."
-msgstr ""
-
-#: lib/logrotate/config_reader.py:1820
-#, python-format
-msgid "Trying to include object '%s' ..."
-msgstr ""
-
-#: lib/logrotate/config_reader.py:1826 lib/logrotate/config_reader.py:1885
-#, python-format
-msgid "Recursive including of '%s'."
-msgstr ""
-
-#: lib/logrotate/config_reader.py:1835
-#, python-format
-msgid "What the hell is this: '%s'."
-msgstr ""
-
-#: lib/logrotate/config_reader.py:1842
-#, python-format
-msgid "Including directory '%s' ..."
-msgstr ""
-
-#: lib/logrotate/config_reader.py:1850
-#, python-format
-msgid "Including item '%(item)s' ('%(path)s') ..."
-msgstr ""
-
-#: lib/logrotate/config_reader.py:1857
-#, python-format
-msgid "Skip subdirectory '%s' in including."
-msgstr ""
-
-#: lib/logrotate/config_reader.py:1864
-#, python-format
-msgid "Item '%s' is not a regular file."
-msgstr ""
-
-#: lib/logrotate/config_reader.py:1874
-#, python-format
-msgid "Item '%(item)s' is matching pattern '%(pattern)s', skiping."
-msgstr ""
-
-#: lib/logrotate/config_reader.py:1916
-msgid "Nested logfile definitions are not allowed."
-msgstr ""
-
-#: lib/logrotate/config_reader.py:1922
-msgid "No logfile pattern defined on starting a logfile definition."
-msgstr ""
-
-#: lib/logrotate/config_reader.py:1960
-#, python-format
-msgid "Directive '%s' is not allowed outside of a logfile definition."
-msgstr ""
-
-#: lib/logrotate/config_reader.py:2031
-msgid "Starting a new log directive with default values."
-msgstr ""
-
-#: lib/logrotate/config_reader.py:2094
-msgid "No logfile pattern defined."
-msgstr ""
-
-#: lib/logrotate/config_reader.py:2100
-#, python-format
-msgid "Find all logfiles for shell matching pattern '%s' ..."
-msgstr ""
-
-#: lib/logrotate/config_reader.py:2106
-#, python-format
-msgid "No logfile found for pattern '%s'."
-msgstr ""
-
-#: lib/logrotate/config_reader.py:2114
-#, python-format
-msgid "Found logfile '%(file)s for pattern '%(pattern)s'."
-msgstr ""
-
-#: lib/logrotate/config_reader.py:2120
-#, python-format
-msgid ""
-"Logfile '%(logfile)s' is even defined (file '%(cfgfile)s', row %(rownum)d) and so not taken a "
-"second time."
-msgstr ""
-
-#: lib/logrotate/config_reader.py:2130
-#, python-format
-msgid "Logfile '%s' will taken."
-msgstr ""
-
-#: lib/logrotate/errors.py:120
+#: lib/logrotate/errors.py:118
 msgid "Unbalanced quotes in {!r}."
 msgstr "Nicht ausbalancierte Anführungszeichen in {!r}."
 
-#: lib/logrotate/errors.py:122
+#: lib/logrotate/errors.py:120
 msgid "Unbalanced quote {what!r} in {where!r}."
 msgstr "Nicht ausbalancierte Anführungszeichen {what!r} in {where!r}."
 
-#: lib/logrotate/filegroup.py:98
+#: lib/logrotate/filegroup.py:96
 msgid "Invalid rotation method {!r} given."
 msgstr "Ungültige Rotationsmethode {!r} angegeben."
 
-#: lib/logrotate/filegroup.py:160 lib/logrotate/script.py:96
-msgid "Invalid type {t!r} of parameter {par}: {pat!r}."
-msgstr "Ungültiger Typ {t!r} des Parameters {par}: {pat!r}."
+#: lib/logrotate/filegroup.py:125
+msgid "Invalid rotation interval {!r} given."
+msgstr "Ungültiges Rotations-Intervall {!r} angegeben."
 
-#: lib/logrotate/filegroup.py:248
+#: lib/logrotate/filegroup.py:151
+msgid "Pointless option(s) for directive {d!r} in {lf!r}:{lnr}: {line}"
+msgstr "Sinnlose Option(en) für Direktive {d!r} in {lf!r}:{lnr}: {line}"
+
+#: lib/logrotate/filegroup.py:446
 msgid "Invalid internal compressor {!r} given."
 msgstr "Ungültiger interner Kopressor {!r} übergeben."
 
-#: lib/logrotate/filegroup.py:434 lib/logrotate/script.py:286
+#: lib/logrotate/filegroup.py:514
+msgid "A negative value for {!r} is not allowed."
+msgstr "Ein negativer Wert für {!r} ist nicht erlaubt."
+
+#: lib/logrotate/filegroup.py:530 lib/logrotate/filegroup.py:549 lib/logrotate/filegroup.py:568
+#: lib/logrotate/filegroup.py:588 lib/logrotate/filegroup.py:608 lib/logrotate/filegroup.py:628
+#: lib/logrotate/filegroup.py:657 lib/logrotate/filegroup.py:673
+msgid "A negative number for {!r} is not allowed."
+msgstr "Eine negative Zahl für {!r} ist nicht erlaubt."
+
+#: lib/logrotate/filegroup.py:708 lib/logrotate/filegroup.py:908
+msgid "Found wrong {f} specifier, the only allowed specifiers are {li}."
+msgstr "Ungültigen {f}-Platzhalter gefunden, die einzigen erlaubten Platzhalter sind {li}."
+
+#: lib/logrotate/filegroup.py:906
+msgid "New {what} path: {p!r}."
+msgstr "Neuer {what}-Pfad: {p!r}."
+
+#: lib/logrotate/filegroup.py:1194
+msgid "Method {} may only be used on a default file group."
+msgstr "Die Methode {} darf nur bei einer Vorgabe-Dateigruppe verwendet werden."
+
+#: lib/logrotate/filegroup.py:1199
+msgid "Spawning a new file group from a default file group."
+msgstr "Generiere neue Dateigruppe aus einer Vorgabe-Dateigruppe."
+
+#: lib/logrotate/filegroup.py:1211 lib/logrotate/script.py:351
 msgid "Call of {what} with a wrong number ({nr}) of arguments."
 msgstr "Aufruf von {what} mit einer ungültigen Anzahl ({nr}) von Argumenten."
 
-#: lib/logrotate/filegroup.py:461
+#: lib/logrotate/filegroup.py:1238
 msgid "File {!r} not found in file list."
 msgstr "Datei {!r} nicht in Dateiliste gefunden."
 
-#: lib/logrotate/filegroup.py:495
-msgid "Invalid file globbing pattern {!r}."
-msgstr "Ungültiges Datei-Globbing-Muster {!r}."
+#: lib/logrotate/filegroup.py:1287
+msgid "Could not add file pattern {p!r}: {e}"
+msgstr "Konnte Dateimuster {p!r} nicht hinzufügen: {e}"
 
-#: lib/logrotate/filegroup.py:500
-msgid "Pattern {!r} is already a member of the file globbing pattern list."
-msgstr "Das Muster %{!r} ist bereits Mitlied der Datei-Globbing-Musterliste."
+#: lib/logrotate/filegroup.py:1292
+msgid "A logfile pattern must be an absolute path: {!r}"
+msgstr "Ein Logdateimuster muss ein absoluter Pfad sein: {!r}"
 
-#: lib/logrotate/filegroup.py:514
-msgid "Invalid taboo pattern {!r} given."
-msgstr "Ungültiges Tabu-Muster {!r} gegeben."
+#: lib/logrotate/filegroup.py:1302
+msgid "Resolving globbing pattern in file group."
+msgstr "Löse Globbing-Muster in Dateigruppe auf."
 
-#: lib/logrotate/filegroup.py:519
-msgid "Invalid taboo pattern type {!r} given."
-msgstr "Ungültiger Typ {!r} für ein Tabu-Muster gegeben."
+#: lib/logrotate/filegroup.py:1310
+msgid "Did not found a file for pattern {!r}."
+msgstr "Keine Datei für Muster {!r} gefunden."
 
-#: lib/logrotate/filegroup.py:527
-msgid "Got a {c} error on adding taboo pattern {p!r}: {e}."
-msgstr "Bekam einen {c}-Fehler beim Hizufügen des Tabumusters {p!r}: {e}."
+#: lib/logrotate/filegroup.py:1316
+msgid "Multiple definition of logfile {f!r} in {cf!r}."
+msgstr "Mehrfache Definition der Logdatei {f!r} in {cf!r}."
 
-#: lib/logrotate/filegroup.py:534
-msgid "Taboo pattern {!r} already exists in the list of taboo patterns."
-msgstr "Das Tabu-Muster {!r} existiert bereits in der Liste der Tabu-Muster."
+#: lib/logrotate/filegroup.py:1327
+msgid "Trying to apply option line {!r} to a default file group."
+msgstr "Versuche Options-Zeile {!r} auf eine Vorgabe-Dateigruppe anzuwenden."
 
-#: lib/logrotate/filegroup.py:548
-msgid "Initializing the list of taboo patterns with some default values."
-msgstr "Initialisiere die Liste der Tabu-Muster mit einigen Vorgabe-Werten."
+#: lib/logrotate/filegroup.py:1329
+msgid "Trying to apply option line {!r} to a file group."
+msgstr "Versuche Options-Zeile {!r} auf eine Dateigruppe anzuwenden."
 
-#: lib/logrotate/script.py:120 lib/logrotate/script.py:134
+#: lib/logrotate/filegroup.py:1334
+msgid "Unsupported directive {d!r} found in {lf!r}:{lnr}."
+msgstr "Nicht unterstützte Direktive {d!r} in {lf!r}:{lnr} gefunden."
+
+#: lib/logrotate/filegroup.py:1368 lib/logrotate/filegroup.py:1421 lib/logrotate/filegroup.py:1504
+msgid "Error in {lf!r}:{lnr}: directive {d!r} was already set as {ex!r} in {of!r}:{ol}."
+msgstr "Fehler in {lf!r}:{lnr}: die Direktive {d!r} wurde bereits als {ex!r} in {of!r}:{ol} gesetzt."
+
+#: lib/logrotate/filegroup.py:1375 lib/logrotate/filegroup.py:1428 lib/logrotate/filegroup.py:1511
+msgid "Setting default file group property {p!r} to {v!r}."
+msgstr "Setze Eigenschaft {p!r} der Vorgabe-Dateigruppe auf {v!r}."
+
+#: lib/logrotate/filegroup.py:1378 lib/logrotate/filegroup.py:1431 lib/logrotate/filegroup.py:1514
+msgid "Setting file group property {p!r} to {v!r}."
+msgstr "Setze Eigenschaft {p!r} der Dateigruppe auf {v!r}."
+
+#: lib/logrotate/filegroup.py:1400
+msgid "Necessary integer value for directive {d!r} in {lf!r}:{lnr} not given: {line}"
+msgstr "Notwendiger Ganzzahl-Wert für Direktive {d!r} in {lf!r}:{lnr} nicht angegeben: {line}"
+
+#: lib/logrotate/filegroup.py:1438
+msgid "Invalid value {v!r} for directive {d!r} in {lf!r}:{lnr}: {e}"
+msgstr "Ungültiger Wert {v!r} für Direktive {d!r} in {lf!r}:{lnr}: {e}"
+
+#: lib/logrotate/filegroup.py:1456
+msgid "Directive {d!r} needs exactly one option ({g} given in {lf!r}:{lnr}): {line}"
+msgid_plural "Directive {d!r} needs exactly {nr} options ({g} given in {lf!r}:{lnr}): {line}"
+msgstr[0] "Die Direktive {d!r} benötigt exakt eine Option ({g} angegeben in {lf!r}:{lnr}): {line}"
+msgstr[1] "Die Direktive {d!r} benötigt exakt {nr} Optionen ({g} angegeben in {lf!r}:{lnr}): {line}"
+
+#: lib/logrotate/filegroup.py:1467
+msgid "Directive {d!r} needs at least one option ({g} given in {lf!r}:{lnr}): {line}"
+msgid_plural "Directive {d!r} needs at least {nr} options ({g} given in {lf!r}:{lnr}): {line}"
+msgstr[0] "Die Direktive {d!r} benötigt wenigstens eine Option ({g} angegeben in {lf!r}:{lnr}): {line}"
+msgstr[1] "Die Direktive {d!r} benötigt wenigstens {nr} Optionen ({g} angegeben in {lf!r}:{lnr}): {line}"
+
+#: lib/logrotate/filegroup.py:1475
+msgid "Directive {d!r} needs at most one option ({g} given in {lf!r}:{lnr}): {line}"
+msgid_plural "Directive {d!r} needs at most {nr} options ({g} given in {lf!r}:{lnr}): {line}"
+msgstr[0] "Die Direktive {d!r} benötigt höchstens eine Option ({g} angegeben in {lf!r}:{lnr}): {line}"
+msgstr[1] "Die Direktive {d!r} benötigt höchstens {nr} Optionen ({g} angegeben in {lf!r}:{lnr}): {line}"
+
+#: lib/logrotate/filegroup.py:1495
+msgid "There is something failing ..."
+msgstr "Da fehlt irgendwas …"
+
+#: lib/logrotate/filegroup.py:1527
+msgid "Invalid value {v!r} for directive {d!r} in {lf!r}:{lnr}: {c} - {e}"
+msgstr "Ungültiger Wert {v!r} für Direktive {d!r} in {lf!r}:{lnr}: {c} - {e}"
+
+#: lib/logrotate/filegroup.py:1546
+msgid "Setting rotation method to {m!r} and the create options to {o!r}."
+msgstr "Setze Rotations-Methode auf {m!r} und die Erstellungs-Optionen auf {o!r}."
+
+#: lib/logrotate/script.py:93
+msgid "Invalid type {t!r} of parameter {par}: {pat!r}."
+msgstr "Ungültiger Typ {t!r} des Parameters {par}: {pat!r}."
+
+#: lib/logrotate/script.py:146 lib/logrotate/script.py:160
 msgid "Invalid value for property {!r} given."
 msgstr "Ungültiger Wert der Property {!r} gegeben."
 
-#: lib/logrotate/script.py:206
+#: lib/logrotate/script.py:241
 msgid "Logrotate script object {!r} will be destroyed."
 msgstr "Das Logrotate-Scriptobjekt {!r} wird zerstört."
 
-#: lib/logrotate/script.py:362
+#: lib/logrotate/script.py:427
 msgid "No command to execute defined in script {!r}."
 msgstr "Kein Kommando zur Ausführung in Skript {!r} definiert."
 
-#: lib/logrotate/script.py:369
+#: lib/logrotate/script.py:431
 msgid "Executing script {!r} with command:"
 msgstr "Führe Skript {!r} mit den Kommandos aus:"
 
-#: lib/logrotate/script.py:381
+#: lib/logrotate/script.py:443
 msgid "Completed process:"
 msgstr "Fertiggestellter Prozess:"
 
-#: lib/logrotate/script.py:383
+#: lib/logrotate/script.py:445
 msgid "Got returncode for script {s!r}: {ret!r}."
 msgstr "Erhaltener Wiedergabewert für Skript {s!r}: {ret!r}."
 
-#: lib/logrotate/script.py:391
+#: lib/logrotate/script.py:453
 msgid "Execution of script {s!r} failed: {e}"
 msgstr "Die Ausführung des Skripts {s!r} ist fehlgeschlagen: {e}"
 
-#: lib/logrotate/script.py:416
+#: lib/logrotate/script.py:479
 msgid "Checking, whether the script {!r} should be executed."
 msgstr "Überprüfe, ob das Skript {!r} ausgeführt werden sollte."
 
-#: lib/logrotate/status.py:147
+#: lib/logrotate/status.py:145
 msgid "Could not evaluate {!r} as a datetime object."
 msgstr "Konnte {!r} nicht als datetime-Objekt interpretieren."
 
-#: lib/logrotate/status.py:326
+#: lib/logrotate/status.py:323
 msgid "Auto reading on init ..."
 msgstr "Automatisches Einlesen bei Initialisierung …"
 
-#: lib/logrotate/status.py:330
+#: lib/logrotate/status.py:327
 msgid "No auto reading on init ..."
 msgstr "Kein automatisches Einlesen bei Initialisierung …"
 
-#: lib/logrotate/status.py:384
+#: lib/logrotate/status.py:381
 msgid "Status file object will destroyed."
 msgstr "Das Statusdatei-Objekt wird zerstört."
 
-#: lib/logrotate/status.py:402
+#: lib/logrotate/status.py:399
 msgid "Only {e} objects can be added to a {c} object (given {f} object)."
 msgstr "Nur {e}-Objekte können zu einem {c}-Objekt hinzugefügt werden (gegeben ein {f}-Objekt)."
 
-#: lib/logrotate/status.py:409
+#: lib/logrotate/status.py:406
 msgid "Filename {f1!r} in given {o} object does not match given filename {f2!r}."
 msgstr ""
 "Der Dateiname {f1!r} im gegebenen {o}-Objekt stimmt nicht mit dem gegebenen Dateinamen {f2!r} "
 "überein."
 
-#: lib/logrotate/status.py:464
+#: lib/logrotate/status.py:461
 msgid "Original permissions of {fn!r}: {perm:04o}"
 msgstr "Original-Zugriffsrechte auf {fn!r}: {perm:04o}"
 
-#: lib/logrotate/status.py:479
+#: lib/logrotate/status.py:476
 msgid "Path is not a regular file"
 msgstr "Der Pfad ist keine reguläre Datei"
 
-#: lib/logrotate/status.py:483
+#: lib/logrotate/status.py:480
 msgid "No read permissions"
 msgstr "Keine Leserechte"
 
-#: lib/logrotate/status.py:486
+#: lib/logrotate/status.py:483
 msgid "Trying to read {!r} ..."
 msgstr "Versuche {!r} zu lesen …"
 
-#: lib/logrotate/status.py:494
+#: lib/logrotate/status.py:491
 msgid "Idendified version of status file: {}"
 msgstr "Identifizierte Version der Status-Datei: {}"
 
-#: lib/logrotate/status.py:502
+#: lib/logrotate/status.py:499
 msgid "Could not evaluate line {file!r}:{lnr} {line!r}: {e}"
 msgstr "Konnte Zeile {file!r}:{lnr} {line!r} nicht auswerten: {e}"
 
-#: lib/logrotate/status.py:523
+#: lib/logrotate/status.py:520
 msgid "Simulating writing {!r} ..."
 msgstr "Simuliere das Schreiben von {!r} …"
 
-#: lib/logrotate/status.py:525 lib/logrotate/status.py:528 lib/logrotate/status.py:536
-#: lib/logrotate/status.py:541
+#: lib/logrotate/status.py:522 lib/logrotate/status.py:525 lib/logrotate/status.py:533
+#: lib/logrotate/status.py:538
 msgid "Writing line {!r}."
 msgstr "Schreibe Zeile {!r}."
 
-#: lib/logrotate/status.py:532
+#: lib/logrotate/status.py:529
 msgid "Trying to write {!r} ..."
 msgstr "Versuche {!r} zu schreiben …"
 
-#: lib/logrotate/status.py:557
+#: lib/logrotate/status.py:554
 msgid "Ensuring permissions of {!r} ..."
 msgstr "Gewährleiste Zugriffsrechte auf {!r} …"
 
-#: lib/logrotate/status.py:560
+#: lib/logrotate/status.py:557
 msgid "Current permissions of {fn!r}: {cur:04o}, expected: {exp:04o}."
 msgstr "Aktuelle Zugriffsrechte auf {fn!r}: {cur:04o}, erwartet: {exp:04o}."
 
-#: lib/logrotate/status.py:564
+#: lib/logrotate/status.py:561
 msgid "Setting permissions of {fn!r} to {perm:04o}."
 msgstr "Setze die Zugriffsrechte von {fn!r} auf {perm:04o}."
 
-#: lib/logrotate/status.py:606
+#: lib/logrotate/status.py:603
 msgid "Checking permissions of status file {!r} ..."
 msgstr "Überprüfe Zugriffsrechte auf Statusdatei {!r} …"
 
-#: lib/logrotate/status.py:612
+#: lib/logrotate/status.py:609
 msgid "Access to status file {!r} is OK."
 msgstr "Der Zugriff auf {!r} in in Ordnung."
 
-#: lib/logrotate/status.py:616
+#: lib/logrotate/status.py:613
 msgid "No write access to status file {!r}."
 msgstr "Kein Schreibzugriff auf Statusdatei {!r}."
 
-#: lib/logrotate/status.py:624
+#: lib/logrotate/status.py:621
 msgid "Checking permissions of parent directory {!r} ..."
 msgstr "Überprüfe Zugriffsrechte auf übergeordnetes Verzeichnis {!r} …"
 
-#: lib/logrotate/status.py:629
+#: lib/logrotate/status.py:626
 msgid "Directory {!r} doesn't exists."
 msgstr "Das Verzeichnis {!r} existiert nicht."
 
-#: lib/logrotate/status.py:638
+#: lib/logrotate/status.py:635
 msgid "Parent directory {d!r} of status file {f!r} is not a directory."
 msgstr "Das übergeordnetes Verzeichnis {d!r} der Statusdatei {f!r} is kein Verzeichnis."
 
-#: lib/logrotate/status.py:648
+#: lib/logrotate/status.py:645
 msgid "No write access to parent directory {d!r} of status file {f!r}."
 msgstr "Kein Schreibzugriff aud das übergeordnetes Verzeichnis {d!r} der Statusdatei {f!r}."
 
-#: lib/logrotate/status.py:656
+#: lib/logrotate/status.py:653
 msgid "Permissions to parent directory {!r} are OK."
 msgstr "Die Zugriffsrechte auf übergeordnetes Verzeichnis {!r} sind in Ordnung."
 
-#: lib/logrotate/translate.py:76
+#: lib/logrotate/translate.py:96
 msgid "Module directory: {!r}"
 msgstr "Modul-Verzeichnis: {!r}"
 
-#: lib/logrotate/translate.py:77
+#: lib/logrotate/translate.py:97
 msgid "Base directory: {!r}"
 msgstr "Basis-Verzeichnis: {!r}"
 
-#: lib/logrotate/translate.py:78
+#: lib/logrotate/translate.py:98
 msgid "Locale directory: {!r}"
 msgstr "Verzeichnis für Locales: {!r}"
 
-#: lib/logrotate/translate.py:79
+#: lib/logrotate/translate.py:99
 msgid "Locale domain: {!r}"
 msgstr "Locale-Domäne: {!r}"
 
-#: lib/logrotate/translate.py:80
+#: lib/logrotate/translate.py:100
 msgid "Found .mo-file: {!r}"
 msgstr "Gefundene .mo-Datei: {!r}"
 

@@ -68,11 +68,11 @@ echo "Installed modules:"
 echo
 pip list --format columns
 
-#echo
-#echo "---------------------------------------------------"
-#echo "Compiling binary language catalogues"
-#echo
-#./compile-xlate-msgs.sh
+echo
+echo "---------------------------------------------------"
+echo "Compiling binary language catalogues"
+echo
+./compile-xlate-msgs.sh
 
 echo
 echo "-------"

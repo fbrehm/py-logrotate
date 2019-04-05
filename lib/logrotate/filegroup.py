@@ -45,7 +45,7 @@ from .translate import XLATOR, format_list
 
 from .common import human2bytes, period2days
 
-__version__ = '0.8.6'
+__version__ = '0.8.7'
 
 _ = XLATOR.gettext
 ngettext = XLATOR.ngettext

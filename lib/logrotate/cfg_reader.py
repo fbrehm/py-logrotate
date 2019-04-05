@@ -110,9 +110,9 @@ class LogrotateConfigReader(HandlingObject):
     msg_block_already_started = _(
         "Found opening curly bracket in file {f!r}:{nr} after another opening curly bracket.")
     msg_pointless_open_bracket = _(
-        "Pointless content found (li!r} after opening curly bracket in file {f!r}:{nr}.")
+        "Pointless content found {li!r} after opening curly bracket in file {f!r}:{nr}.")
     msg_pointless_closing_bracket = _(
-        "Pointless content found (li!r} after closing curly bracket in file {f!r}:{nr}.")
+        "Pointless content found {li!r} after closing curly bracket in file {f!r}:{nr}.")
 
     # ------------------------------------------------------
     def __init__(
@@ -685,7 +685,7 @@ class LogrotateConfigReader(HandlingObject):
         if include in self.included_paths:
             of = str(self.included_paths[include]['file'])
             ol = self.included_paths[include]['line']
-            msg = _("Object {o!r} was already included in {of!r}{ol} ({f!r}:{nr}).").format(
+            msg = _("Object {o!r} was already included in {of!r}:{ol} ({f!r}:{nr}).").format(
                 o=str(include), of=of, ol=ol, f=str(cfg_file), nr=linenr)
             LOG.error(msg)
             return
@@ -741,7 +741,7 @@ class LogrotateConfigReader(HandlingObject):
             if child in self.included_paths:
                 of = str(self.included_paths[child]['file'])
                 ol = self.included_paths[child]['line']
-                msg = _("Object {o!r} was already included in {of!r}{ol} ({f!r}:{nr}).").format(
+                msg = _("Object {o!r} was already included in {of!r}:{ol} ({f!r}:{nr}).").format(
                     o=str(child), of=of, ol=ol, f=str(cfg_file), nr=linenr)
                 LOG.error(msg)
                 return
