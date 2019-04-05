@@ -10,6 +10,8 @@ from __future__ import absolute_import, print_function
 
 # Standard modules
 import logging
+import argparse
+from pathlib import Path
 
 # Third party modules
 
@@ -22,15 +24,20 @@ from fb_tools.app import BaseApplication
 from fb_tools.errors import FbAppError
 
 from . import DEFAULT_CONFIG_FILE, DEFAULT_STATUS_FILE, DEFAULT_PID_FILE
-from .translate import XLATOR
+from .translate import __module_dir__ as __xlate_module_dir__
+from .translate import __base_dir__ as __xlate_base_dir__
+from .translate import __mo_file__ as __xlate_mo_file__
+from .translate import XLATOR, LOCALE_DIR, DOMAIN
 
 from .errors import LogrotateConfigurationError, LogrotateObjectError
 from .errors import LogrotateCfgFatalError, LogrotateCfgNonFatalError
 from .common import split_parts
+from .cfg_reader import LogrotateConfigReader
 from .filegroup import LogFileGroup
 from .script import LogRotateScript
+from .status import StatusFile
 
-__version__ = '0.1.1'
+__version__ = '0.2.1'
 
 _ = XLATOR.gettext
 ngettext = XLATOR.ngettext
@@ -42,6 +49,37 @@ LOG = logging.getLogger(__name__)
 class LogrotateAppError(FbAppError, LogrotateObjectError):
     """Base exception class for all exceptions in this application module."""
     pass
+
+
+# =============================================================================
+class CfgFileOptionAction(argparse.Action):
+
+    # -------------------------------------------------------------------------
+    def __init__(self, option_strings, must_exists, *args, **kwargs):
+
+        super(CfgFileOptionAction, self).__init__(
+            option_strings=option_strings, *args, **kwargs)
+        self.must_exists = bool(must_exists)
+
+    # -------------------------------------------------------------------------
+    def __call__(self, parser, namespace, filename, option_string=None):
+
+        if filename is None:
+            setattr(namespace, self.dest, None)
+            return
+
+        path = Path(filename)
+        if not path.is_absolute():
+            msg = _("File {!r} must be an absolute path.").format(filename)
+            raise argparse.ArgumentError(self, msg)
+        if self.must_exists and not path.exists():
+            msg = _("File {!r} does not exists.").format(filename)
+            raise argparse.ArgumentError(self, msg)
+        if path.exists() and not path.is_file():
+            msg = _("File {!r} is not a regular file.").format(filename)
+            raise argparse.ArgumentError(self, msg)
+
+        setattr(namespace, self.dest, path.resolve())
 
 
 # =============================================================================
@@ -59,14 +97,15 @@ class LogrotateApplication(BaseApplication):
 
         self._cfg_file = None
         self.cfg_reader = None
-        self._statusfile = None
+        self.statusfile = None
+        self._statusfilename = None
         self._pidfile = None
 
         self.file_groups = []
         self.scripts = {}
 
         super(LogrotateApplication, self).__init__(
-            appname=appname, verbose=verbose, version=version, base_dir=base_dir,
+            appname=appname, verbose=verbose, version=GLOBAL_VERSION, base_dir=base_dir,
             description=desc, initialized=False,
         )
 
@@ -77,6 +116,18 @@ class LogrotateApplication(BaseApplication):
     def cfg_file(self):
         """Configuration file."""
         return self._cfg_file
+
+    # -------------------------------------------------------------------------
+    @property
+    def statusfilename(self):
+        """Status file."""
+        return self._statusfilename
+
+    # -------------------------------------------------------------------------
+    @property
+    def pidfile(self):
+        """PID file."""
+        return self._pidfile
 
     # -------------------------------------------------------------------------
     def as_dict(self, short=True):
@@ -92,6 +143,18 @@ class LogrotateApplication(BaseApplication):
 
         res = super(LogrotateApplication, self).as_dict(short=short)
         res['cfg_file'] = self.cfg_file
+        res['statusfilename'] = self.statusfilename
+        res['pidfile'] = self.pidfile
+
+        if 'xlate' not in res:
+            res['xlate'] = {}
+        res['xlate'][DOMAIN] = {
+            '__module_dir__': __xlate_module_dir__,
+            '__base_dir__': __xlate_base_dir__,
+            'LOCALE_DIR': LOCALE_DIR,
+            'DOMAIN': DOMAIN,
+            '__mo_file__': __xlate_mo_file__,
+        }
 
         return res
 
@@ -113,8 +176,84 @@ class LogrotateApplication(BaseApplication):
         self.init_logging()
         self.perform_arg_parser()
 
+        self.init_objects()
+        self.cfg_reader.read()
+        self.perform_arg_parser_after_cfg()
+        self.statusfile.filename = self.statusfilename
+        self.statusfile.initialized = True
 
         self.initialized = True
+
+    # -------------------------------------------------------------------------
+    def init_arg_parser(self):
+        """
+        Public available method to initiate the argument parser.
+        """
+
+        super(LogrotateApplication, self).init_arg_parser()
+
+        lr_group = self.arg_parser.add_argument_group(_('Logrotate Options'))
+
+        lr_group.add_argument(
+            '-S', '--state', dest='status_file', metavar=_('FILE'),
+            action=CfgFileOptionAction, must_exists=False,
+            help=_("Path of state file (default: {!r}).").format(str(DEFAULT_STATUS_FILE))
+        )
+
+        lr_group.add_argument(
+            '-P', '--pidfile', dest='pidfile', metavar=_('FILE'),
+            action=CfgFileOptionAction, must_exists=False,
+            help=_("Path of PID file (default: {!r}).").format(str(DEFAULT_PID_FILE))
+        )
+
+        self.arg_parser.add_argument(
+            'cfg_file', metavar=_('CONFIG_FILE'), nargs='?',
+            action=CfgFileOptionAction, must_exists=True, default=DEFAULT_CONFIG_FILE,
+            help=_("Path of the configuration file (default: {!r}).").format(
+                str(DEFAULT_CONFIG_FILE))
+        )
+
+    # -------------------------------------------------------------------------
+    def perform_arg_parser(self):
+
+        if self.args.cfg_file:
+            self._cfg_file = self.args.cfg_file
+        else:
+            self._cfg_file = DEFAULT_CONFIG_FILE
+
+    # -------------------------------------------------------------------------
+    def perform_arg_parser_after_cfg(self):
+
+        if self.args.status_file:
+            self._statusfilename = self.args.status_file
+        elif self.cfg_reader.statusfile:
+            self._statusfilename = self.cfg_reader.statusfile
+        else:
+            self._statusfilename = DEFAULT_STATUS_FILE
+
+        if self.args.pidfile:
+            self._pidfile = self.args.pidfile
+        elif self.cfg_reader.pidfile:
+            self._statusfilename = self.cfg_reader.statusfile
+        else:
+            self._pidfile = DEFAULT_PID_FILE
+
+    # -------------------------------------------------------------------------
+    def init_objects(self):
+
+        LOG.debug(_("Initializing necessary objects ..."))
+
+        self.cfg_reader = LogrotateConfigReader(
+            config_file=self.cfg_file, simulate=self.simulate, quiet=self.quiet, force=self.force,
+            appname=self.appname, verbose=self.verbose, base_dir=self.base_dir)
+        self.cfg_reader.initialized = True
+
+        sfile = DEFAULT_STATUS_FILE
+        if self.statusfilename:
+            sfile = self.statusfilename
+        self.statusfile = StatusFile(
+            sfile, simulate=self.simulate, auto_read=False,
+            appname=self.appname, verbose=self.verbose, base_dir=self.base_dir)
 
     # -------------------------------------------------------------------------
     def _run(self):

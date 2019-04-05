@@ -36,7 +36,7 @@ from .errors import LogrotateStatusFileError, StatusEntryValueError
 
 from .translate import XLATOR
 
-__version__ = '0.4.4'
+__version__ = '0.4.5'
 
 _ = XLATOR.gettext
 ngettext = XLATOR.ngettext
@@ -349,7 +349,7 @@ class StatusFile(FbBaseObject, collections.MutableMapping):
         self._simulate = bool(value)
 
     # -----------------------------------------------------------------------
-    def as_dict(self):
+    def as_dict(self, short=True):
         """
         Transforms the elements of the object into a dict
 
@@ -357,7 +357,7 @@ class StatusFile(FbBaseObject, collections.MutableMapping):
         @rtype:  dict
         """
 
-        res = super(StatusFile, self).as_dict()
+        res = super(StatusFile, self).as_dict(short=short)
 
         res['simulate'] = self.simulate
         res['was_read'] = self.was_read

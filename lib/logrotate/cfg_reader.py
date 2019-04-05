@@ -31,7 +31,7 @@ from .common import split_parts
 from .filegroup import LogFileGroup
 from .script import LogRotateScript
 
-__version__ = '0.4.6'
+__version__ = '0.4.7'
 
 _ = XLATOR.gettext
 ngettext = XLATOR.ngettext
@@ -116,18 +116,9 @@ class LogrotateConfigReader(HandlingObject):
 
     # ------------------------------------------------------
     def __init__(
-        self, config_file=DEFAULT_CONFIG_FILE, name=None, simulate=False, quiet=False,
+        self, config_file=DEFAULT_CONFIG_FILE, simulate=False, quiet=False,
             force=None, appname=None, verbose=0, base_dir=None):
-        """
-        Constructor.
-
-        @param name: the name of the script as an identifier
-        @type name: str
-        @param simulate: test mode - no write actions are made
-        @type simulate: bool
-
-        @return: None
-        """
+        """Constructor."""
 
         self._config_file = None
         self.current_group = None
@@ -321,6 +312,14 @@ class LogrotateConfigReader(HandlingObject):
         res['taboo_file_patterns'] = []
         for re_taboo in self.taboo_file_patterns:
             res['taboo_file_patterns'].append(re_taboo.pattern)
+
+        res['file_groups'] = []
+        for fg in self.file_groups:
+            res['file_groups'].append(fg.as_dict(short=short))
+
+        res['scripts'] = {}
+        for sname in self.scripts:
+            res['scripts'][sname] = self.scripts[sname].as_dict(short=short)
 
         return res
 
@@ -770,6 +769,7 @@ class LogrotateConfigReader(HandlingObject):
         if self.current_group is None:
             self.current_group = self.default_group.spawn_new()
             self.current_group.config_file = cfg_file
+            self.current_group.line_nr = linenr
         if self.verbose > 3:
             LOG.debug(_("New spawned file group:") + '\n' + pp(self.current_group.as_dict()))
         if self.current_group.definition_started:
