@@ -45,7 +45,7 @@ from .translate import XLATOR, format_list
 
 from .common import human2bytes, period2days
 
-__version__ = '0.8.7'
+__version__ = '0.9.1'
 
 _ = XLATOR.gettext
 ngettext = XLATOR.ngettext
@@ -1296,18 +1296,28 @@ class LogFileGroup(FbBaseObject, MutableSequence):
             self.patterns.append(path)
 
     # -------------------------------------------------------------------------
-    def resolve_patterns(self):
+    def resolve_patterns(self, nr=None):
 
         if self.verbose > 1:
-            LOG.debug(_("Resolving globbing pattern in file group."))
+            if nr is None:
+                msg = _("Resolving globbing pattern in file group.")
+            else:
+                msg = _("Resolving globbing pattern in file group number {}.").format(nr)
+            LOG.debug(msg)
         self.clear()
 
         for pattern in self.patterns:
 
             files = glob.glob(str(pattern))
             if not files:
-                if self.verbose > 2:
-                    LOG.debug(_("Did not found a file for pattern {!r}.").format(pattern))
+                msg = _(
+                    "Did not found a file for pattern {p!r} defined in {cf!r} line {lnr}."
+                    ).format(p=str(pattern), cf=str(self.config_file), lnr=self.line_nr)
+                if self.missing_ok:
+                    if self.verbose > 1:
+                        LOG.debug(msg)
+                else:
+                    LOG.error(msg)
                 continue
 
             for lfile in files:
@@ -1570,6 +1580,13 @@ class LogFileGroup(FbBaseObject, MutableSequence):
         self.create_mode = options[0]
         self.create_owner = options[1]
         self.create_group = options[2]
+
+    # -------------------------------------------------------------------------
+    def check_for_rotation(self, logfile):
+
+        LOG.debug(_("Checking file {!r} for the need of rotation.").format(str(logfile)))
+
+        return False
 
 
 # ========================================================================

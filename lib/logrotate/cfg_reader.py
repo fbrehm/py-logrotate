@@ -31,7 +31,7 @@ from .common import split_parts
 from .filegroup import LogFileGroup
 from .script import LogRotateScript
 
-__version__ = '0.4.7'
+__version__ = '0.5.2'
 
 _ = XLATOR.gettext
 ngettext = XLATOR.ngettext
@@ -128,6 +128,9 @@ class LogrotateConfigReader(HandlingObject):
         self.included_paths = {}
         self._statusfile = None
         self._pidfile = None
+
+        self.all_logfiles = {}
+        self.logfiles_rotate = {}
 
         self.scripts = {}
         self.current_script = None
@@ -342,8 +345,6 @@ class LogrotateConfigReader(HandlingObject):
         cfg_file = self.config_file.resolve()
         if not self._read(cfg_file):
             return False
-
-        self.resolve_globbings()
 
         if self.verbose > 2:
             out = []
@@ -845,19 +846,43 @@ class LogrotateConfigReader(HandlingObject):
     # -------------------------------------------------------------------------
     def resolve_globbings(self):
 
-        all_logfiles = {}
+        self.all_logfiles = {}
 
-        LOG.debug("Resolving globbing patterns in all file groups ...")
+        LOG.debug(_("Resolving globbing patterns in all file groups ..."))
+        i = 0
         for file_group in self.file_groups:
-            file_group.resolve_patterns()
+            file_group.resolve_patterns(i)
             for lfile in file_group:
-                if lfile in all_logfiles:
+                if lfile in self.all_logfiles:
                     msg = _(
                         "Double declaration of logfile {lf!r} in {f1!r} and {f2!r}.").format(
-                        lf=str(lfile), f1=str(all_logfiles[lfile]), f2=str(file_group.config_file))
+                        lf=str(lfile), f1=str(self.all_logfiles[lfile]),
+                        f2=str(file_group.config_file))
                     LOG.error(msg)
                     continue
-                all_logfiles[lfile] = file_group.config_file
+                self.all_logfiles[lfile] = i
+            i += 1
+
+        if self.verbose > 1:
+            LOG.debug(_("Resolved logfiles:") + '\n' + pp(self.all_logfiles))
+
+    # -------------------------------------------------------------------------
+    def check_for_rotation(self):
+
+        LOG.debug(_("Checking all existing logfiles for the need of rotation."))
+        self.logfiles_rotate = {}
+
+        for logfile in self.all_logfiles.keys():
+
+            idx = self.all_logfiles[logfile]
+            path = Path(logfile)
+            file_group = self.file_groups[idx]
+
+            if file_group.check_for_rotation(path):
+                self.logfiles_rotate[path] = idx
+
+        if self.verbose > 1:
+            LOG.debug(_("Logfiles to rotate:") + '\n' + pp(self.logfiles_rotate))
 
 
 # =============================================================================

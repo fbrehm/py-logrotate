@@ -37,7 +37,7 @@ from .filegroup import LogFileGroup
 from .script import LogRotateScript
 from .status import StatusFile
 
-__version__ = '0.2.1'
+__version__ = '0.3.2'
 
 _ = XLATOR.gettext
 ngettext = XLATOR.ngettext
@@ -256,10 +256,34 @@ class LogrotateApplication(BaseApplication):
             appname=self.appname, verbose=self.verbose, base_dir=self.base_dir)
 
     # -------------------------------------------------------------------------
+    def pre_run(self):
+
+        LOG.debug(_("Executing {!r} ...").format('pre_run()'))
+
+        self.cfg_reader.resolve_globbings()
+        nr_files = len(self.cfg_reader.all_logfiles.keys())
+        if not nr_files:
+            LOG.info(_("Found no existing logfiles to rotate."))
+            self.exit(0)
+        msg = ngettext(
+            "Found one existing logfile to rotate.",
+            "Found {nr} existing logfiles to rotate.", nr_files).format(nr=nr_files)
+        LOG.debug(msg)
+
+    # -------------------------------------------------------------------------
     def _run(self):
 
-        LOG.debug(_("Starting {a!r}, version {v!r} ...").format(
+        LOG.info(_("Starting {a!r}, version {v!r} ...").format(
             a=self.appname, v=self.version))
+        self.cfg_reader.check_for_rotation()
+        nr_files = len(self.cfg_reader.logfiles_rotate.keys())
+        if not nr_files:
+            LOG.info(_("Found no logfiles to rotate."))
+            self.exit(0)
+        msg = ngettext(
+            "Found one logfile to rotate.",
+            "Found {nr} logfiles to rotate.", nr_files).format(nr=nr_files)
+        LOG.debug(msg)
 
 
 # =============================================================================
