@@ -7,16 +7,95 @@ msgid ""
 msgstr ""
 "Project-Id-Version: plogrotate 0.8.1\n"
 "Report-Msgid-Bugs-To: frank.brehm@profitbricks.com\n"
-"POT-Creation-Date: 2019-04-05 14:55+0200\n"
-"PO-Revision-Date: 2019-04-05 14:00+0100\n"
+"POT-Creation-Date: 2019-04-30 18:02+0200\n"
+"PO-Revision-Date: 2019-04-30 18:10+0100\n"
 "Last-Translator: Frank Brehm <frank@brehm-online.com>\n"
 "Language: de\n"
-"Language-Team: de <LL@li.org>\n"
+"Language-Team: de <frank@brehm-online.com>\n"
 "Plural-Forms: nplurals=2; plural=(n != 1)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 2.6.0\n"
+
+#: lib/logrotate/app.py:73
+msgid "File {!r} must be an absolute path."
+msgstr "Die Datei {!r} muss ein absoluter Pfad sein."
+
+#: lib/logrotate/app.py:76
+msgid "File {!r} does not exists."
+msgstr "Die Datei {!r} existiert nicht."
+
+#: lib/logrotate/app.py:79
+msgid "File {!r} is not a regular file."
+msgstr "Die Datei {!r} ist keine reguläre Datei."
+
+#: lib/logrotate/app.py:92
+msgid ""
+"It is designed to ease administration of systems that generate large numbers of log files. It "
+"allows automatic rotation, compression and removal of log files. Each log file may be handled "
+"hourly, daily, weekly, monthly, or when it grows too large."
+msgstr ""
+"Es ist dafür bestimmt, die Administration von Systemen zu vereinfachen, die eine große Anzahl "
+"Logdateien generieren. Es erlaubtz die automatische Rotation und Kompression von Logdateien "
+"deren Löschung. Jede Logdatei kann stündlich, t#gliche, wöchentlich, monatlich behandelt "
+"werden, oder wenn sie zu groß werden."
+
+#: lib/logrotate/app.py:195
+msgid "Logrotate Options"
+msgstr "Logrotations-Optionen"
+
+#: lib/logrotate/app.py:198 lib/logrotate/app.py:204
+msgid "FILE"
+msgstr "DATEI"
+
+#: lib/logrotate/app.py:200
+msgid "Path of state file (default: {!r})."
+msgstr "Pfad zur Statusdatei (Vorgabe: {!r})."
+
+#: lib/logrotate/app.py:206
+msgid "Path of PID file (default: {!r})."
+msgstr "Pfad zur PID-Datei (Vorgabe: {!r})."
+
+#: lib/logrotate/app.py:210
+msgid "CONFIG_FILE"
+msgstr "KONFIG_DATEI"
+
+#: lib/logrotate/app.py:212
+msgid "Path of the configuration file (default: {!r})."
+msgstr "Pfad zur Konfigurations-Datei (Vorgabe: {!r})."
+
+#: lib/logrotate/app.py:244
+msgid "Initializing necessary objects ..."
+msgstr "Initialisiere notwendige Objekte …"
+
+#: lib/logrotate/app.py:261
+msgid "Executing {!r} ..."
+msgstr "Führe {!r} aus …"
+
+#: lib/logrotate/app.py:266
+msgid "Found no existing logfiles to rotate."
+msgstr "Keine existierenden Logdateien zum Rotieren gefunden."
+
+#: lib/logrotate/app.py:268
+msgid "Found one existing logfile to rotate."
+msgid_plural "Found {nr} existing logfiles to rotate."
+msgstr[0] "Fand eine existierende Logdatei für die Rotation."
+msgstr[1] "Fand {nr} existierende Logdateien für die Rotation."
+
+#: lib/logrotate/app.py:276
+msgid "Starting {a!r}, version {v!r} ..."
+msgstr "Starte {a!r}, Version {v!r} …"
+
+#: lib/logrotate/app.py:281
+msgid "Found no logfiles to rotate."
+msgstr "Keine Logdateien zum Rotieren gefunden."
+
+#: lib/logrotate/app.py:283
+msgid "Found one logfile to rotate."
+msgid_plural "Found {nr} logfiles to rotate."
+msgstr[0] "Fand eine Logdatei, die rotiert werden muss."
+msgstr[1] "Fand {nr} Logdateien, die rotiert werden müssen."
 
 #: lib/logrotate/cfg_reader.py:48 lib/logrotate/status.py:472 lib/logrotate/status.py:548
 msgid "File does not exists"
@@ -48,35 +127,35 @@ msgstr "Sinnlosen Inhalt {li!r} nach öffnenden geschweiften Klammern in Datei {
 msgid "Pointless content found {li!r} after closing curly bracket in file {f!r}:{nr}."
 msgstr "Sinnlosen Inhalt {li!r} nach schließenden geschweiften Klammern in Datei {f!r}:{nr} gefunden."
 
-#: lib/logrotate/cfg_reader.py:164
+#: lib/logrotate/cfg_reader.py:158
 msgid "The filename of the config file may not be None."
 msgstr "Der Dateiname der Konfigurationsdatei darf nicht None sein."
 
-#: lib/logrotate/cfg_reader.py:210
+#: lib/logrotate/cfg_reader.py:204
 msgid "Invalid taboo pattern {!r} given."
 msgstr "Ungültiges Tabu-Muster {!r} gegeben."
 
-#: lib/logrotate/cfg_reader.py:215
+#: lib/logrotate/cfg_reader.py:209
 msgid "Invalid taboo pattern type {!r} given."
 msgstr "Ungültiger Typ {!r} für ein Tabu-Muster gegeben."
 
-#: lib/logrotate/cfg_reader.py:223
+#: lib/logrotate/cfg_reader.py:217
 msgid "Got a {c} error on adding taboo pattern {p!r}: {e}."
 msgstr "Bekam einen {c}-Fehler beim Hizufügen des Tabumusters {p!r}: {e}."
 
-#: lib/logrotate/cfg_reader.py:234
+#: lib/logrotate/cfg_reader.py:228
 msgid "Taboo pattern {!r} already exists in the list of taboo patterns."
 msgstr "Das Tabu-Muster {!r} existiert bereits in der Liste der Tabu-Muster."
 
-#: lib/logrotate/cfg_reader.py:236
+#: lib/logrotate/cfg_reader.py:230
 msgid "Taboo pattern {!r} already exists in the list of taboo file patterns."
 msgstr "Das Tabu-Muster {!r} existiert bereits in der Liste der Datei-Tabu-Muster."
 
-#: lib/logrotate/cfg_reader.py:250
+#: lib/logrotate/cfg_reader.py:244
 msgid "Initializing the list of taboo patterns with some default values."
 msgstr "Initialisiere die Liste der Tabu-Muster mit einigen Vorgabe-Werten."
 
-#: lib/logrotate/cfg_reader.py:287
+#: lib/logrotate/cfg_reader.py:281
 msgid "Initializing default file group ..."
 msgstr "Initialisiere Vorgabe-Dateigruppe …"
 
@@ -236,53 +315,69 @@ msgstr "Die Datei ({f}) stimmt mit Dateimuster {p!r} überein."
 msgid "Evaluating line with a path at begin in {f!r}:{nr}: {li!r}"
 msgstr "Erforsche Zeile mit einem Pfad am Anfang in {f!r}:{nr}: {li!r}"
 
-#: lib/logrotate/cfg_reader.py:774
+#: lib/logrotate/cfg_reader.py:775
 msgid "New spawned file group:"
 msgstr "Neu generierte Dateigruppe:"
 
-#: lib/logrotate/cfg_reader.py:776
+#: lib/logrotate/cfg_reader.py:777
 msgid "Logfile patttern definitions inside a definition block (in file {f!r}:{nr}) are not allowed."
 msgstr ""
 "Logdateimuster-Definitionen innerhalb eines Definitionsblocks (in Datei {f!r}:{nr}) sind nicht "
 "erlaubt."
 
-#: lib/logrotate/cfg_reader.py:793 lib/logrotate/cfg_reader.py:825
+#: lib/logrotate/cfg_reader.py:794 lib/logrotate/cfg_reader.py:826
 msgid "Current file group:"
 msgstr "Aktuelle Dateigruppe:"
 
-#: lib/logrotate/cfg_reader.py:799
+#: lib/logrotate/cfg_reader.py:800
 msgid "Evaluating line with a opening curly bracket in {f!r}:{nr}: {li!r}"
 msgstr "Erforsche Zeile mit öffnenden geschweiften Klammern in {f!r}:{nr}: {li!r}"
 
-#: lib/logrotate/cfg_reader.py:804
+#: lib/logrotate/cfg_reader.py:805
 msgid "Found opening curly bracket in file {f!r}:{nr} without previous definition of files to rotate."
 msgstr ""
 "Öffnende geschweifte Klammern in Datei {f!r}:{nr} ohne vorherige Definition der Dateien, die zu "
 "rotieren sind, gefunden."
 
-#: lib/logrotate/cfg_reader.py:820
+#: lib/logrotate/cfg_reader.py:821
 msgid "Evaluating line with a closing curly bracket in {f!r}:{nr}: {li!r}"
 msgstr "Erforsche Zeile mit schließenden geschweiften Klammern in {f!r}:{nr}: {li!r}"
 
-#: lib/logrotate/cfg_reader.py:827
+#: lib/logrotate/cfg_reader.py:828
 msgid "Found closing curly bracket in file {f!r}:{nr} without previous definition of files to rotate."
 msgstr ""
 "Schließende geschweifte Klammern in Datei {f!r}:{nr} ohne vorherige Definion von Dateien, die zu"
 " rotieren sind, gefunden."
 
-#: lib/logrotate/cfg_reader.py:832
+#: lib/logrotate/cfg_reader.py:833
 msgid "Finishing file group:"
 msgstr "Schließe Dateigruppe:"
 
-#: lib/logrotate/cfg_reader.py:834
+#: lib/logrotate/cfg_reader.py:835
 msgid "Found closing curly bracket in file {f!r}:{nr} without previous opening curly bracket."
 msgstr ""
 "Schließende geschweifte Klammern in Datei {f!r}:{nr} ohne vorherige öffnende geschweifte "
 "Klammern gefunden."
 
-#: lib/logrotate/cfg_reader.py:855
+#: lib/logrotate/cfg_reader.py:851
+msgid "Resolving globbing patterns in all file groups ..."
+msgstr "Löse Globbing-Muster in allen Dateigruppen auf …"
+
+#: lib/logrotate/cfg_reader.py:857
 msgid "Double declaration of logfile {lf!r} in {f1!r} and {f2!r}."
 msgstr "Doppelte Deklaration der Logdatei {lf!r} in {f1!r} und {f2!r}."
+
+#: lib/logrotate/cfg_reader.py:867
+msgid "Resolved logfiles:"
+msgstr "Aufgelöste Logdateien:"
+
+#: lib/logrotate/cfg_reader.py:872
+msgid "Checking all existing logfiles for the need of rotation."
+msgstr "Überprüfe ale Logdateien zur Notwendigkeit der Rotation."
+
+#: lib/logrotate/cfg_reader.py:885
+msgid "Logfiles to rotate:"
+msgstr "Logdateien, die rotiert werden müssen."
 
 #: lib/logrotate/common.py:159
 msgid "Broken split of {chunk!r}: {left!r} left."
@@ -461,79 +556,87 @@ msgstr "Konnte Dateimuster {p!r} nicht hinzufügen: {e}"
 msgid "A logfile pattern must be an absolute path: {!r}"
 msgstr "Ein Logdateimuster muss ein absoluter Pfad sein: {!r}"
 
-#: lib/logrotate/filegroup.py:1302
+#: lib/logrotate/filegroup.py:1303
 msgid "Resolving globbing pattern in file group."
 msgstr "Löse Globbing-Muster in Dateigruppe auf."
 
-#: lib/logrotate/filegroup.py:1310
-msgid "Did not found a file for pattern {!r}."
-msgstr "Keine Datei für Muster {!r} gefunden."
+#: lib/logrotate/filegroup.py:1305
+msgid "Resolving globbing pattern in file group number {}."
+msgstr "Löse Globbing-Muster in Dateigruppe Nummer {} auf."
 
-#: lib/logrotate/filegroup.py:1316
+#: lib/logrotate/filegroup.py:1313
+msgid "Did not found a file for pattern {p!r} defined in {cf!r} line {lnr}."
+msgstr "Keine Datei zum Muster {p!r} definiert in {cf!r}, Zeile {lnr}, gefunden."
+
+#: lib/logrotate/filegroup.py:1326
 msgid "Multiple definition of logfile {f!r} in {cf!r}."
 msgstr "Mehrfache Definition der Logdatei {f!r} in {cf!r}."
 
-#: lib/logrotate/filegroup.py:1327
+#: lib/logrotate/filegroup.py:1337
 msgid "Trying to apply option line {!r} to a default file group."
 msgstr "Versuche Options-Zeile {!r} auf eine Vorgabe-Dateigruppe anzuwenden."
 
-#: lib/logrotate/filegroup.py:1329
+#: lib/logrotate/filegroup.py:1339
 msgid "Trying to apply option line {!r} to a file group."
 msgstr "Versuche Options-Zeile {!r} auf eine Dateigruppe anzuwenden."
 
-#: lib/logrotate/filegroup.py:1334
+#: lib/logrotate/filegroup.py:1344
 msgid "Unsupported directive {d!r} found in {lf!r}:{lnr}."
 msgstr "Nicht unterstützte Direktive {d!r} in {lf!r}:{lnr} gefunden."
 
-#: lib/logrotate/filegroup.py:1368 lib/logrotate/filegroup.py:1421 lib/logrotate/filegroup.py:1504
+#: lib/logrotate/filegroup.py:1378 lib/logrotate/filegroup.py:1431 lib/logrotate/filegroup.py:1514
 msgid "Error in {lf!r}:{lnr}: directive {d!r} was already set as {ex!r} in {of!r}:{ol}."
 msgstr "Fehler in {lf!r}:{lnr}: die Direktive {d!r} wurde bereits als {ex!r} in {of!r}:{ol} gesetzt."
 
-#: lib/logrotate/filegroup.py:1375 lib/logrotate/filegroup.py:1428 lib/logrotate/filegroup.py:1511
+#: lib/logrotate/filegroup.py:1385 lib/logrotate/filegroup.py:1438 lib/logrotate/filegroup.py:1521
 msgid "Setting default file group property {p!r} to {v!r}."
 msgstr "Setze Eigenschaft {p!r} der Vorgabe-Dateigruppe auf {v!r}."
 
-#: lib/logrotate/filegroup.py:1378 lib/logrotate/filegroup.py:1431 lib/logrotate/filegroup.py:1514
+#: lib/logrotate/filegroup.py:1388 lib/logrotate/filegroup.py:1441 lib/logrotate/filegroup.py:1524
 msgid "Setting file group property {p!r} to {v!r}."
 msgstr "Setze Eigenschaft {p!r} der Dateigruppe auf {v!r}."
 
-#: lib/logrotate/filegroup.py:1400
+#: lib/logrotate/filegroup.py:1410
 msgid "Necessary integer value for directive {d!r} in {lf!r}:{lnr} not given: {line}"
 msgstr "Notwendiger Ganzzahl-Wert für Direktive {d!r} in {lf!r}:{lnr} nicht angegeben: {line}"
 
-#: lib/logrotate/filegroup.py:1438
+#: lib/logrotate/filegroup.py:1448
 msgid "Invalid value {v!r} for directive {d!r} in {lf!r}:{lnr}: {e}"
 msgstr "Ungültiger Wert {v!r} für Direktive {d!r} in {lf!r}:{lnr}: {e}"
 
-#: lib/logrotate/filegroup.py:1456
+#: lib/logrotate/filegroup.py:1466
 msgid "Directive {d!r} needs exactly one option ({g} given in {lf!r}:{lnr}): {line}"
 msgid_plural "Directive {d!r} needs exactly {nr} options ({g} given in {lf!r}:{lnr}): {line}"
 msgstr[0] "Die Direktive {d!r} benötigt exakt eine Option ({g} angegeben in {lf!r}:{lnr}): {line}"
 msgstr[1] "Die Direktive {d!r} benötigt exakt {nr} Optionen ({g} angegeben in {lf!r}:{lnr}): {line}"
 
-#: lib/logrotate/filegroup.py:1467
+#: lib/logrotate/filegroup.py:1477
 msgid "Directive {d!r} needs at least one option ({g} given in {lf!r}:{lnr}): {line}"
 msgid_plural "Directive {d!r} needs at least {nr} options ({g} given in {lf!r}:{lnr}): {line}"
 msgstr[0] "Die Direktive {d!r} benötigt wenigstens eine Option ({g} angegeben in {lf!r}:{lnr}): {line}"
 msgstr[1] "Die Direktive {d!r} benötigt wenigstens {nr} Optionen ({g} angegeben in {lf!r}:{lnr}): {line}"
 
-#: lib/logrotate/filegroup.py:1475
+#: lib/logrotate/filegroup.py:1485
 msgid "Directive {d!r} needs at most one option ({g} given in {lf!r}:{lnr}): {line}"
 msgid_plural "Directive {d!r} needs at most {nr} options ({g} given in {lf!r}:{lnr}): {line}"
 msgstr[0] "Die Direktive {d!r} benötigt höchstens eine Option ({g} angegeben in {lf!r}:{lnr}): {line}"
 msgstr[1] "Die Direktive {d!r} benötigt höchstens {nr} Optionen ({g} angegeben in {lf!r}:{lnr}): {line}"
 
-#: lib/logrotate/filegroup.py:1495
+#: lib/logrotate/filegroup.py:1505
 msgid "There is something failing ..."
 msgstr "Da fehlt irgendwas …"
 
-#: lib/logrotate/filegroup.py:1527
+#: lib/logrotate/filegroup.py:1537
 msgid "Invalid value {v!r} for directive {d!r} in {lf!r}:{lnr}: {c} - {e}"
 msgstr "Ungültiger Wert {v!r} für Direktive {d!r} in {lf!r}:{lnr}: {c} - {e}"
 
-#: lib/logrotate/filegroup.py:1546
+#: lib/logrotate/filegroup.py:1556
 msgid "Setting rotation method to {m!r} and the create options to {o!r}."
 msgstr "Setze Rotations-Methode auf {m!r} und die Erstellungs-Optionen auf {o!r}."
+
+#: lib/logrotate/filegroup.py:1587
+msgid "Checking file {!r} for the need of rotation."
+msgstr "Überprüfe Datei {!r} zur Notwendigkeit der Rotation."
 
 #: lib/logrotate/script.py:93
 msgid "Invalid type {t!r} of parameter {par}: {pat!r}."
