@@ -16,8 +16,10 @@ import locale
 import glob
 import tempfile
 import textwrap
+import time
 
-from datetime import tzinfo, timedelta, datetime, date, time
+#from datetime import tzinfo, timedelta, datetime, date, time, timezone
+import datetime
 
 from pathlib import Path
 
@@ -31,6 +33,8 @@ import six
 import pytz
 
 UTC = pytz.utc
+
+from fb_tools.common import pp
 
 # Setting the user’s preferred locale settings
 locale.setlocale(locale.LC_ALL, '')
@@ -80,6 +84,35 @@ class StatusTestCase(BaseTestCase):
         self.assertEqual(entry_str, '~          ~')
 
     # -------------------------------------------------------------------------
+    def test_entry_timezonebased(self):
+
+        LOG.info("Testing status entries with time zone dependend values ...")
+        from logrotate.status import StatusFileEntry
+
+        local_tz = datetime.datetime.now(datetime.timezone.utc).astimezone().tzinfo
+        cur_ts = int(time.time())
+        cur_dt = datetime.datetime.fromtimestamp(cur_ts, local_tz)
+        cur_dt_utc = cur_dt.astimezone(pytz.utc)
+        LOG.debug("Current timestamp: {}".format(cur_dt.isoformat(' ')))
+        fn = '/var/log/messages'
+        entry_v2 = '"{f}" {y}-{mon}-{day}-{hour}:{min}:{sec}'.format(
+            f=fn, y=cur_dt.year, mon=cur_dt.month, day=cur_dt.day,
+            hour=cur_dt.hour, min=cur_dt.minute, sec=cur_dt.second)
+        entry_v3 = '"{f}" {dt}'.format(f=fn, dt=cur_dt.strftime('%Y-%m-%d_%H:%M:%S'))
+
+        for entry_str in (entry_v2, entry_v3):
+
+            LOG.debug("Checking Entry: {}".format(entry_str))
+            entry = StatusFileEntry.from_line(
+                entry_str, verbose=self.verbose, appname=self.appname)
+            LOG.debug("Parsed Datetime: {}".format(
+                entry.ts.isoformat(' ')))
+            if self.verbose > 2:
+                LOG.debug("Entry:\n" + pp(entry.as_dict()))
+            entry_utc = entry.ts.astimezone(pytz.utc)
+            self.assertEqual(entry_utc, cur_dt_utc)
+
+    # -------------------------------------------------------------------------
     def test_initialized_entry(self):
 
         LOG.info("Testing status entries with values ...")
@@ -92,8 +125,8 @@ class StatusTestCase(BaseTestCase):
         fn_squot = "/var/log/'bla.log"
         fn_dquot = '/var/log/"blub.log'
 
-        ts_d = date(2016, 1, 1)
-        ts_dt = datetime(2016, 2, 2, 3, 14, 25)
+        ts_d = datetime.date(2016, 1, 1)
+        ts_dt = datetime.datetime(2016, 2, 2, 3, 14, 25)
         ts_d_str = '2015-1-3'
         ts_dt_str1 = '2014-04-05 03:44:11'
         ts_dt_str2 = '2014-04-05_03-44-22'
@@ -179,7 +212,7 @@ class StatusTestCase(BaseTestCase):
 
         from logrotate.status import StatusFileEntry
 
-        rdate = datetime(2010, 1, 1, 0, 0, 0, tzinfo=UTC)
+        rdate = datetime.datetime(2010, 1, 1, 0, 0, 0, tzinfo=UTC)
 
         filenames = (
             '/var/log/messages',
@@ -219,7 +252,7 @@ class StatusTestCase(BaseTestCase):
         from logrotate.status import ENCODING
 
         test_filename = '/var/log/blub.log'
-        rdate = datetime(2010, 1, 1, 0, 0, 0, tzinfo=UTC)
+        rdate = datetime.datetime(2010, 1, 1, 0, 0, 0, tzinfo=UTC)
 
         expected = textwrap.dedent('''\
             Logrotate State -- Version 3
@@ -312,6 +345,7 @@ if __name__ == '__main__':
 
     suite.addTest(StatusTestCase('test_import', verbose))
     suite.addTest(StatusTestCase('test_empty_entry', verbose))
+    suite.addTest(StatusTestCase('test_entry_timezonebased', verbose))
     suite.addTest(StatusTestCase('test_initialized_entry', verbose))
     suite.addTest(StatusTestCase('test_quoting', verbose))
     suite.addTest(StatusTestCase('test_creating_status_file', verbose))

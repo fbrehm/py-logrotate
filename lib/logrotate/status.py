@@ -17,7 +17,7 @@ import collections
 import stat
 import errno
 
-from datetime import datetime, date
+import datetime
 
 from pathlib import Path
 
@@ -36,7 +36,7 @@ from .errors import LogrotateStatusFileError, StatusEntryValueError
 
 from .translate import XLATOR
 
-__version__ = '0.4.5'
+__version__ = '0.5.1'
 
 _ = XLATOR.gettext
 ngettext = XLATOR.ngettext
@@ -63,6 +63,8 @@ class StatusFileEntry(FbBaseObject):
     re_quoted = re.compile(pat_quotes)
     re_ts_v2 = re.compile(pat_ts_v2)
     re_ts_v3 = re.compile(pat_ts_v3)
+
+    local_timezone = datetime.datetime.now(datetime.timezone.utc).astimezone().tzinfo
 
     # -----------------------------------------------------------------------
     def __init__(self, filename=None, ts=None, appname=None, verbose=0, base_dir=None):
@@ -119,28 +121,29 @@ class StatusFileEntry(FbBaseObject):
         """Tries to cast the given value into a datetime object somehow."""
 
         if value is None:
-            return datetime.utcnow()
+            #return datetime.datetime.utcnow()
+            return datetime.datetime.now(cls.local_timezone)
 
-        if isinstance(value, datetime):
+        if isinstance(value, datetime.datetime):
             return value
-        if isinstance(value, date):
-            return datetime(value.year, value.month, value.day, tzinfo=UTC)
+        if isinstance(value, datetime.date):
+            return datetime.datetime(value.year, value.month, value.day, tzinfo=cls.local_timezone)
 
         v_str = str(to_str(value))
 
         match = cls.re_ts_v3.search(v_str)
         if match:
-            return datetime(
+            return datetime.datetime(
                 year=int(match.group('year')), month=int(match.group('month')),
                 day=int(match.group('day')), hour=int(match.group('hour')),
                 minute=int(match.group('min')), second=int(match.group('sec')),
-                tzinfo=UTC)
+                tzinfo=cls.local_timezone)
 
         match = cls.re_ts_v2.search(v_str)
         if match:
-            return datetime(
+            return datetime.datetime(
                 year=int(match.group('year')), month=int(match.group('month')),
-                day=int(match.group('day')), tzinfo=UTC)
+                day=int(match.group('day')), tzinfo=cls.local_timezone)
 
         msg = _("Could not evaluate {!r} as a datetime object.").format(value)
         raise StatusEntryValueError(msg)
@@ -166,6 +169,8 @@ class StatusFileEntry(FbBaseObject):
             res['pat_ts_v3'] = self.pat_ts_v3
             res['pat_quotes'] = self.pat_quotes
             res['quotes'] = self.quotes
+
+        res['local_timezone'] = '{n}'.format(n=self.local_timezone.tzname(self.ts))
 
         return res
 
