@@ -34,7 +34,7 @@ except ImportError:
 from six.moves import shlex_quote
 
 # Own modules
-from fb_tools.common import to_str, is_sequence
+from fb_tools.common import pp, to_str, is_sequence
 
 from fb_tools.obj import FbBaseObject
 
@@ -45,7 +45,7 @@ from .translate import XLATOR, format_list
 
 from .common import human2bytes, period2days
 
-__version__ = '0.9.1'
+__version__ = '0.9.2'
 
 _ = XLATOR.gettext
 ngettext = XLATOR.ngettext
@@ -263,6 +263,8 @@ class LogFileGroup(FbBaseObject, MutableSequence):
 
         self.patterns = []
         self._files = []
+
+        self.last_rotation = {}
 
         self._compress = bool(compress)
         self._compresscmd = None
@@ -1105,7 +1107,11 @@ class LogFileGroup(FbBaseObject, MutableSequence):
     # -------------------------------------------------------------------------
     def __delitem__(self, key):
 
-        del self._files[key]
+        try:
+            ix = self._files.index(key)
+            del self._files[ix]
+        except ValueError:
+            LOG.warning(_("Logfile {!r} already removed in logfile group.").format(str(key)))
 
     # -------------------------------------------------------------------------
     def __repr__(self):
@@ -1327,6 +1333,9 @@ class LogFileGroup(FbBaseObject, MutableSequence):
                         f=str(path), c=str(self.config_file)))
                     continue
                 self.append(path)
+
+        if self.verbose > 2:
+            LOG.debug(_("Resolved logfiles in file group:") + '\n' + pp(sorted(list(self))))
 
     # -------------------------------------------------------------------------
     def apply_directive(self, line, line_parts, cfg_file, linenr):
