@@ -38,7 +38,7 @@ from .filegroup import LogFileGroup
 from .script import LogRotateScript
 from .status import StatusFile
 
-__version__ = '0.3.3'
+__version__ = '0.4.1'
 
 _ = XLATOR.gettext
 ngettext = XLATOR.ngettext
@@ -294,6 +294,15 @@ class LogrotateApplication(BaseApplication):
         lock.autoremove = True
 
         try:
+
+            if self.statusfile.exists:
+                self.statusfile.read()
+                if self.verbose > 2:
+                    entries = {}
+                    for path in self.statusfile.keys():
+                        fn = str(path)
+                        entries[fn] = self.statusfile[path].ts.isoformat(' ')
+                    LOG.debug(_("Found status entries:") + '\n' + pp(entries))
 
             self.cfg_reader.check_for_rotation()
             nr_files = len(self.cfg_reader.logfiles_rotate.keys())

@@ -333,6 +333,12 @@ class StatusFile(FbBaseObject, collections.MutableMapping):
 
     # -----------------------------------------------------------
     @property
+    def exists(self):
+        """Flag, whether the statusfile is existing or not."""
+        return self.filename.exists()
+
+    # -----------------------------------------------------------
+    @property
     def was_read(self):
         """Flag, that the current config file was read."""
         return self._was_read
@@ -365,6 +371,7 @@ class StatusFile(FbBaseObject, collections.MutableMapping):
         res = super(StatusFile, self).as_dict(short=short)
 
         res['simulate'] = self.simulate
+        res['exists'] = self.exists
         res['was_read'] = self.was_read
         res['has_changed'] = self.has_changed
         res['open_args'] = self.open_args
