@@ -22,6 +22,7 @@ from . import __version__ as GLOBAL_VERSION
 from fb_tools.common import pp, to_str
 from fb_tools.app import BaseApplication
 from fb_tools.errors import FbAppError
+from fb_tools.handler.lock import LockHandler
 
 from . import DEFAULT_CONFIG_FILE, DEFAULT_STATUS_FILE, DEFAULT_PID_FILE
 from .translate import __module_dir__ as __xlate_module_dir__
@@ -37,7 +38,7 @@ from .filegroup import LogFileGroup
 from .script import LogRotateScript
 from .status import StatusFile
 
-__version__ = '0.3.2'
+__version__ = '0.3.3'
 
 _ = XLATOR.gettext
 ngettext = XLATOR.ngettext
@@ -69,9 +70,6 @@ class CfgFileOptionAction(argparse.Action):
             return
 
         path = Path(filename)
-        if not path.is_absolute():
-            msg = _("File {!r} must be an absolute path.").format(filename)
-            raise argparse.ArgumentError(self, msg)
         if self.must_exists and not path.exists():
             msg = _("File {!r} does not exists.").format(filename)
             raise argparse.ArgumentError(self, msg)
@@ -100,6 +98,7 @@ class LogrotateApplication(BaseApplication):
         self.statusfile = None
         self._statusfilename = None
         self._pidfile = None
+        self.locker = None
 
         self.file_groups = []
         self.scripts = {}
@@ -182,6 +181,14 @@ class LogrotateApplication(BaseApplication):
         self.statusfile.filename = self.statusfilename
         self.statusfile.initialized = True
 
+        self.locker = LockHandler(
+            appname=self.appname, verbose=self.verbose, base_dir=self.base_dir,
+            simulate=self.simulate, sudo=False, quiet=self.quiet,
+            lockretry_delay_start=1, lockretry_delay_increase=1,
+            lockretry_max_delay=1800, max_lockfile_age=3600, locking_use_pid=True,
+            lockdir=self.pidfile.parent)
+        self.locker.initialized = True
+
         self.initialized = True
 
     # -------------------------------------------------------------------------
@@ -231,12 +238,18 @@ class LogrotateApplication(BaseApplication):
         else:
             self._statusfilename = DEFAULT_STATUS_FILE
 
+        if not self.statusfilename.is_absolute():
+            self._statusfilename = (self.base_dir / self.statusfilename)
+
         if self.args.pidfile:
             self._pidfile = self.args.pidfile
         elif self.cfg_reader.pidfile:
-            self._statusfilename = self.cfg_reader.statusfile
+            self._pidfile = self.cfg_reader.pidfile
         else:
             self._pidfile = DEFAULT_PID_FILE
+
+        if not self.pidfile.is_absolute():
+            self._pidfile = (self.base_dir / self.pidfile)
 
     # -------------------------------------------------------------------------
     def init_objects(self):
@@ -275,15 +288,25 @@ class LogrotateApplication(BaseApplication):
 
         LOG.info(_("Starting {a!r}, version {v!r} ...").format(
             a=self.appname, v=self.version))
-        self.cfg_reader.check_for_rotation()
-        nr_files = len(self.cfg_reader.logfiles_rotate.keys())
-        if not nr_files:
-            LOG.info(_("Found no logfiles to rotate."))
-            self.exit(0)
-        msg = ngettext(
-            "Found one logfile to rotate.",
-            "Found {nr} logfiles to rotate.", nr_files).format(nr=nr_files)
-        LOG.debug(msg)
+
+        LOG.info(_("Trying to create PID-file {fn!r} ...").format(fn=str(self.pidfile)))
+        lock = self.locker.create_lockfile(self.pidfile)
+        lock.autoremove = True
+
+        try:
+
+            self.cfg_reader.check_for_rotation()
+            nr_files = len(self.cfg_reader.logfiles_rotate.keys())
+            if not nr_files:
+                LOG.info(_("Found no logfiles to rotate."))
+                self.exit(0)
+            msg = ngettext(
+                "Found one logfile to rotate.",
+                "Found {nr} logfiles to rotate.", nr_files).format(nr=nr_files)
+            LOG.debug(msg)
+
+        finally:
+            lock = None
 
 
 # =============================================================================
