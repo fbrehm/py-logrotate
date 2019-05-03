@@ -38,7 +38,7 @@ from .filegroup import LogFileGroup
 from .script import LogRotateScript
 from .status import StatusFile
 
-__version__ = '0.4.1'
+__version__ = '0.4.2'
 
 _ = XLATOR.gettext
 ngettext = XLATOR.ngettext
@@ -294,28 +294,42 @@ class LogrotateApplication(BaseApplication):
         lock.autoremove = True
 
         try:
-
-            if self.statusfile.exists:
-                self.statusfile.read()
-                if self.verbose > 2:
-                    entries = {}
-                    for path in self.statusfile.keys():
-                        fn = str(path)
-                        entries[fn] = self.statusfile[path].ts.isoformat(' ')
-                    LOG.debug(_("Found status entries:") + '\n' + pp(entries))
-
-            self.cfg_reader.check_for_rotation()
-            nr_files = len(self.cfg_reader.logfiles_rotate.keys())
-            if not nr_files:
-                LOG.info(_("Found no logfiles to rotate."))
-                self.exit(0)
-            msg = ngettext(
-                "Found one logfile to rotate.",
-                "Found {nr} logfiles to rotate.", nr_files).format(nr=nr_files)
-            LOG.debug(msg)
+            self.eval_necessary_data()
 
         finally:
             lock = None
+
+    # -------------------------------------------------------------------------
+    def eval_necessary_data(self):
+
+        if self.statusfile.exists:
+            self.statusfile.read()
+            if self.verbose > 2:
+                entries = {}
+                for path in self.statusfile.keys():
+                    fn = str(path)
+                    entries[fn] = self.statusfile[path].ts.isoformat(' ')
+                LOG.debug(_("Found status entries:") + '\n' + pp(entries))
+
+        for logfile in self.cfg_reader.all_logfiles.keys():
+            ix = self.cfg_reader.all_logfiles[logfile]
+            file_group = self.cfg_reader.file_groups[ix]
+            if logfile in self.statusfile:
+                if self.verbose > 2:
+                    LOG.debug(_(
+                        "Setting last rotation of {lf!r} to {dt} in logfile group {ix}.").format(
+                        lf=str(logfile), ix=ix, dt=self.statusfile[logfile].ts.isoformat(' ')))
+                file_group.last_rotation[logfile] = self.statusfile[logfile].ts
+
+        self.cfg_reader.check_for_rotation()
+        nr_files = len(self.cfg_reader.logfiles_rotate.keys())
+        if not nr_files:
+            LOG.info(_("Found no logfiles to rotate."))
+            self.exit(0)
+        msg = ngettext(
+            "Found one logfile to rotate.",
+            "Found {nr} logfiles to rotate.", nr_files).format(nr=nr_files)
+        LOG.debug(msg)
 
 
 # =============================================================================
