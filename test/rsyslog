@@ -27,6 +27,25 @@ shredcycles 2
 }
 
 /var/log/all.log
+/var/log/debug
+/var/log/debug.log
+{
+	daily
+	missingok
+	notifempty
+	minsize 10M
+	dateext
+	addextension .log
+	olddir /var/log/.old
+	compress
+	delaycompress 0
+	shredcycles 4
+	sharedscripts
+	postrotate
+		invoke-rc.d rsyslog rotate >/dev/null
+	endscript
+}
+
 /var/log/mail.info
 /var/log/mail.warn
 /var/log/mail.err

@@ -31,7 +31,7 @@ from .common import split_parts
 from .filegroup import LogFileGroup
 from .script import LogRotateScript
 
-__version__ = '0.5.2'
+__version__ = '0.5.3'
 
 _ = XLATOR.gettext
 ngettext = XLATOR.ngettext
@@ -854,11 +854,15 @@ class LogrotateConfigReader(HandlingObject):
             file_group.resolve_patterns(i)
             for lfile in file_group:
                 if lfile in self.all_logfiles:
+                    ix = self.all_logfiles[lfile]
+                    first_fg = self.file_groups[ix]
                     msg = _(
-                        "Double declaration of logfile {lf!r} in {f1!r} and {f2!r}.").format(
-                        lf=str(lfile), f1=str(self.all_logfiles[lfile]),
-                        f2=str(file_group.config_file))
+                        "Double declaration of logfile {lf!r} in {f1!r} (line {lnr1}) "
+                        "and {f2!r} (line {lnr2}).").format(
+                        lf=str(lfile), f1=str(first_fg.config_file), lnr1=first_fg.line_nr,
+                        f2=str(file_group.config_file), lnr2=file_group.line_nr)
                     LOG.error(msg)
+                    del file_group[lfile]
                     continue
                 self.all_logfiles[lfile] = i
             i += 1
