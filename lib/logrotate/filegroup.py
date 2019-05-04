@@ -16,6 +16,7 @@ import copy
 import glob
 import pwd
 import grp
+import datetime
 
 from collections import MutableSequence
 
@@ -33,6 +34,8 @@ except ImportError:
 # Third party modules
 from six.moves import shlex_quote
 
+from babel.dates import format_timedelta
+
 # Own modules
 from fb_tools.common import pp, to_str, is_sequence
 
@@ -45,7 +48,9 @@ from .translate import XLATOR, format_list
 
 from .common import human2bytes, period2days
 
-__version__ = '0.9.2'
+from .status import StatusFileEntry
+
+__version__ = '0.9.3'
 
 _ = XLATOR.gettext
 ngettext = XLATOR.ngettext
@@ -245,6 +250,44 @@ class LogFileGroup(FbBaseObject, MutableSequence):
 
     unsupported_directives = (
         'error', 'mail', 'mailfirst', 'maillast', 'nomail', 'su', 'uncompresscmd')
+
+    min_last_rotation_date = {}
+
+    # -------------------------------------------------------------------------
+    def __new__(cls, *args, **kwargs):
+
+        cls.init_last_rotation_date()
+
+        return super().__new__(cls)
+
+    # -------------------------------------------------------------------------
+    @classmethod
+    def init_last_rotation_date(cls):
+
+        if cls.min_last_rotation_date.keys():
+            return
+
+        tz = StatusFileEntry.local_timezone
+        dt_now = datetime.datetime.now(tz)
+
+        dt_year = datetime.datetime(
+            dt_now.year - 1, dt_now.month, dt_now.day, hour=dt_now.hour,
+            minute=dt_now.minute, second=dt_now.second, tzinfo=tz)
+        cls.min_last_rotation_date['year'] = dt_year
+
+        if dt_now.month <= 1:
+            dt_month = dt_year = datetime.datetime(
+                dt_now.year - 1, 12, dt_now.day, hour=dt_now.hour,
+                minute=dt_now.minute, second=dt_now.second, tzinfo=tz)
+        else:
+            dt_month = dt_year = datetime.datetime(
+                dt_now.year, dt_now.month - 1, dt_now.day, hour=dt_now.hour,
+                minute=dt_now.minute, second=dt_now.second, tzinfo=tz)
+        cls.min_last_rotation_date['month'] = dt_month
+
+        cls.min_last_rotation_date['week'] = dt_now - datetime.timedelta(weeks=1)
+        cls.min_last_rotation_date['day'] = dt_now - datetime.timedelta(days=1)
+        cls.min_last_rotation_date['hour'] = dt_now - datetime.timedelta(hours=1)
 
     # -------------------------------------------------------------------------
     def __init__(
@@ -1085,6 +1128,8 @@ class LogFileGroup(FbBaseObject, MutableSequence):
         res['patterns'] = copy.copy(self.patterns)
         res['files'] = copy.copy(self._files)
 
+        res['min_last_rotation_date'] = self.min_last_rotation_date
+
         return res
 
     # -------------------------------------------------------------------------
@@ -1594,6 +1639,26 @@ class LogFileGroup(FbBaseObject, MutableSequence):
     def check_for_rotation(self, logfile):
 
         LOG.debug(_("Checking file {!r} for the need of rotation.").format(str(logfile)))
+        if not logfile.exists():
+            msg = _("File {!r} does not exists.").format(str(logfile))
+            raise LogFileGroupError(msg)
+        if not logfile.is_file():
+            msg = _("File {!r} is not a regular file.").format(str(logfile))
+            LOG.error(msg)
+            return False
+
+        fstat = logfile.stat()
+        file_size = fstat.st_size
+        diff_last_rotated = None
+        dt_mtime = datetime.datetime.fromtimestamp(fstat.st_mtime, StatusFileEntry.local_timezone)
+        now = datetime.datetime.now(StatusFileEntry.local_timezone)
+        if logfile in self.last_rotation:
+            diff_last_rotated = now - self.last_rotation[logfile]
+            if self.verbose > 1:
+                LOG.debug(_("Last rotation of was {} ago.").format(
+                    format_timedelta(diff_last_rotated, granularity='hour', format='long')))
+        elif self.verbose > 1:
+            LOG.debug(_("File was obviously not rotated."))
 
         return False
 
