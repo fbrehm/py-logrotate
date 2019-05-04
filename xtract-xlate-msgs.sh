@@ -15,7 +15,7 @@ my_address="${DEBEMAIL:-frank.brehm@pixelpark.com}"
 
 used_locales="de_DE"
 
-pkg_version=$( cat lib/webhooks/__init__.py | \
+pkg_version=$( cat lib/logrotate/__init__.py | \
                     grep '^[ 	]*__version__' | \
                     sed -e 's/[ 	]*//g' | \
                     awk -F= '{print $2}' | \
