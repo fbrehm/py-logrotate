@@ -1,16 +1,16 @@
 # Translations template for plogrotate.
 # Copyright (C) 2019 Frank Brehm, Berlin
 # This file is distributed under the same license as the plogrotate project.
-# Frank Brehm <frank@brehm-online.com>, 2019.
+# Frank Brehm <frank.brehm@pixelpark.com>, 2019.
 #
 #, fuzzy
 msgid ""
 msgstr ""
 "Project-Id-Version: plogrotate 0.9.2\n"
-"Report-Msgid-Bugs-To: frank@brehm-online.com\n"
-"POT-Creation-Date: 2019-05-04 10:08+0200\n"
+"Report-Msgid-Bugs-To: frank.brehm@pixelpark.com\n"
+"POT-Creation-Date: 2019-05-06 14:58+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
-"Last-Translator: FULL NAME <frank@brehm-online.com>\n"
+"Last-Translator: FULL NAME <frank.brehm@pixelpark.com>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
@@ -633,12 +633,66 @@ msgstr ""
 msgid "Checking file {!r} for the need of rotation."
 msgstr ""
 
-#: lib/logrotate/filegroup.py:1658
-msgid "Last rotation of was {} ago."
+#: lib/logrotate/filegroup.py:1653
+msgid "File {!r} is empty and that's why it should not be rotated."
 msgstr ""
 
-#: lib/logrotate/filegroup.py:1661
+#: lib/logrotate/filegroup.py:1658
+msgid "File {lf!r} has a size of {sz}."
+msgstr ""
+
+#: lib/logrotate/filegroup.py:1668
+msgid "Last rotation of {lf!r} was {days:0.1f} days ago."
+msgstr ""
+
+#: lib/logrotate/filegroup.py:1671
 msgid "File was obviously not rotated."
+msgstr ""
+
+#: lib/logrotate/filegroup.py:1676
+msgid "File {lf!r} is {days:0.1f} days old."
+msgstr ""
+
+#: lib/logrotate/filegroup.py:1680
+msgid "File {lf!r} is less than one day old, not rotating."
+msgid_plural "File {lf!r} is less than {days} days old, not rotating."
+msgstr[0] ""
+msgstr[1] ""
+
+#: lib/logrotate/filegroup.py:1690
+msgid "File {lf!r} is bigger than or equal to size {sz}, rotating."
+msgstr ""
+
+#: lib/logrotate/filegroup.py:1695
+msgid "File {lf!r} is less than a size of {sz}, not rotating."
+msgstr ""
+
+#: lib/logrotate/filegroup.py:1701
+msgid "File {lf!r} is bigger than or equal to maximum size {sz}, rotating."
+msgstr ""
+
+#: lib/logrotate/filegroup.py:1708
+msgid "Minimum last rotation date of file {lf!r}: {dt}"
+msgstr ""
+
+#: lib/logrotate/filegroup.py:1712
+msgid "Last rotation was long enough ago."
+msgstr ""
+
+#: lib/logrotate/filegroup.py:1716
+msgid "Last rotation was not long enough ago."
+msgstr ""
+
+#: lib/logrotate/filegroup.py:1724
+msgid "File {lf!r} is less than the minimum size of {sz}, not rotating."
+msgstr ""
+
+#: lib/logrotate/filegroup.py:1726
+msgid "File {lf!r} is bigger than or equal to minimum size {sz}, rotating."
+msgstr ""
+
+#: lib/logrotate/filegroup.py:1731
+msgid "File {lf!r} should not be rotated from some unknown reason."
 msgstr ""
 
 #: lib/logrotate/script.py:93

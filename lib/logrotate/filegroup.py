@@ -50,7 +50,7 @@ from .common import human2bytes, period2days
 
 from .status import StatusFileEntry
 
-__version__ = '0.9.4'
+__version__ = '0.9.5'
 
 _ = XLATOR.gettext
 ngettext = XLATOR.ngettext
@@ -1665,8 +1665,8 @@ class LogFileGroup(FbBaseObject, MutableSequence):
             diff_last_rotated_float = float(diff_last_rotated.days) + (
                 float(diff_last_rotated.seconds) / 24 / 60 / 60)
             if self.verbose > 1:
-                LOG.debug(_("Last rotation of was {days:0.1f} days ago.").format(
-                    days=diff_last_rotated_float))
+                LOG.debug(_("Last rotation of {lf!r} was {days:0.1f} days ago.").format(
+                    lf=str(logfile), days=diff_last_rotated_float))
         elif self.verbose > 1:
             LOG.debug(_("File was obviously not rotated."))
 
@@ -1691,8 +1691,8 @@ class LogFileGroup(FbBaseObject, MutableSequence):
                     lf=str(logfile), sz=msize_str))
                 return True
             else:
-                LOG.debug(_("File {lf!r} is less than a size of {sz}, not rotating.".format(
-                    lf=str(logfile), sz=msize_str)))
+                LOG.debug(_("File {lf!r} is less than a size of {sz}, not rotating.").format(
+                    lf=str(logfile), sz=msize_str))
                 return False
 
         if self.maxsize is not None:
