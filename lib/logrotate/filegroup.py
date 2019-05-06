@@ -37,7 +37,7 @@ from six.moves import shlex_quote
 from babel.dates import format_timedelta
 
 # Own modules
-from fb_tools.common import pp, to_str, is_sequence
+from fb_tools.common import pp, to_str, is_sequence, bytes2human
 
 from fb_tools.obj import FbBaseObject
 
@@ -50,7 +50,7 @@ from .common import human2bytes, period2days
 
 from .status import StatusFileEntry
 
-__version__ = '0.9.3'
+__version__ = '0.9.4'
 
 _ = XLATOR.gettext
 ngettext = XLATOR.ngettext
@@ -1649,17 +1649,87 @@ class LogFileGroup(FbBaseObject, MutableSequence):
 
         fstat = logfile.stat()
         file_size = fstat.st_size
+        if not self.if_empty and not file_size:
+            LOG.debug(_("File {!r} is empty and that's why it should not be rotated.").format(
+                str(logfile)))
+            return False
+        fs_str = bytes2human(file_size, precision=1)
+        if self.verbose > 1:
+            LOG.debug(_("File {lf!r} has a size of {sz}.").format(lf=str(logfile), sz=fs_str))
+
         diff_last_rotated = None
         dt_mtime = datetime.datetime.fromtimestamp(fstat.st_mtime, StatusFileEntry.local_timezone)
         now = datetime.datetime.now(StatusFileEntry.local_timezone)
         if logfile in self.last_rotation:
             diff_last_rotated = now - self.last_rotation[logfile]
+            diff_last_rotated_float = float(diff_last_rotated.days) + (
+                float(diff_last_rotated.seconds) / 24 / 60 / 60)
             if self.verbose > 1:
-                LOG.debug(_("Last rotation of was {} ago.").format(
-                    format_timedelta(diff_last_rotated, granularity='hour', format='long')))
+                LOG.debug(_("Last rotation of was {days:0.1f} days ago.").format(
+                    days=diff_last_rotated_float))
         elif self.verbose > 1:
             LOG.debug(_("File was obviously not rotated."))
 
+        file_age = now - dt_mtime
+        file_age_float = float(file_age.days) + (float(file_age.seconds) / 24 / 60 / 60)
+        if self.verbose > 1:
+            LOG.debug(_("File {lf!r} is {days:0.1f} days old.").format(
+                lf=str(logfile), days=file_age_float))
+        if self.minage is not None:
+            if file_age.days < self.minage:
+                msg = ngettext(
+                    "File {lf!r} is less than one day old, not rotating.",
+                    "File {lf!r} is less than {days} days old, not rotating.",
+                    self.minage).format(lf=str(logfile), days=self.minage)
+                LOG.debug(msg)
+                return False
+
+        if self.size is not None:
+            msize_str = bytes2human(self.size, precision=1)
+            if file_size >= self.size:
+                LOG.debug(_("File {lf!r} is bigger than or equal to size {sz}, rotating.").format(
+                    lf=str(logfile), sz=msize_str))
+                return True
+            else:
+                LOG.debug(_("File {lf!r} is less than a size of {sz}, not rotating.".format(
+                    lf=str(logfile), sz=msize_str)))
+                return False
+
+        if self.maxsize is not None:
+            msize_str = bytes2human(self.maxsize, precision=1)
+            if file_size >= self.maxsize:
+                LOG.debug(_(
+                    "File {lf!r} is bigger than or equal to maximum size {sz},"
+                    " rotating.").format(lf=str(logfile), sz=msize_str))
+                return True
+
+        min_rotation_date = self.min_last_rotation_date[str(self.rotation_interval)]
+        if self.verbose > 1:
+            LOG.debug(_("Minimum last rotation date of file {lf!r}: {dt}").format(
+                lf=str(logfile), dt=min_rotation_date.isoformat(' ')))
+        if logfile in self.last_rotation:
+            if self.last_rotation[logfile] <= min_rotation_date:
+                LOG.debug(_("Last rotation was long enough ago."))
+                if self.minsize is None:
+                    return True
+            else:
+                LOG.debug(_("Last rotation was not long enough ago."))
+                return False
+
+        if self.minsize is not None:
+            msize_str = bytes2human(self.minsize, precision=1)
+            if file_size < self.minsize:
+                LOG.debug(_(
+                    "File {lf!r} is less than the minimum size of {sz}, not rotating.".format(
+                    lf=str(logfile), sz=msize_str)))
+                return False
+            LOG.debug(_(
+                "File {lf!r} is bigger than or equal to minimum size {sz}, rotating.").format(
+                lf=str(logfile), sz=msize_str))
+            return True
+
+        LOG.debug(_("File {lf!r} should not be rotated from some unknown reason.").format(
+            lf=str(logfile)))
         return False
 
 
