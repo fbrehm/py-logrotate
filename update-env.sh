@@ -4,11 +4,26 @@ base_dir=$( dirname $0 )
 cd ${base_dir}
 base_dir=$( readlink -f . )
 
-if type -t virtualenv >/dev/null ; then
-    :
-else
-    echo "Command 'virtualenv' not found, please install package 'python-virtualenv' or appropriate." >&2
-    exit 6
+declare -a VALID_PY_VERSIONS=("3.8" "3.7" "3.6" "3.5")
+FOUND_VIRTUALENV="n"
+
+VENV_CMD=
+
+for py_version in "${VALID_PY_VERSIONS[@]}" ; do
+    VENV_CMD="virtualenv-${py_version}"
+    if type -t ${VENV_CMD} >/dev/null ; then
+        FOUND_VIRTUALENV="y"
+        break
+    fi
+done
+
+if [[ "${FOUND_VIRTUALENV}" != "y" ]] ; then
+    if type -t virtualenv >/dev/null ; then
+        VENV_CMD="virtualenv"
+    else
+        echo "Command 'virtualenv' not found, please install package 'python-virtualenv' or appropriate." >&2
+        exit 6
+    fi
 fi
 
 if type -t msgfmt >/dev/null ; then
@@ -17,8 +32,6 @@ else
     echo "Command 'msgfmt' not found, please install package 'gettext' or appropriate." >&2
     exit 6
 fi
-
-declare -a VALID_PY_VERSIONS=("3.8" "3.7" "3.6" "3.5")
 
 echo "Preparing virtual environment …"
 echo
@@ -31,7 +44,7 @@ if [[ ! -f venv/bin/activate ]] ; then
             echo
             echo "Found ${PYTHON}."
             echo
-            virtualenv --python=${PYTHON} venv
+            ${VENV_CMD} --python=${PYTHON} venv
             break
         fi
     done
@@ -79,4 +92,4 @@ echo "-------"
 echo "Fertig."
 echo
 
-# vim: ts=4
+# vim: ts=4 list
