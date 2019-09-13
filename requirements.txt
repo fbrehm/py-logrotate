@@ -1,5 +1,5 @@
 six
 flake8
 pathlib
-git+https://git.pixelpark.com/frabrehm/python_fb_tools.git@master
+git+https://git.pixelpark.com/python/python_fb_tools.git@master
 Babel
